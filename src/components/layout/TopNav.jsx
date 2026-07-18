@@ -15,22 +15,20 @@ export default function TopNav() {
   const { itemCount: wishCount } = useWishlist();
 
   return (
-    <header className="sticky top-0 z-50 bg-white/70 backdrop-blur-xl shadow-[0_2px_16px_rgba(0,0,0,0.05)]">
-      <div className="max-w-md mx-auto w-full flex items-center justify-between px-4 h-20">
+    <header className="sticky top-0 z-50 bg-white/55 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
+      <div className="max-w-md mx-auto w-full flex items-center justify-between px-4 h-16">
         <Link to="/" className="flex items-center no-tap-highlight active:scale-95 transition-transform">
-          <div className="h-16 w-28 rounded-2xl bg-black overflow-hidden flex items-center justify-center flex-shrink-0">
-            <img
-              src="https://media.base44.com/images/public/user_6a5b60fa58a7a9c730d2e144/7a94e394d_A9E61264-817E-46E3-8245-1007BBE65B07.png"
-              alt="Ukart"
-              className="h-full w-full object-contain"
-            />
-          </div>
+          <img
+            src="https://media.base44.com/images/public/user_6a5b60fa58a7a9c730d2e144/7a94e394d_A9E61264-817E-46E3-8245-1007BBE65B07.png"
+            alt="Ukart"
+            className="h-11 w-auto"
+          />
         </Link>
 
         <div className="flex items-center gap-1">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="p-2.5 rounded-full hover:bg-black/5 active:scale-90 transition-transform">
+              <button className="p-2 rounded-full hover:bg-black/5 active:scale-90 transition-transform">
                 <MenuIcon className="w-5 h-5 text-gray-700" />
               </button>
             </DropdownMenuTrigger>
@@ -42,25 +40,25 @@ export default function TopNav() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Link to="/wishlist" className="relative p-2.5 rounded-full hover:bg-black/5 active:scale-90 transition-transform">
+          <Link to="/wishlist" className="relative p-2 rounded-full hover:bg-black/5 active:scale-90 transition-transform">
             <Heart className="w-5 h-5 text-gray-700" />
             {wishCount > 0 && (
-              <span className="absolute top-1 right-1 bg-[#2E7D32] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+              <span className="absolute top-0.5 right-0.5 bg-[#2E7D32] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                 {wishCount}
               </span>
             )}
           </Link>
 
-          <Link to="/cart" className="relative p-2.5 rounded-full hover:bg-black/5 active:scale-90 transition-transform">
+          <Link to="/cart" className="relative p-2 rounded-full hover:bg-black/5 active:scale-90 transition-transform">
             <ShoppingBag className="w-5 h-5 text-gray-700" />
             {itemCount > 0 && (
-              <span className="absolute top-1 right-1 bg-[#2E7D32] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+              <span className="absolute top-0.5 right-0.5 bg-[#2E7D32] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                 {itemCount}
               </span>
             )}
           </Link>
 
-          <Link to="/profile" className="p-2.5 rounded-full hover:bg-black/5 active:scale-90 transition-transform">
+          <Link to="/profile" className="p-2 rounded-full hover:bg-black/5 active:scale-90 transition-transform">
             <User className="w-5 h-5 text-gray-700" />
           </Link>
         </div>
