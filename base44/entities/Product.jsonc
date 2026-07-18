@@ -1,0 +1,43 @@
+{
+  "name": "Product",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "price": {
+      "type": "number"
+    },
+    "original_price": {
+      "type": "number"
+    },
+    "image": {
+      "type": "string"
+    },
+    "category_id": {
+      "type": "string"
+    },
+    "category_name": {
+      "type": "string"
+    },
+    "rating": {
+      "type": "number"
+    },
+    "description": {
+      "type": "string"
+    },
+    "unit": {
+      "type": "string"
+    },
+    "is_best_seller": {
+      "type": "boolean"
+    },
+    "is_weekly_deal": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "name",
+    "price"
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "name": "Package",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "image": {
+      "type": "string"
+    },
+    "starting_price": {
+      "type": "number"
+    },
+    "total_price": {
+      "type": "number"
+    },
+    "original_total": {
+      "type": "number"
+    },
+    "item_count": {
+      "type": "number"
+    },
+    "badge": {
+      "type": "string"
+    },
+    "delivery_time": {
+      "type": "string"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "addons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

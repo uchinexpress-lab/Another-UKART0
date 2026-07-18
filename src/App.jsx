@@ -6,7 +6,20 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
-// Add page imports here
+import { CartProvider } from '@/context/CartContext';
+import { WishlistProvider } from '@/context/WishlistContext';
+import Layout from '@/components/layout/Layout';
+import Home from '@/pages/Home';
+import PackageDetail from '@/pages/PackageDetail';
+import Packages from '@/pages/Packages';
+import Categories from '@/pages/Categories';
+import CategoryProducts from '@/pages/CategoryProducts';
+import SearchResults from '@/pages/SearchResults';
+import Offers from '@/pages/Offers';
+import Cart from '@/pages/Cart';
+import Wishlist from '@/pages/Wishlist';
+import Profile from '@/pages/Profile';
+import BudgetShop from '@/pages/BudgetShop';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -33,10 +46,26 @@ const AuthenticatedApp = () => {
 
   // Render the main app
   return (
-    <Routes>
-      {/* Add your page Route elements here */}
-      <Route path="*" element={<PageNotFound />} />
-    </Routes>
+    <CartProvider>
+      <WishlistProvider>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/package/:id" element={<PackageDetail />} />
+            <Route path="/packages" element={<Packages />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/category/:id" element={<CategoryProducts />} />
+            <Route path="/search" element={<SearchResults />} />
+            <Route path="/offers" element={<Offers />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/wishlist" element={<Wishlist />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/budget/:range" element={<BudgetShop />} />
+          </Route>
+          <Route path="*" element={<PageNotFound />} />
+        </Routes>
+      </WishlistProvider>
+    </CartProvider>
   );
 };
 

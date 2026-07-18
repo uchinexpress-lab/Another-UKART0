@@ -1,0 +1,24 @@
+{
+  "name": "Category",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "icon": {
+      "type": "string"
+    },
+    "image": {
+      "type": "string"
+    },
+    "display_order": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
