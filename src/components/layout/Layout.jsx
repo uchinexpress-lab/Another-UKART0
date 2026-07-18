@@ -8,14 +8,14 @@ export default function Layout() {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex flex-col max-w-md mx-auto relative">
+    <div className="min-h-screen bg-[#FAFAFA] flex flex-col relative">
       <TopNav />
       <motion.main
         key={location.pathname}
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25, ease: 'easeOut' }}
-        className="flex-1 pb-20"
+        className="flex-1 pb-20 max-w-md mx-auto w-full"
       >
         <Outlet />
       </motion.main>

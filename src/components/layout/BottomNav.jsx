@@ -16,15 +16,15 @@ export default function BottomNav() {
   const { itemCount } = useCart();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100 max-w-md mx-auto">
-      <div className="flex items-center justify-around h-16">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-100">
+      <div className="max-w-md mx-auto flex items-center justify-around h-16">
         {navItems.map(({ to, icon: Icon, label }) => {
           const active = to === '/' ? location.pathname === '/' : location.pathname.startsWith(to);
           return (
             <Link
               key={to}
               to={to}
-              className="flex flex-col items-center gap-0.5 px-3 py-1 no-tap-highlight"
+              className="flex flex-col items-center gap-0.5 px-3 py-1 no-tap-highlight active:scale-90 transition-transform"
             >
               <div className="relative">
                 <Icon
