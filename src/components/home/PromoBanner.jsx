@@ -6,32 +6,32 @@ export default function PromoBanner() {
   const navigate = useNavigate();
 
   return (
-    <div
-      className="relative rounded-3xl overflow-hidden"
-      style={{ background: 'linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #76C237 100%)' }}
-    >
+    <div className="relative rounded-3xl overflow-hidden h-44">
+      <img
+        src="https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=600&h=400&fit=crop"
+        alt="Fresh grocery shelf"
+        className="absolute inset-0 w-full h-full object-cover"
+      />
       <div
-        className="absolute right-0 top-0 bottom-0 w-1/2 opacity-25"
+        className="absolute inset-0"
         style={{
-          backgroundImage:
-            "url(https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=300&fit=crop)",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          background:
+            'linear-gradient(135deg, rgba(27,94,32,0.55) 0%, rgba(46,125,50,0.30) 100%)',
         }}
       />
-      <div className="relative p-5">
-        <span className="inline-block bg-white/20 text-white text-[9px] font-bold px-2 py-0.5 rounded-full mb-2 tracking-wide">
-          NEW IN LAGOS
+      <div className="relative p-5 h-full flex flex-col justify-center">
+        <span className="inline-block bg-white/25 backdrop-blur-sm text-white text-[10px] font-semibold px-2.5 py-1 rounded-full mb-2 tracking-wide w-fit">
+          Delivering Across Lagos
         </span>
-        <h2 className="text-2xl font-bold text-white leading-tight tracking-tight">
+        <h2 className="text-2xl font-bold text-white leading-tight tracking-tight drop-shadow-md">
           NO MARKET WAHALA.
         </h2>
-        <p className="text-xs text-white/85 mt-1 mb-3 max-w-[200px]">
+        <p className="text-xs text-white/95 mt-1 mb-3 max-w-[210px] font-medium drop-shadow-sm">
           Fresh groceries delivered across Lagos with fast, reliable delivery.
         </p>
         <button
-          onClick={() => navigate('/packages')}
-          className="inline-flex items-center gap-1.5 bg-white text-[#2E7D32] text-xs font-bold px-4 py-2 rounded-full hover:bg-gray-50 transition-colors"
+          onClick={() => navigate('/categories')}
+          className="inline-flex items-center gap-1.5 bg-white text-[#2E7D32] text-xs font-bold px-4 py-2 rounded-full hover:bg-gray-50 active:scale-95 transition-all w-fit shadow-md"
         >
           Shop Now <ArrowRight className="w-3 h-3" />
         </button>

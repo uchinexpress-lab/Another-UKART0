@@ -44,7 +44,7 @@ export default function Home() {
   const weeklyDeals = products.filter((p) => p.is_weekly_deal);
 
   return (
-    <div className="space-y-6 pb-4">
+    <div className="space-y-8 pb-4">
       <div className="px-4 pt-3">
         <SearchBar />
         <QuickCategories categories={categories} />

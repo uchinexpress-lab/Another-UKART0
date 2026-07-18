@@ -10,7 +10,7 @@ export default function QuickCategories({ categories }) {
         <button
           key={cat.id}
           onClick={() => navigate(cat.slug === 'packages' ? '/packages' : `/category/${cat.id}`)}
-          className="flex flex-col items-center gap-1.5 flex-shrink-0 w-16 no-tap-highlight"
+          className="flex flex-col items-center gap-1.5 flex-shrink-0 w-16 no-tap-highlight active:scale-90 transition-transform"
         >
           <div className="w-14 h-14 rounded-2xl bg-[#E8F5E9] flex items-center justify-center text-2xl">
             {cat.icon}
