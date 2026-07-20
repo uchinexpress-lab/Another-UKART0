@@ -8,6 +8,7 @@ import ShopByBudget from '@/components/home/ShopByBudget';
 import FeaturedCategories from '@/components/home/FeaturedCategories';
 import BestSellers from '@/components/home/BestSellers';
 import WeeklyDeals from '@/components/home/WeeklyDeals';
+import PopularMealKits from '@/components/home/PopularMealKits';
 import CustomerReviews from '@/components/home/CustomerReviews';
 
 export default function Home() {
@@ -53,6 +54,7 @@ export default function Home() {
         <PromoBanner />
       </div>
       <WeeklyDeals products={weeklyDeals} />
+      <PopularMealKits packages={packages} />
       <PackageCarousel packages={packages} />
       <ShopByBudget />
       <FeaturedCategories categories={categories} />

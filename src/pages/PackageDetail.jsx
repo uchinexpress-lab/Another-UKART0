@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft, Check, Clock, Plus, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, Check, Clock, Plus, ShoppingBag, Users } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
 export default function PackageDetail() {
@@ -54,7 +54,13 @@ export default function PackageDetail() {
             </span>
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">{pkg.name}</h1>
-          <p className="text-sm text-gray-500 mb-4">{pkg.description}</p>
+          <p className="text-sm text-gray-500 mb-3">{pkg.description}</p>
+          {pkg.group === 'meal_kits' && pkg.serves && (
+            <div className="flex items-center gap-1.5 text-xs font-medium text-[#2E7D32] bg-[#E8F5E9] w-fit px-2.5 py-1 rounded-full mb-4">
+              <Users className="w-3.5 h-3.5" />
+              {pkg.serves}
+            </div>
+          )}
 
           <div className="flex items-end justify-between">
             <div>

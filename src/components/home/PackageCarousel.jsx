@@ -5,7 +5,8 @@ import PackageCard from '@/components/package/PackageCard';
 
 export default function PackageCarousel({ packages }) {
   const navigate = useNavigate();
-  if (!packages?.length) return null;
+  const essentials = (packages || []).filter((p) => p.group !== 'meal_kits');
+  if (!essentials.length) return null;
 
   return (
     <section>
@@ -19,7 +20,7 @@ export default function PackageCarousel({ packages }) {
         </button>
       </div>
       <div className="flex gap-4 overflow-x-auto pb-2 px-4 scrollbar-hide snap-x">
-        {packages.map((pkg) => (
+        {essentials.map((pkg) => (
           <div key={pkg.id} className="snap-start">
             <PackageCard pkg={pkg} />
           </div>
