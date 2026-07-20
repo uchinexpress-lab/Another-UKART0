@@ -29,6 +29,17 @@
     "delivery_time": {
       "type": "string"
     },
+    "group": {
+      "type": "string",
+      "enum": [
+        "essentials",
+        "meal_kits"
+      ],
+      "default": "essentials"
+    },
+    "serves": {
+      "type": "string"
+    },
     "items": {
       "type": "array",
       "items": {
