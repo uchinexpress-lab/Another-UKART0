@@ -52,11 +52,11 @@ export default function Home() {
       <div className="px-4">
         <PromoBanner />
       </div>
+      <WeeklyDeals products={weeklyDeals} />
       <PackageCarousel packages={packages} />
       <ShopByBudget />
       <FeaturedCategories categories={categories} />
       <BestSellers products={bestSellers} />
-      <WeeklyDeals products={weeklyDeals} />
       <CustomerReviews reviews={reviews} />
     </div>
   );
