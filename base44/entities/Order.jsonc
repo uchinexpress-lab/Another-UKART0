@@ -43,6 +43,9 @@
     "customer_address": {
       "type": "string"
     },
+    "landmark": {
+      "type": "string"
+    },
     "status": {
       "type": "string",
       "enum": [
