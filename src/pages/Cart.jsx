@@ -1,12 +1,61 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
-import { Trash2, Minus, Plus, ShoppingBag, ArrowRight } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { Trash2, Minus, Plus, ShoppingBag, ArrowRight, Loader2 } from 'lucide-react';
 
 export default function Cart() {
   const { items, updateQuantity, removeItem, total, clearCart } = useCart();
   const navigate = useNavigate();
   const deliveryFee = total > 0 ? (total > 30000 ? 0 : 1500) : 0;
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [customerAddress, setCustomerAddress] = useState('');
+  const [placing, setPlacing] = useState(false);
+
+  const handleCheckout = async () => {
+    if (!customerName.trim() || !customerPhone.trim() || !customerAddress.trim() || placing) return;
+    setPlacing(true);
+    try {
+      const orderNumber = `UK-${Date.now().toString().slice(-6)}`;
+      const orderItems = items.map((i) => ({
+        name: i.name,
+        price: i.price,
+        quantity: i.quantity,
+        unit: i.unit,
+      }));
+      const [order, admins] = await Promise.all([
+        base44.entities.Order.create({
+          order_number: orderNumber,
+          items: orderItems,
+          subtotal: total,
+          delivery_fee: deliveryFee,
+          total: total + deliveryFee,
+          customer_name: customerName,
+          customer_phone: customerPhone,
+          customer_address: customerAddress,
+          status: 'new',
+        }),
+        base44.entities.User.filter({ role: 'admin' }),
+      ]);
+      const itemLines = orderItems
+        .map((i) => `• ${i.quantity}x ${i.name} — ₦${(i.price * i.quantity).toLocaleString()}`)
+        .join('\n');
+      const body = `New order received!\n\nOrder: ${orderNumber}\nCustomer: ${customerName}\nPhone: ${customerPhone}\nAddress: ${customerAddress}\n\nItems:\n${itemLines}\n\nSubtotal: ₦${total.toLocaleString()}\nDelivery: ${deliveryFee === 0 ? 'FREE' : '₦' + deliveryFee.toLocaleString()}\nTotal: ₦${(total + deliveryFee).toLocaleString()}`;
+      for (const admin of admins) {
+        await base44.integrations.Core.SendEmail({
+          to: admin.email,
+          subject: `🛒 New Order ${orderNumber} — Ukart`,
+          body,
+        });
+      }
+      clearCart();
+      navigate('/');
+    } catch (e) {
+      setPlacing(false);
+      alert('Could not place order. Please try again.');
+    }
+  };
 
   if (items.length === 0) {
     return (
@@ -81,16 +130,47 @@ export default function Cart() {
         </div>
       </div>
 
+      <div className="mt-6 bg-white rounded-2xl border border-gray-100 p-4">
+        <h3 className="text-sm font-bold text-gray-900 mb-3">Delivery Details</h3>
+        <div className="space-y-2.5">
+          <input
+            value={customerName}
+            onChange={(e) => setCustomerName(e.target.value)}
+            placeholder="Full name"
+            className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none focus:border-[#2E7D32]"
+          />
+          <input
+            value={customerPhone}
+            onChange={(e) => setCustomerPhone(e.target.value)}
+            placeholder="Phone number"
+            inputMode="tel"
+            className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none focus:border-[#2E7D32]"
+          />
+          <textarea
+            value={customerAddress}
+            onChange={(e) => setCustomerAddress(e.target.value)}
+            placeholder="Delivery address"
+            rows={2}
+            className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none focus:border-[#2E7D32] resize-none"
+          />
+        </div>
+      </div>
+
       <div className="fixed bottom-16 left-0 right-0 max-w-md mx-auto px-4 py-3 bg-white border-t border-gray-100">
         <button
-          onClick={() => {
-            alert('Order placed! Thank you for shopping with Ukart. 🛒');
-            clearCart();
-            navigate('/');
-          }}
-          className="w-full h-12 rounded-2xl bg-[#2E7D32] text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#1B5E20]"
+          onClick={handleCheckout}
+          disabled={placing || !customerName.trim() || !customerPhone.trim() || !customerAddress.trim()}
+          className="w-full h-12 rounded-2xl bg-[#2E7D32] text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#1B5E20] disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Checkout ₦{(total + deliveryFee).toLocaleString()} <ArrowRight className="w-4 h-4" />
+          {placing ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" /> Placing order...
+            </>
+          ) : (
+            <>
+              Checkout ₦{(total + deliveryFee).toLocaleString()} <ArrowRight className="w-4 h-4" />
+            </>
+          )}
         </button>
       </div>
     </div>
