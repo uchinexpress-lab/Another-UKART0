@@ -24,31 +24,26 @@ export default function Cart() {
         quantity: i.quantity,
         unit: i.unit,
       }));
-      const [order, admins] = await Promise.all([
-        base44.entities.Order.create({
-          order_number: orderNumber,
-          items: orderItems,
-          subtotal: total,
-          delivery_fee: deliveryFee,
-          total: total + deliveryFee,
-          customer_name: customerName,
-          customer_phone: customerPhone,
-          customer_address: customerAddress,
-          status: 'new',
-        }),
-        base44.entities.User.filter({ role: 'admin' }),
-      ]);
+      await base44.entities.Order.create({
+        order_number: orderNumber,
+        items: orderItems,
+        subtotal: total,
+        delivery_fee: deliveryFee,
+        total: total + deliveryFee,
+        customer_name: customerName,
+        customer_phone: customerPhone,
+        customer_address: customerAddress,
+        status: 'new',
+      });
       const itemLines = orderItems
         .map((i) => `• ${i.quantity}x ${i.name} — ₦${(i.price * i.quantity).toLocaleString()}`)
         .join('\n');
       const body = `New order received!\n\nOrder: ${orderNumber}\nCustomer: ${customerName}\nPhone: ${customerPhone}\nAddress: ${customerAddress}\n\nItems:\n${itemLines}\n\nSubtotal: ₦${total.toLocaleString()}\nDelivery: ${deliveryFee === 0 ? 'FREE' : '₦' + deliveryFee.toLocaleString()}\nTotal: ₦${(total + deliveryFee).toLocaleString()}`;
-      for (const admin of admins) {
-        await base44.integrations.Core.SendEmail({
-          to: admin.email,
-          subject: `🛒 New Order ${orderNumber} — Ukart`,
-          body,
-        });
-      }
+      await base44.integrations.Core.SendEmail({
+        to: 'ukartfreshventures@gmail.com',
+        subject: `🛒 New Order ${orderNumber} — Ukart`,
+        body,
+      });
       clearCart();
       navigate('/');
     } catch (e) {
