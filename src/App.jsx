@@ -22,6 +22,7 @@ import Shop from '@/pages/Shop';
 import Wishlist from '@/pages/Wishlist';
 import Profile from '@/pages/Profile';
 import BudgetShop from '@/pages/BudgetShop';
+import OrderTracking from '@/pages/OrderTracking';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -65,6 +66,7 @@ const AuthenticatedApp = () => {
             <Route path="/wishlist" element={<Wishlist />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/budget/:range" element={<BudgetShop />} />
+            <Route path="/track" element={<OrderTracking />} />
           </Route>
           <Route path="*" element={<PageNotFound />} />
         </Routes>

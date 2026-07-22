@@ -51,6 +51,7 @@
       "enum": [
         "new",
         "processing",
+        "on_the_way",
         "delivered",
         "cancelled"
       ],

@@ -70,7 +70,10 @@ export default function Checkout() {
           Your order <span className="font-bold text-[#2E7D32]">{done}</span> has been received.
         </p>
         <p className="text-xs text-gray-400 mb-6">We'll call {phone} to confirm your delivery.</p>
-        <Link to="/" className="bg-[#2E7D32] text-white text-sm font-bold px-6 py-3 rounded-full">
+        <Link to={`/track?order=${done}`} className="bg-[#2E7D32] text-white text-sm font-bold px-6 py-3 rounded-full mb-3">
+          Track My Order
+        </Link>
+        <Link to="/" className="text-[#2E7D32] text-sm font-medium px-6 py-3 rounded-full border border-[#2E7D32]/20">
           Continue Shopping
         </Link>
       </div>
