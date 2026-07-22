@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, LayoutGrid, Tag, ShoppingBag, Heart } from 'lucide-react';
+import { Home, Package, Tag, ShoppingBag, Heart } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 
 const navItems = [
   { to: '/', icon: Home, label: 'Home' },
-  { to: '/categories', icon: LayoutGrid, label: 'Categories' },
+  { to: '/packages', icon: Package, label: 'Packages' },
   { to: '/offers', icon: Tag, label: 'Offers' },
   { to: '/cart', icon: ShoppingBag, label: 'Cart' },
   { to: '/wishlist', icon: Heart, label: 'Wishlist' },

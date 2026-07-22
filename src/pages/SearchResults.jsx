@@ -9,14 +9,30 @@ export default function SearchResults() {
   const query = params.get('q') || '';
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
+  const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     base44.entities.Product.list().then((prods) => {
-      const filtered = prods.filter((p) =>
-        p.name.toLowerCase().includes(query.toLowerCase())
+      const q = query.toLowerCase();
+      const matched = prods.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          (p.description || '').toLowerCase().includes(q)
       );
-      setProducts(filtered);
+      setProducts(matched);
+
+      // Related: share a category with a matched product but don't match the query
+      const matchedIds = new Set(matched.map((p) => p.id));
+      const matchedCatIds = new Set(
+        matched.flatMap((p) => p.category_ids || [])
+      );
+      const relatedProducts = prods.filter(
+        (p) =>
+          !matchedIds.has(p.id) &&
+          (p.category_ids || []).some((c) => matchedCatIds.has(c))
+      );
+      setRelated(relatedProducts);
       setLoading(false);
     });
   }, [query]);
@@ -36,6 +52,7 @@ export default function SearchResults() {
       </button>
       <h1 className="text-lg font-bold text-gray-900 mb-1">Search: &ldquo;{query}&rdquo;</h1>
       <p className="text-sm text-gray-500 mb-4">{products.length} results</p>
+
       {products.length === 0 ? (
         <div className="text-center py-12">
           <Search className="w-12 h-12 text-gray-300 mx-auto mb-3" />
@@ -46,6 +63,17 @@ export default function SearchResults() {
           {products.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
+        </div>
+      )}
+
+      {related.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-base font-bold text-gray-900 mb-3">You might also like</h2>
+          <div className="grid grid-cols-2 gap-3">
+            {related.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
         </div>
       )}
     </div>
