@@ -3,6 +3,7 @@ export const BROAD_CATEGORIES = [
     name: 'Fresh Produce',
     slug: 'fresh-produce',
     icon: '🥬',
+    image: 'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/82034169c_F273CC61-F421-4CC8-9B3D-DAC42D0E826E.png',
     example: 'Vegetables & fruits',
     slugs: ['vegetables', 'fruits'],
   },
