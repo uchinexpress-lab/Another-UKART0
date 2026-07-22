@@ -20,6 +20,12 @@
     "category_name": {
       "type": "string"
     },
+    "category_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "rating": {
       "type": "number"
     },
@@ -34,6 +40,14 @@
     },
     "is_weekly_deal": {
       "type": "boolean"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "coming_soon"
+      ],
+      "default": "active"
     }
   },
   "required": [

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, Star, Plus } from 'lucide-react';
+import { Heart, Star, Plus, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 
@@ -7,18 +7,31 @@ export default function ProductCard({ product }) {
   const { addItem } = useCart();
   const { toggleItem, isWishlisted } = useWishlist();
   const wished = isWishlisted(product.id);
-  const discount = product.original_price
+  const comingSoon = product.status === 'coming_soon';
+  const discount = product.original_price && !comingSoon
     ? Math.round((1 - product.price / product.original_price) * 100)
     : 0;
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col h-full">
       <div className="relative aspect-square bg-gray-50">
-        <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-        {discount > 0 && (
-          <span className="absolute top-2 left-2 bg-[#2E7D32] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-            -{discount}%
+        {product.image ? (
+          <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-[#E8F5E9]">
+            <ShoppingBag className="w-8 h-8 text-[#2E7D32]/40" />
+          </div>
+        )}
+        {comingSoon ? (
+          <span className="absolute top-2 left-2 bg-gray-700/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+            Coming Soon
           </span>
+        ) : (
+          discount > 0 && (
+            <span className="absolute top-2 left-2 bg-[#2E7D32] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+              -{discount}%
+            </span>
+          )
         )}
         <button
           onClick={() => toggleItem(product)}
@@ -39,21 +52,31 @@ export default function ProductCard({ product }) {
         </h3>
         <span className="text-[10px] text-gray-400 mb-2">{product.unit || '1 pack'}</span>
         <div className="flex items-center justify-between mt-auto">
-          <div>
-            <span className="text-sm font-bold text-[#2E7D32]">
-              ₦{product.price.toLocaleString()}
-            </span>
-            {product.original_price && (
-              <span className="text-[10px] text-gray-400 line-through block">
-                ₦{product.original_price.toLocaleString()}
+          {comingSoon ? (
+            <span className="text-xs font-bold text-gray-500">Coming Soon</span>
+          ) : (
+            <div>
+              <span className="text-sm font-bold text-[#2E7D32]">
+                ₦{product.price.toLocaleString()}
               </span>
-            )}
-          </div>
+              {product.original_price && (
+                <span className="text-[10px] text-gray-400 line-through block">
+                  ₦{product.original_price.toLocaleString()}
+                </span>
+              )}
+            </div>
+          )}
           <button
-            onClick={() => addItem(product)}
-            className="w-8 h-8 rounded-full bg-[#2E7D32] flex items-center justify-center hover:bg-[#1B5E20] transition-colors flex-shrink-0"
+            onClick={() => !comingSoon && addItem(product)}
+            disabled={comingSoon}
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0 ${
+              comingSoon ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#2E7D32] hover:bg-[#1B5E20]'
+            }`}
           >
-            <Plus className="w-4 h-4 text-white" strokeWidth={2.5} />
+            <Plus
+              className={`w-4 h-4 ${comingSoon ? 'text-gray-400' : 'text-white'}`}
+              strokeWidth={2.5}
+            />
           </button>
         </div>
       </div>

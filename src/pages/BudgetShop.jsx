@@ -26,7 +26,7 @@ export default function BudgetShop() {
     }
     Promise.all([base44.entities.Product.list(), base44.entities.Package.list()]).then(
       ([prods, pkgs]) => {
-        setProducts(prods.filter((p) => p.price >= budget.min && p.price < budget.max));
+        setProducts(prods.filter((p) => p.status !== 'coming_soon' && p.price >= budget.min && p.price < budget.max));
         setPackages(
           pkgs.filter((p) => p.starting_price >= budget.min && p.starting_price < budget.max)
         );

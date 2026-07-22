@@ -17,7 +17,7 @@ export default function CategoryProducts() {
       base44.entities.Product.list(),
     ]).then(([cat, prods]) => {
       setCategory(cat);
-      setProducts(prods.filter((p) => p.category_id === id));
+      setProducts(prods.filter((p) => p.category_id === id || (p.category_ids && p.category_ids.includes(id))));
       setLoading(false);
     });
   }, [id]);
