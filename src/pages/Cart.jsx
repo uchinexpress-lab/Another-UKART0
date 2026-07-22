@@ -33,6 +33,9 @@ export default function Cart() {
             <div className="flex-1 min-w-0">
               <h3 className="text-sm font-semibold text-gray-900 truncate">{item.name}</h3>
               <span className="text-xs text-gray-400">{item.unit}</span>
+              {item.details && (
+                <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-2">{item.details}</p>
+              )}
               <div className="text-sm font-bold text-[#2E7D32]">
                 ₦{(item.price * item.quantity).toLocaleString()}
               </div>

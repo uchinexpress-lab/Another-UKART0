@@ -23,7 +23,7 @@ export default function Checkout() {
     try {
       const orderNumber = `UK-${Date.now().toString().slice(-6)}`;
       const orderItems = items.map((i) => ({
-        name: i.name,
+        name: i.details ? `${i.name} (${i.details})` : i.name,
         price: i.price,
         quantity: i.quantity,
         unit: i.unit,
