@@ -89,6 +89,7 @@ export const BROAD_CATEGORIES = [
     name: 'Grocery Packages',
     slug: 'grocery-packages',
     icon: '📦',
+    image: 'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/161d7dc3a_5E190ECB-3290-4520-8947-FEA04BF23981.png',
     example: 'Curated meal kits & bundles',
     slugs: ['packages'],
     route: '/packages',
