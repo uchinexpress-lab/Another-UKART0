@@ -1,0 +1,110 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Image } from '@/components/ui/image';
+import { useCart } from '@/context/CartContext';
+import { Plus } from 'lucide-react';
+
+const BATCH_SIZE = 10;
+
+export default function InfiniteProductGrid({ products }) {
+  const navigate = useNavigate();
+  const { addItem } = useCart();
+  const [visible, setVisible] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const sentinelRef = useRef(null);
+  const indexRef = useRef(0);
+
+  const loadMore = useCallback(() => {
+    if (!products.length) return;
+    setLoading(true);
+    // Simulate a short fetch delay for smooth UX on each batch
+    setTimeout(() => {
+      const next = [];
+      for (let i = 0; i < BATCH_SIZE; i++) {
+        next.push(products[(indexRef.current + i) % products.length]);
+      }
+      indexRef.current += BATCH_SIZE;
+      setVisible((prev) => [...prev, ...next]);
+      setLoading(false);
+    }, 400);
+  }, [products]);
+
+  // Seed the first batch on mount (or when products change)
+  useEffect(() => {
+    if (!products.length) return;
+    indexRef.current = 0;
+    const first = [];
+    for (let i = 0; i < BATCH_SIZE; i++) {
+      first.push(products[i % products.length]);
+    }
+    indexRef.current = BATCH_SIZE;
+    setVisible(first);
+  }, [products]);
+
+  // Infinite scroll via IntersectionObserver
+  useEffect(() => {
+    const node = sentinelRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loading) {
+          loadMore();
+        }
+      },
+      { rootMargin: '400px' }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [loadMore, loading]);
+
+  if (!products.length) return null;
+
+  return (
+    <div className="px-4 pt-2">
+      <h2 className="text-lg font-bold text-gray-900 mb-3">More to Explore</h2>
+      <div className="grid grid-cols-2 gap-3">
+        {visible.map((p, idx) => (
+          <div
+            key={`${p.id}-${idx}`}
+            className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col"
+          >
+            <button
+              onClick={() => navigate(`/category/${p.category_ids?.[0] || ''}`)}
+              className="w-full aspect-square bg-[#F5F5F5] flex items-center justify-center overflow-hidden"
+            >
+              {p.image ? (
+                <Image src={p.image} alt={p.name} className="w-full h-full" fittingType="fill" />
+              ) : (
+                <span className="text-3xl">🛒</span>
+              )}
+            </button>
+            <div className="p-2.5 flex flex-col flex-1">
+              <p className="text-xs font-semibold text-gray-900 leading-tight line-clamp-2 mb-1">
+                {p.name}
+              </p>
+              {p.unit && (
+                <p className="text-[10px] text-gray-400 mb-1">{p.unit}</p>
+              )}
+              <div className="flex items-center justify-between mt-auto">
+                <span className="text-sm font-bold text-[#2E7D32]">
+                  ₦{(p.price || 0).toLocaleString()}
+                </span>
+                <button
+                  onClick={() => addItem(p)}
+                  className="w-7 h-7 rounded-full bg-[#2E7D32] text-white flex items-center justify-center active:scale-90 transition-transform"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div ref={sentinelRef} className="h-12 flex items-center justify-center py-4">
+        {loading && (
+          <div className="w-6 h-6 border-3 border-gray-200 border-t-[#2E7D32] rounded-full animate-spin" />
+        )}
+      </div>
+    </div>
+  );
+}

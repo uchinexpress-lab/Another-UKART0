@@ -10,6 +10,7 @@ import BestSellers from '@/components/home/BestSellers';
 import WeeklyDeals from '@/components/home/WeeklyDeals';
 import PopularMealKits from '@/components/home/PopularMealKits';
 import CustomerReviews from '@/components/home/CustomerReviews';
+import InfiniteProductGrid from '@/components/home/InfiniteProductGrid';
 
 export default function Home() {
   const [packages, setPackages] = useState([]);
@@ -57,6 +58,7 @@ export default function Home() {
       <FeaturedCategories />
       <BestSellers products={bestSellers} />
       <CustomerReviews reviews={reviews} />
+      <InfiniteProductGrid products={products} />
     </div>
   );
 }
