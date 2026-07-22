@@ -81,6 +81,7 @@ export const BROAD_CATEGORIES = [
     name: 'Baking Essentials',
     slug: 'baking-essentials',
     icon: '🎂',
+    image: 'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/1fec70355_AC2D39B5-2999-484B-AC1F-2EE2706EE68F.png',
     example: 'Sugar, flour & cocoa',
     slugs: ['baking-ingredients'],
   },
