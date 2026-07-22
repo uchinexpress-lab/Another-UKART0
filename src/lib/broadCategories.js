@@ -73,6 +73,7 @@ export const BROAD_CATEGORIES = [
     name: 'Frozen Foods',
     slug: 'frozen-foods',
     icon: '❄️',
+    image: 'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/391ee030d_CB7B74D8-E65C-4CEB-AC01-8EC10AF74DE7.png',
     example: 'Frozen chicken, fish & fries',
     slugs: ['frozen-foods'],
   },
