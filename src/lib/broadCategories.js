@@ -11,6 +11,7 @@ export const BROAD_CATEGORIES = [
     name: 'Tubers & Grains',
     slug: 'tubers-grains',
     icon: '🍠',
+    image: 'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/dec508480_7D9D3B8B-904D-4FBC-8DB8-6632E1E49D37.png',
     example: 'Rice, beans, yam & garri',
     slugs: ['rice-grains', 'tubers-root-crops'],
   },
