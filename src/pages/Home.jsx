@@ -12,7 +12,6 @@ import PopularMealKits from '@/components/home/PopularMealKits';
 import CustomerReviews from '@/components/home/CustomerReviews';
 
 export default function Home() {
-  const [categories, setCategories] = useState([]);
   const [packages, setPackages] = useState([]);
   const [products, setProducts] = useState([]);
   const [reviews, setReviews] = useState([]);
@@ -20,12 +19,10 @@ export default function Home() {
 
   useEffect(() => {
     Promise.all([
-      base44.entities.Category.list('-display_order'),
       base44.entities.Package.list(),
       base44.entities.Product.list(),
       base44.entities.Review.list(),
-    ]).then(([cats, pkgs, prods, revs]) => {
-      setCategories(cats);
+    ]).then(([pkgs, prods, revs]) => {
       setPackages(pkgs);
       setProducts(prods);
       setReviews(revs);
@@ -48,7 +45,7 @@ export default function Home() {
     <div className="space-y-8 pb-4">
       <div className="px-4 pt-3">
         <SearchBar />
-        <QuickCategories categories={categories} />
+        <QuickCategories />
       </div>
       <div className="px-4">
         <PromoBanner />
@@ -57,7 +54,7 @@ export default function Home() {
       <PopularMealKits packages={packages} />
       <PackageCarousel packages={packages} />
       <ShopByBudget />
-      <FeaturedCategories categories={categories} />
+      <FeaturedCategories />
       <BestSellers products={bestSellers} />
       <CustomerReviews reviews={reviews} />
     </div>

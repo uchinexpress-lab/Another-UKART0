@@ -1,36 +1,42 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BROAD_CATEGORIES } from '@/lib/broadCategories';
 
-const gradients = [
-  'linear-gradient(135deg, #E8F5E9, #C8E6C9)',
-  'linear-gradient(135deg, #F1F8E9, #DCEDC8)',
-  'linear-gradient(135deg, #FFFDE7, #FFF9C4)',
-  'linear-gradient(135deg, #FFF3E0, #FFE0B2)',
-  'linear-gradient(135deg, #FBE9E7, #FFCCBC)',
-  'linear-gradient(135deg, #E0F7FA, #B2EBF2)',
+const tileColors = [
+  'bg-[#E8F5E9]',
+  'bg-[#F1F8E9]',
+  'bg-[#FFFDE7]',
+  'bg-[#FFF3E0]',
+  'bg-[#FBE9E7]',
+  'bg-[#E0F7FA]',
 ];
 
-export default function FeaturedCategories({ categories }) {
+export default function FeaturedCategories() {
   const navigate = useNavigate();
-  const cats = categories.filter((c) => c.slug !== 'packages');
-
-  if (!cats.length) return null;
 
   return (
     <section className="px-4">
-      <h2 className="text-lg font-bold text-gray-900 mb-3">Featured Categories</h2>
+      <h2 className="text-lg font-bold text-gray-900 mb-3">Shop by Category</h2>
       <div className="grid grid-cols-3 gap-3">
-        {cats.map((cat, i) => (
+        {BROAD_CATEGORIES.map((cat, i) => (
           <button
-            key={cat.id}
-            onClick={() => navigate(`/category/${cat.id}`)}
-            style={{ background: gradients[i % gradients.length] }}
-            className="rounded-2xl p-3 h-24 flex flex-col items-center justify-center gap-1.5 active:scale-95 transition-transform"
+            key={cat.slug}
+            onClick={() => navigate(cat.route || `/shop/${cat.slug}`)}
+            className="bg-white rounded-2xl border border-gray-100 p-3 flex flex-col items-center gap-2 active:scale-95 transition-transform"
           >
-            <span className="text-3xl">{cat.icon}</span>
-            <span className="text-[11px] font-semibold text-gray-700 text-center leading-tight">
-              {cat.name}
-            </span>
+            <div
+              className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl ${
+                tileColors[i % tileColors.length]
+              }`}
+            >
+              {cat.icon}
+            </div>
+            <div className="text-center">
+              <div className="text-xs font-bold text-gray-900 leading-tight">{cat.name}</div>
+              <div className="text-[10px] text-gray-400 leading-tight mt-0.5 line-clamp-1">
+                {cat.example}
+              </div>
+            </div>
           </button>
         ))}
       </div>

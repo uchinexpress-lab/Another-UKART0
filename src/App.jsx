@@ -18,6 +18,7 @@ import SearchResults from '@/pages/SearchResults';
 import Offers from '@/pages/Offers';
 import Cart from '@/pages/Cart';
 import Checkout from '@/pages/Checkout';
+import Shop from '@/pages/Shop';
 import Wishlist from '@/pages/Wishlist';
 import Profile from '@/pages/Profile';
 import BudgetShop from '@/pages/BudgetShop';
@@ -54,6 +55,7 @@ const AuthenticatedApp = () => {
             <Route path="/" element={<Home />} />
             <Route path="/package/:id" element={<PackageDetail />} />
             <Route path="/packages" element={<Packages />} />
+            <Route path="/shop/:slug" element={<Shop />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/category/:id" element={<CategoryProducts />} />
             <Route path="/search" element={<SearchResults />} />
