@@ -1,8 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, ShoppingBag, User, Menu as MenuIcon, Truck, Settings, HelpCircle, Info } from 'lucide-react';
-import { useCart } from '@/context/CartContext';
-import { useWishlist } from '@/context/WishlistContext';
+import { User, Menu as MenuIcon, Truck, Settings, HelpCircle, Info } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,9 +9,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export default function TopNav() {
-  const { itemCount } = useCart();
-  const { itemCount: wishCount } = useWishlist();
-
   return (
     <header className="sticky top-0 z-50 bg-white/55 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
       <div className="max-w-md mx-auto w-full flex items-center justify-between px-4 h-16">
@@ -39,24 +34,6 @@ export default function TopNav() {
               <DropdownMenuItem><Info className="w-4 h-4 mr-2" /> About Ukart</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          <Link to="/wishlist" className="relative p-2 rounded-full hover:bg-black/5 active:scale-90 transition-transform">
-            <Heart className="w-5 h-5 text-gray-700" />
-            {wishCount > 0 && (
-              <span className="absolute top-0.5 right-0.5 bg-[#2E7D32] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                {wishCount}
-              </span>
-            )}
-          </Link>
-
-          <Link to="/cart" className="relative p-2 rounded-full hover:bg-black/5 active:scale-90 transition-transform">
-            <ShoppingBag className="w-5 h-5 text-gray-700" />
-            {itemCount > 0 && (
-              <span className="absolute top-0.5 right-0.5 bg-[#2E7D32] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                {itemCount}
-              </span>
-            )}
-          </Link>
 
           <Link to="/profile" className="p-2 rounded-full hover:bg-black/5 active:scale-90 transition-transform">
             <User className="w-5 h-5 text-gray-700" />
