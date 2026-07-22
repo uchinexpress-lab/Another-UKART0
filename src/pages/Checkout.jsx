@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
 import { base44 } from '@/api/base44Client';
+import { notifyOrderCreated } from '@/lib/notifications';
 import { ArrowLeft, MapPin, Navigation, Phone, User, Loader2, CheckCircle2, ShoppingBag } from 'lucide-react';
 
 export default function Checkout() {
@@ -28,7 +29,8 @@ export default function Checkout() {
         quantity: i.quantity,
         unit: i.unit,
       }));
-      await base44.entities.Order.create({
+      const me = await base44.auth.me();
+      const order = await base44.entities.Order.create({
         order_number: orderNumber,
         items: orderItems,
         subtotal: total,
@@ -36,21 +38,18 @@ export default function Checkout() {
         total: total + deliveryFee,
         customer_name: name,
         customer_phone: phone,
+        customer_email: me?.email || '',
         customer_address: address,
         landmark,
         status: 'new',
+        payment_method: 'Cash on Delivery',
+        payment_status: 'Pending',
       });
-      const itemLines = orderItems
-        .map((i) => `• ${i.quantity}x ${i.name} — ₦${(i.price * i.quantity).toLocaleString()}`)
-        .join('\n');
-      const body = `New order received!\n\nOrder: ${orderNumber}\nCustomer: ${name}\nPhone: ${phone}\nAddress: ${address}\nLandmark: ${landmark}\n\nItems:\n${itemLines}\n\nSubtotal: ₦${total.toLocaleString()}\nDelivery: ${deliveryFee === 0 ? 'FREE' : '₦' + deliveryFee.toLocaleString()}\nTotal: ₦${(total + deliveryFee).toLocaleString()}`;
       try {
-        await base44.integrations.Core.SendEmail({
-          to: 'ukartfreshventures@gmail.com',
-          subject: `🛒 New Order ${orderNumber} — Ukart`,
-          body,
-        });
-      } catch (_) {}
+        await notifyOrderCreated(order, me?.email);
+      } catch (e) {
+        console.error('Notification error:', e);
+      }
       clearCart();
       setDone(orderNumber);
     } catch (e) {

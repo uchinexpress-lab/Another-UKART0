@@ -1,7 +1,17 @@
-import React from 'react';
-import { User, Package, MapPin, CreditCard, HelpCircle, Info, ChevronRight, Bell } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+import { User, Package, MapPin, CreditCard, HelpCircle, Info, ChevronRight, Bell, Settings, ClipboardList } from 'lucide-react';
 
 export default function Profile() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    base44.auth.me().then(setUser).catch(() => {});
+  }, []);
+
+  const isAdmin = user?.role === 'admin';
+
   const menuItems = [
     { icon: Package, label: 'My Orders' },
     { icon: MapPin, label: 'Delivery Addresses' },
@@ -37,6 +47,24 @@ export default function Profile() {
           </button>
         ))}
       </div>
+
+      {isAdmin && (
+        <div className="mt-6">
+          <h2 className="text-xs font-bold text-gray-400 uppercase mb-3 px-1">Admin</h2>
+          <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50">
+            <Link to="/admin/orders" className="w-full flex items-center gap-3 p-4 hover:bg-gray-50">
+              <ClipboardList className="w-5 h-5 text-[#2E7D32]" />
+              <span className="text-sm font-medium text-gray-900 flex-1 text-left">Manage Orders</span>
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+            </Link>
+            <Link to="/admin/settings" className="w-full flex items-center gap-3 p-4 hover:bg-gray-50">
+              <Settings className="w-5 h-5 text-[#2E7D32]" />
+              <span className="text-sm font-medium text-gray-900 flex-1 text-left">Notification Settings</span>
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

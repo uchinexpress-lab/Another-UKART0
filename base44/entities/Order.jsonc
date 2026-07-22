@@ -37,6 +37,9 @@
     "customer_name": {
       "type": "string"
     },
+    "customer_email": {
+      "type": "string"
+    },
     "customer_phone": {
       "type": "string"
     },
@@ -46,16 +49,36 @@
     "landmark": {
       "type": "string"
     },
+    "payment_method": {
+      "type": "string",
+      "default": "Cash on Delivery"
+    },
+    "payment_status": {
+      "type": "string",
+      "default": "Pending"
+    },
     "status": {
       "type": "string",
       "enum": [
         "new",
         "processing",
+        "ready",
         "on_the_way",
         "delivered",
         "cancelled"
       ],
       "default": "new"
+    },
+    "admin_notified": {
+      "type": "boolean",
+      "default": false
+    },
+    "confirmation_email_sent": {
+      "type": "boolean",
+      "default": false
+    },
+    "last_status_notified": {
+      "type": "string"
     }
   },
   "required": [

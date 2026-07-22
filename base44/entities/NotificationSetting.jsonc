@@ -1,0 +1,22 @@
+{
+  "name": "NotificationSetting",
+  "type": "object",
+  "properties": {
+    "business_email": {
+      "type": "string",
+      "default": "ukartfreshventures@gmail.com"
+    },
+    "enable_business_email": {
+      "type": "boolean",
+      "default": true
+    },
+    "enable_customer_confirmation": {
+      "type": "boolean",
+      "default": true
+    },
+    "enable_customer_status_emails": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

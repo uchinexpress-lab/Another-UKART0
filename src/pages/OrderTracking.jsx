@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   Search,
   Package,
+  PackageCheck,
   Clock,
   Truck,
   CheckCircle2,
@@ -28,6 +29,12 @@ const STEPS = [
     icon: Package,
   },
   {
+    key: 'ready',
+    title: 'Ready for Delivery',
+    description: 'Your order is packed and waiting for a rider.',
+    icon: PackageCheck,
+  },
+  {
     key: 'on_the_way',
     title: 'Out for Delivery',
     description: 'Our rider is on the way to your Lagos address.',
@@ -41,7 +48,7 @@ const STEPS = [
   },
 ];
 
-const STEP_ORDER = ['new', 'processing', 'on_the_way', 'delivered'];
+const STEP_ORDER = ['new', 'processing', 'ready', 'on_the_way', 'delivered'];
 
 export default function OrderTracking() {
   const [params, setParams] = useSearchParams();
