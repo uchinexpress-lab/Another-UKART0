@@ -17,7 +17,7 @@ export default function Layout() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25, ease: 'easeOut' }}
-        className="flex-1 pb-20 max-w-md mx-auto w-full"
+        className={`flex-1 pb-20 max-w-md mx-auto w-full ${isHome ? '' : 'pt-16'}`}
       >
         <Outlet />
       </motion.main>
