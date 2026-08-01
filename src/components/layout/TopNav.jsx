@@ -1,16 +1,15 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
-  User,
-  Menu as MenuIcon,
+  Bell,
+  ShoppingCart,
+  MapPin,
   ChevronDown,
-  Truck,
-  Settings,
-  HelpCircle,
-  Info,
+  Search,
 } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
+import { useCart } from '@/context/CartContext';
 import { useDeliveryLocation } from '@/hooks/useDeliveryLocation';
-import SearchBar from '@/components/search/SearchBar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,28 +53,65 @@ const LAGOS_AREAS = {
 
 export default function TopNav() {
   const { location, status, setManual } = useDeliveryLocation();
+  const { itemCount } = useCart();
+  const navigate = useNavigate();
+  const [query, setQuery] = useState('');
+  const [firstName, setFirstName] = useState('');
+
+  useEffect(() => {
+    base44.auth
+      .me()
+      .then((u) => setFirstName((u?.full_name || 'there').split(' ')[0]))
+      .catch(() => setFirstName('there'));
+  }, []);
 
   const areaDisplay = location?.area ?? 'your area';
-  const line2 = location
-    ? location.line2
-    : status === 'requesting'
-    ? 'Detecting your location…'
-    : 'Tap to select your area';
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (query.trim()) navigate(`/search?q=${encodeURIComponent(query.trim())}`);
+  };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/85 backdrop-blur-md shadow-[0_1px_12px_rgba(0,0,0,0.06)]">
-      <div className="max-w-md mx-auto w-full px-4 py-2.5 flex items-center justify-between">
+    <header className="sticky top-0 z-50 bg-gradient-to-br from-[#1B7F3A] via-[#2E9E44] to-[#5FCF65] shadow-[0_2px_16px_rgba(0,0,0,0.12)]">
+      <div className="max-w-md mx-auto w-full px-4 pt-4 pb-3">
+        {/* Greeting + right actions */}
+        <div className="flex items-start justify-between">
+          <div className="text-white">
+            <p className="text-lg font-bold leading-tight">
+              Hello, {firstName} 👋
+            </p>
+            <p className="text-xs text-white/85 leading-tight mt-0.5">
+              What would you like today?
+            </p>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <button className="relative p-2 rounded-full hover:bg-white/15 active:scale-90 transition-transform">
+              <Bell className="w-5 h-5 text-white" strokeWidth={2} />
+            </button>
+            <Link
+              to="/cart"
+              className="relative p-2 rounded-full hover:bg-white/15 active:scale-90 transition-transform"
+            >
+              <ShoppingCart className="w-5 h-5 text-white" strokeWidth={2} />
+              {itemCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 bg-[#ff4d4d] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                  {itemCount}
+                </span>
+              )}
+            </Link>
+          </div>
+        </div>
+
         {/* Location selector */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex flex-col items-start text-left max-w-[62%] -ml-1 px-1 rounded-lg active:scale-95 transition-transform no-tap-highlight">
-              <span className="flex items-center gap-1 font-bold text-gray-900 text-[15px] leading-tight">
-                <span className="truncate">📍 Delivering to {areaDisplay}</span>
-                <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
+            <button className="flex items-center gap-1 text-white text-sm font-medium mt-3 -ml-1 px-1 py-0.5 rounded-lg active:scale-95 transition-transform no-tap-highlight">
+              <MapPin className="w-4 h-4" />
+              <span className="truncate max-w-[200px]">
+                {areaDisplay}, Lagos
               </span>
-              <span className="text-xs text-gray-500 leading-tight mt-0.5 truncate w-full">
-                {line2}
-              </span>
+              <ChevronDown className="w-4 h-4 text-white/80 shrink-0" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-60 max-h-80 overflow-y-auto">
@@ -107,31 +143,22 @@ export default function TopNav() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Right actions */}
-        <div className="flex items-center gap-1">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="p-2 rounded-full hover:bg-black/5 active:scale-90 transition-transform">
-                <MenuIcon className="w-5 h-5 text-gray-700" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem><Truck className="w-4 h-4 mr-2" /> Track Order</DropdownMenuItem>
-              <DropdownMenuItem><Settings className="w-4 h-4 mr-2" /> Settings</DropdownMenuItem>
-              <DropdownMenuItem><HelpCircle className="w-4 h-4 mr-2" /> Help &amp; Support</DropdownMenuItem>
-              <DropdownMenuItem><Info className="w-4 h-4 mr-2" /> About Ukart</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Link to="/profile" className="p-2 rounded-full hover:bg-black/5 active:scale-90 transition-transform">
-            <User className="w-5 h-5 text-gray-700" />
-          </Link>
-        </div>
-      </div>
-
-      {/* Search bar */}
-      <div className="max-w-md mx-auto w-full px-4 pb-2.5">
-        <SearchBar />
+        {/* Search bar */}
+        <form onSubmit={handleSearch} className="relative mt-3">
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search for groceries, packages, meal kits…"
+            className="w-full pl-4 pr-12 h-12 rounded-full bg-white text-sm font-medium text-gray-900 placeholder:text-[#6e8f5c] shadow-sm focus:ring-2 focus:ring-white/60 focus:scale-[1.01] outline-none transition-all"
+          />
+          <button
+            type="submit"
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#2E9E44] flex items-center justify-center active:scale-90 transition-transform"
+          >
+            <Search className="w-4 h-4 text-white" strokeWidth={2.5} />
+          </button>
+        </form>
       </div>
     </header>
   );
