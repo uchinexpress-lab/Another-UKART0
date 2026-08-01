@@ -1,21 +1,22 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Image } from '@/components/ui/image';
 
 const budgets = [
   {
     label: 'Under ₦10,000',
     range: 'under-10000',
-    style: { background: 'linear-gradient(135deg, #76C237, #2E7D32)' },
+    image: 'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/4d5a60cdb_6B0E7B31-8A6B-4A4C-A3C8-B1021C819EC6.png',
   },
   {
     label: '₦10,000 – ₦20,000',
     range: '10000-20000',
-    style: { background: 'linear-gradient(135deg, #66BB6A, #1B5E20)' },
+    image: 'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/8b656a89c_4E0590D9-DDED-42E3-B316-B3771C5FE41D.png',
   },
   {
     label: '₦20,000+',
     range: 'over-20000',
-    style: { background: 'linear-gradient(135deg, #81C784, #388E3C)' },
+    image: 'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/df63f1381_A03C7B63-6C24-45CD-8997-AA8633C1C23B.png',
   },
 ];
 
@@ -31,11 +32,15 @@ export default function ShopByBudget() {
           <button
             key={b.range}
             onClick={() => navigate(`/budget/${b.range}`)}
-            style={b.style}
-            className="rounded-2xl p-3 text-left h-24 flex flex-col justify-between hover:opacity-90 transition-opacity"
+            aria-label={b.label}
+            className="relative rounded-2xl overflow-hidden h-28 flex flex-col justify-end hover:opacity-90 transition-opacity"
           >
-            <span className="text-base">💚</span>
-            <span className="text-[11px] font-bold text-white leading-tight">{b.label}</span>
+            <Image
+              src={b.image}
+              alt={b.label}
+              className="absolute inset-0 w-full h-full"
+              fittingType="fill"
+            />
           </button>
         ))}
       </div>
