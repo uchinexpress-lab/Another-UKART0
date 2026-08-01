@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import SearchBar from '@/components/search/SearchBar';
 import QuickCategories from '@/components/categories/QuickCategories';
 import PromoBanner from '@/components/home/PromoBanner';
 import PackageCarousel from '@/components/home/PackageCarousel';
@@ -46,7 +45,6 @@ export default function Home() {
   return (
     <div className="space-y-8 pb-4">
       <div className="px-4 pt-3">
-        <SearchBar />
         <QuickCategories />
       </div>
       <div className="px-4">
