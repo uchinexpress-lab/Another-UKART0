@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { Heart, Star, Plus, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -13,7 +14,13 @@ export default function ProductCard({ product }) {
     : 0;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col h-full">
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-20px' }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col h-full"
+    >
       <div className="relative aspect-square bg-gray-50">
         {product.image ? (
           <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
@@ -69,7 +76,7 @@ export default function ProductCard({ product }) {
           <button
             onClick={() => !comingSoon && addItem(product)}
             disabled={comingSoon}
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0 ${
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90 flex-shrink-0 ${
               comingSoon ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#2E7D32] hover:bg-[#1B5E20]'
             }`}
           >
@@ -80,6 +87,6 @@ export default function ProductCard({ product }) {
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

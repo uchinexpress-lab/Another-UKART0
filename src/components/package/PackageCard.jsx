@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Package } from 'lucide-react';
 
@@ -13,7 +14,11 @@ export default function PackageCard({ pkg, className }) {
   const widthClass = className || 'w-72 flex-shrink-0';
 
   return (
-    <div className={`${widthClass} bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm`}>
+    <motion.div
+      whileTap={{ scale: 0.97 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+      className={`${widthClass} bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm`}
+    >
       <div className="relative h-40 bg-gray-50">
         <img src={pkg.image} alt={pkg.name} className="w-full h-full object-cover" />
         {pkg.badge && (
@@ -42,12 +47,12 @@ export default function PackageCard({ pkg, className }) {
           </div>
           <button
             onClick={() => navigate(`/package/${pkg.id}`)}
-            className="flex items-center gap-1 bg-[#2E7D32] text-white text-xs font-semibold px-3 py-2 rounded-full hover:bg-[#1B5E20] transition-colors"
+            className="flex items-center gap-1 bg-[#2E7D32] text-white text-xs font-semibold px-3 py-2 rounded-full hover:bg-[#1B5E20] transition-all active:scale-95"
           >
             View Package <ArrowRight className="w-3 h-3" />
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

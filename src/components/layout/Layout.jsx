@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import TopNav from './TopNav';
 import BrandedHeader from './BrandedHeader';
+import FloatingCart from './FloatingCart';
 import BottomNav from './BottomNav';
 
 function getPageTitle(pathname) {
@@ -40,6 +41,7 @@ export default function Layout() {
       >
         <Outlet />
       </motion.main>
+      <FloatingCart />
       <BottomNav />
     </div>
   );
