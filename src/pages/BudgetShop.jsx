@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft } from 'lucide-react';
 import ProductCard from '@/components/product/ProductCard';
 import PackageCard from '@/components/package/PackageCard';
 
@@ -13,7 +12,6 @@ const budgetRanges = {
 
 export default function BudgetShop() {
   const { range } = useParams();
-  const navigate = useNavigate();
   const budget = budgetRanges[range];
   const [products, setProducts] = useState([]);
   const [packages, setPackages] = useState([]);
@@ -47,10 +45,7 @@ export default function BudgetShop() {
 
   return (
     <div className="p-4">
-      <button onClick={() => navigate(-1)} className="mb-4 flex items-center gap-2 text-gray-700">
-        <ArrowLeft className="w-5 h-5" /> Back
-      </button>
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">💚 {budget.label}</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-1 mt-2">💚 {budget.label}</h1>
       <p className="text-sm text-gray-500 mb-4">Everything within your budget</p>
 
       {packages.length > 0 && (

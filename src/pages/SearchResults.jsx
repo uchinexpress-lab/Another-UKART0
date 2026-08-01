@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import ProductCard from '@/components/product/ProductCard';
 
 export default function SearchResults() {
   const [params] = useSearchParams();
   const query = params.get('q') || '';
-  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -46,10 +45,7 @@ export default function SearchResults() {
   }
 
   return (
-    <div className="p-4">
-      <button onClick={() => navigate(-1)} className="mb-4 flex items-center gap-2 text-gray-700">
-        <ArrowLeft className="w-5 h-5" /> Back
-      </button>
+    <div className="p-4 pt-2">
       <h1 className="text-lg font-bold text-gray-900 mb-1">Search: &ldquo;{query}&rdquo;</h1>
       <p className="text-sm text-gray-500 mb-4">{products.length} results</p>
 
