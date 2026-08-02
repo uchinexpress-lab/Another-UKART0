@@ -107,9 +107,12 @@ export default function TopNav() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-1 text-white text-sm font-medium mt-3 -ml-1 px-1 py-0.5 rounded-lg active:scale-95 transition-transform no-tap-highlight">
-              <MapPin className="w-4 h-4" />
-              <span className="truncate max-w-[200px]">
-                {areaDisplay}, Lagos
+              <MapPin className="w-4 h-4 shrink-0" />
+              <span className="flex flex-col items-start leading-tight">
+                <span className="truncate max-w-[180px]">{areaDisplay}, Lagos</span>
+                {location?.line2 && (
+                  <span className="text-[10px] text-white/80 font-normal">{location.line2}</span>
+                )}
               </span>
               <ChevronDown className="w-4 h-4 text-white/80 shrink-0" />
             </button>

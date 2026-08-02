@@ -13,6 +13,9 @@ export const AuthProvider = ({ children }) => {
   const [authError, setAuthError] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [appPublicSettings, setAppPublicSettings] = useState(null); // Contains only { id, public_settings }
+  const [isGuest, setIsGuest] = useState(() => {
+    try { return localStorage.getItem('ukart_guest') === 'true'; } catch { return false; }
+  });
 
   useEffect(() => {
     checkAppState();
@@ -54,6 +57,13 @@ export const AuthProvider = ({ children }) => {
         if (appError.status === 403 && appError.data?.extra_data?.reason) {
           const reason = appError.data.extra_data.reason;
           if (reason === 'auth_required') {
+            if (isGuest) {
+              // Guest browsing — allow access without authentication
+              setIsLoadingAuth(false);
+              setIsLoadingPublicSettings(false);
+              setAuthChecked(true);
+              return;
+            }
             setAuthError({
               type: 'auth_required',
               message: 'Authentication required'
@@ -96,6 +106,10 @@ export const AuthProvider = ({ children }) => {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
       setIsAuthenticated(true);
+      if (isGuest) {
+        try { localStorage.removeItem('ukart_guest'); } catch {}
+        setIsGuest(false);
+      }
       setIsLoadingAuth(false);
       setAuthChecked(true);
     } catch (error) {
@@ -132,6 +146,16 @@ export const AuthProvider = ({ children }) => {
     base44.auth.redirectToLogin(window.location.href);
   };
 
+  const enterGuest = () => {
+    try { localStorage.setItem('ukart_guest', 'true'); } catch {}
+    setIsGuest(true);
+  };
+
+  const exitGuest = () => {
+    try { localStorage.removeItem('ukart_guest'); } catch {}
+    setIsGuest(false);
+  };
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -141,8 +165,11 @@ export const AuthProvider = ({ children }) => {
       authError,
       appPublicSettings,
       authChecked,
+      isGuest,
       logout,
       navigateToLogin,
+      enterGuest,
+      exitGuest,
       checkUserAuth,
       checkAppState
     }}>

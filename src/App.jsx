@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -9,6 +10,10 @@ import ScrollToTop from './components/ScrollToTop';
 import { CartProvider } from '@/context/CartContext';
 import { WishlistProvider } from '@/context/WishlistContext';
 import Layout from '@/components/layout/Layout';
+import Splash from '@/components/Splash';
+import BrowseGuard from '@/components/BrowseGuard';
+import GuestGate from '@/components/GuestGate';
+import { AnimatePresence } from 'framer-motion';
 import Home from '@/pages/Home';
 import PackageDetail from '@/pages/PackageDetail';
 import Packages from '@/pages/Packages';
@@ -25,11 +30,14 @@ import BudgetShop from '@/pages/BudgetShop';
 import OrderTracking from '@/pages/OrderTracking';
 import AdminSettings from '@/pages/AdminSettings';
 import AdminOrders from '@/pages/AdminOrders';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
 
-  // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
@@ -38,39 +46,37 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Handle authentication errors
-  if (authError) {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
-      navigateToLogin();
-      return null;
-    }
+  if (authError && authError.type === 'user_not_registered') {
+    return <UserNotRegisteredError />;
   }
 
-  // Render the main app
   return (
     <CartProvider>
       <WishlistProvider>
         <Routes>
-          <Route element={<Layout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/package/:id" element={<PackageDetail />} />
-            <Route path="/packages" element={<Packages />} />
-            <Route path="/shop/:slug" element={<Shop />} />
-            <Route path="/categories" element={<Categories />} />
-            <Route path="/category/:id" element={<CategoryProducts />} />
-            <Route path="/search" element={<SearchResults />} />
-            <Route path="/offers" element={<Offers />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/wishlist" element={<Wishlist />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/budget/:range" element={<BudgetShop />} />
-            <Route path="/track" element={<OrderTracking />} />
-            <Route path="/admin/settings" element={<AdminSettings />} />
-            <Route path="/admin/orders" element={<AdminOrders />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route element={<BrowseGuard />}>
+            <Route element={<Layout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/package/:id" element={<PackageDetail />} />
+              <Route path="/packages" element={<Packages />} />
+              <Route path="/shop/:slug" element={<Shop />} />
+              <Route path="/categories" element={<Categories />} />
+              <Route path="/category/:id" element={<CategoryProducts />} />
+              <Route path="/search" element={<SearchResults />} />
+              <Route path="/offers" element={<Offers />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/checkout" element={<GuestGate><Checkout /></GuestGate>} />
+              <Route path="/wishlist" element={<Wishlist />} />
+              <Route path="/profile" element={<GuestGate><Profile /></GuestGate>} />
+              <Route path="/budget/:range" element={<BudgetShop />} />
+              <Route path="/track" element={<OrderTracking />} />
+              <Route path="/admin/settings" element={<GuestGate><AdminSettings /></GuestGate>} />
+              <Route path="/admin/orders" element={<GuestGate><AdminOrders /></GuestGate>} />
+            </Route>
           </Route>
           <Route path="*" element={<PageNotFound />} />
         </Routes>
@@ -79,15 +85,25 @@ const AuthenticatedApp = () => {
   );
 };
 
+function AppShell() {
+  const [showSplash, setShowSplash] = useState(true);
+  return (
+    <>
+      <AuthenticatedApp />
+      <AnimatePresence>
+        {showSplash && <Splash onDone={() => setShowSplash(false)} />}
+      </AnimatePresence>
+    </>
+  );
+}
 
 function App() {
-
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
           <ScrollToTop />
-          <AuthenticatedApp />
+          <AppShell />
         </Router>
         <Toaster />
       </QueryClientProvider>
