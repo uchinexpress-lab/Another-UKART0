@@ -31,6 +31,10 @@
     "delivery_fee": {
       "type": "number"
     },
+    "discount": {
+      "type": "number",
+      "default": 0
+    },
     "total": {
       "type": "number"
     },

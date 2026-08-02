@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
 import { base44 } from '@/api/base44Client';
 import { notifyOrderCreated } from '@/lib/notifications';
-import { ArrowLeft, MapPin, Navigation, Phone, User, Loader2, CheckCircle2, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, MapPin, Navigation, Phone, User, Loader2, CheckCircle2, ShoppingBag, Tag } from 'lucide-react';
+
+const REWARD_AMOUNT = 1000;
 
 export default function Checkout() {
   const { items, total, clearCart } = useCart();
@@ -15,6 +17,41 @@ export default function Checkout() {
   const [landmark, setLandmark] = useState('');
   const [placing, setPlacing] = useState(false);
   const [done, setDone] = useState(null);
+  const [referralDiscount, setReferralDiscount] = useState(0);
+  const [rewardRef, setRewardRef] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const me = await base44.auth.me();
+        if (!me?.id) return;
+        // Referred user's available reward (after their first order was placed)
+        const asReferred = await base44.entities.Referral.filter({
+          referred_user_id: me.id,
+          status: 'first_order_placed',
+          referred_rewarded: false,
+        });
+        if (asReferred.length > 0) {
+          setReferralDiscount(asReferred[0].reward_amount || REWARD_AMOUNT);
+          setRewardRef({ id: asReferred[0].id, type: 'referred' });
+          return;
+        }
+        // Referrer's available reward (after their friend's first order was placed)
+        const asReferrer = await base44.entities.Referral.filter({
+          referrer_id: me.id,
+          status: 'first_order_placed',
+          referrer_rewarded: false,
+        });
+        if (asReferrer.length > 0) {
+          setReferralDiscount(asReferrer[0].reward_amount || REWARD_AMOUNT);
+          setRewardRef({ id: asReferrer[0].id, type: 'referrer' });
+        }
+      } catch {}
+    })();
+  }, []);
+
+  const appliedDiscount = Math.min(referralDiscount, total);
+  const grandTotal = total - appliedDiscount + deliveryFee;
 
   const canPlace = name.trim() && phone.trim() && address.trim() && landmark.trim() && !placing;
 
@@ -35,7 +72,8 @@ export default function Checkout() {
         items: orderItems,
         subtotal: total,
         delivery_fee: deliveryFee,
-        total: total + deliveryFee,
+        discount: appliedDiscount,
+        total: grandTotal,
         customer_name: name,
         customer_phone: phone,
         customer_email: me?.email || '',
@@ -49,6 +87,26 @@ export default function Checkout() {
         await notifyOrderCreated(order, me?.email);
       } catch (e) {
         console.error('Notification error:', e);
+      }
+      // Apply referral reward and mark the referred user's first order
+      try {
+        if (rewardRef) {
+          await base44.entities.Referral.update(
+            rewardRef.id,
+            rewardRef.type === 'referred' ? { referred_rewarded: true } : { referrer_rewarded: true }
+          );
+        }
+        if (me?.id) {
+          const pending = await base44.entities.Referral.filter({
+            referred_user_id: me.id,
+            status: 'pending',
+          });
+          if (pending.length > 0) {
+            await base44.entities.Referral.update(pending[0].id, { status: 'first_order_placed' });
+          }
+        }
+      } catch (e) {
+        console.error('Referral reward error:', e);
       }
       clearCart();
       setDone(orderNumber);
@@ -113,9 +171,14 @@ export default function Checkout() {
             {items.reduce((s, i) => s + i.quantity, 0)} items
           </span>
           <span className="font-bold text-[#2E7D32]">
-            ₦{(total + deliveryFee).toLocaleString()}
+            ₦{grandTotal.toLocaleString()}
           </span>
         </div>
+        {appliedDiscount > 0 && (
+          <div className="flex items-center gap-1.5 text-xs text-[#2E7D32] font-medium mb-2">
+            <Tag className="w-3.5 h-3.5" /> Referral reward −₦{appliedDiscount.toLocaleString()} applied
+          </div>
+        )}
         <div className="flex gap-1 overflow-x-auto scrollbar-hide">
           {items.map((i) => (
             <img
@@ -178,6 +241,12 @@ export default function Checkout() {
       </div>
 
       <div className="fixed bottom-16 left-0 right-0 max-w-md mx-auto px-4 py-3 bg-white border-t border-gray-100">
+        {appliedDiscount > 0 && (
+          <div className="flex items-center justify-between text-xs mb-2">
+            <span className="text-gray-500">Referral discount</span>
+            <span className="text-[#2E7D32] font-semibold">−₦{appliedDiscount.toLocaleString()}</span>
+          </div>
+        )}
         <button
           onClick={placeOrder}
           disabled={!canPlace}
@@ -188,7 +257,7 @@ export default function Checkout() {
               <Loader2 className="w-4 h-4 animate-spin" /> Placing order...
             </>
           ) : (
-            <>Place Order — ₦{(total + deliveryFee).toLocaleString()}</>
+            <>Place Order — ₦{grandTotal.toLocaleString()}</>
           )}
         </button>
       </div>

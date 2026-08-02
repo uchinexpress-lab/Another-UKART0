@@ -75,6 +75,23 @@ export default function Register() {
           referral_code: referralCode || undefined,
         });
       } catch {}
+      try {
+        const ref = localStorage.getItem('ukart_ref');
+        if (ref) {
+          const me = await base44.auth.me();
+          const existing = await base44.entities.Referral.filter({ referred_user_id: me.id });
+          if (existing.length === 0) {
+            await base44.entities.Referral.create({
+              referrer_id: ref,
+              referred_user_id: me.id,
+              referred_email: me.email,
+              status: 'pending',
+              reward_amount: 1000,
+            });
+          }
+          localStorage.removeItem('ukart_ref');
+        }
+      } catch {}
       window.location.href = returnTo;
     } catch (err) {
       setError(err.message || "Invalid verification code");

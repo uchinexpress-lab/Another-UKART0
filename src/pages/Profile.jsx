@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { User, Package, MapPin, CreditCard, HelpCircle, Info, ChevronRight, Bell, Settings, ClipboardList, ChevronDown } from 'lucide-react';
 import SavedAddresses from '@/components/profile/SavedAddresses';
+import ReferEarn from '@/components/profile/ReferEarn';
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -38,6 +39,7 @@ export default function Profile() {
           <p className="text-sm text-gray-500">No Market Wahala</p>
         </div>
       </div>
+      <ReferEarn />
       <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50">
         {menuItems.map((item, i) => (
           <div key={i}>
