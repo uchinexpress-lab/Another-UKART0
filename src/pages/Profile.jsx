@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { User, Package, MapPin, CreditCard, HelpCircle, Info, ChevronRight, Bell, Settings, ClipboardList } from 'lucide-react';
+import { User, Package, MapPin, CreditCard, HelpCircle, Info, ChevronRight, Bell, Settings, ClipboardList, ChevronDown } from 'lucide-react';
+import SavedAddresses from '@/components/profile/SavedAddresses';
 
 export default function Profile() {
   const [user, setUser] = useState(null);
+  const [showAddresses, setShowAddresses] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -14,7 +16,7 @@ export default function Profile() {
 
   const menuItems = [
     { icon: Package, label: 'My Orders' },
-    { icon: MapPin, label: 'Delivery Addresses' },
+    { icon: MapPin, label: 'Delivery Addresses', toggle: true },
     { icon: CreditCard, label: 'Payment Methods' },
     { icon: Bell, label: 'Notifications' },
     { icon: HelpCircle, label: 'Help & Support' },
@@ -38,13 +40,29 @@ export default function Profile() {
       </div>
       <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50">
         {menuItems.map((item, i) => (
-          <button key={i} className="w-full flex items-center gap-3 p-4 hover:bg-gray-50">
-            <item.icon className="w-5 h-5 text-[#2E7D32]" />
-            <span className="text-sm font-medium text-gray-900 flex-1 text-left">
-              {item.label}
-            </span>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
-          </button>
+          <div key={i}>
+            <button
+              className="w-full flex items-center gap-3 p-4 hover:bg-gray-50"
+              onClick={() => item.toggle && setShowAddresses((v) => !v)}
+            >
+              <item.icon className="w-5 h-5 text-[#2E7D32]" />
+              <span className="text-sm font-medium text-gray-900 flex-1 text-left">
+                {item.label}
+              </span>
+              {item.toggle ? (
+                <ChevronDown
+                  className={`w-4 h-4 text-gray-400 transition-transform ${showAddresses ? 'rotate-180' : ''}`}
+                />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-gray-400" />
+              )}
+            </button>
+            {item.toggle && showAddresses && (
+              <div className="px-4 pb-3">
+                <SavedAddresses />
+              </div>
+            )}
+          </div>
         ))}
       </div>
 
