@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
-import {
-  ShoppingBag,
-  ChevronDown,
-  Heart,
-  Truck,
-  Shield,
-} from 'lucide-react';
+import { Heart, Truck, Shield } from 'lucide-react';
+import { Image } from '@/components/ui/image';
 import {
   Accordion,
   AccordionContent,
@@ -14,22 +9,23 @@ import {
 } from '@/components/ui/accordion';
 
 const APP_VERSION = '1.0.0';
+const LOGO_URL =
+  'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/d3261a5c0_EBB75787-5398-4D1A-A981-EDA4D423A4C4.png';
 
-const TERMS = `These Terms govern your use of the Ukart app. By placing an order, you agree to provide accurate delivery information and to be available to receive your order. Orders are subject to availability. Delivery times are estimates and may vary due to traffic or weather. Payments are due via Cash on Delivery unless online payment is selected. We reserve the right to refuse or cancel any order. Prices are listed in Nigerian Naira and may change without notice.`;
+const TERMS = `These Terms & Conditions govern your use of the UKART app and your grocery orders within Lagos, Nigeria. By placing an order, you agree to provide accurate delivery details (name, phone number, address and landmark) and to be available to receive your order at the scheduled time. All orders are subject to product availability; if an item is unavailable, we will notify you and adjust your order and total accordingly. Delivery times shown (35–90 minutes on the Island, same-day on the Mainland) are estimates and may be affected by traffic, weather or rider availability. Prices are listed in Nigerian Naira (₦) and include applicable charges unless a delivery fee is separately stated. Payment is currently accepted via Cash on Delivery, payable to the rider upon receipt of your order. You may cancel an order before it is dispatched by contacting support with your order number; orders already out for delivery cannot be cancelled. UKART Fresh Ventures reserves the right to refuse, modify or cancel any order, and to update these terms at any time.`;
 
-const PRIVACY = `Ukart respects your privacy. We collect your name, phone number, email and delivery address solely to fulfil your orders and communicate delivery updates. We do not sell your personal data. Payment card details, when collected, are stored as the last four digits only. You may request deletion of your data by contacting support. By using the app, you consent to this privacy policy.`;
+const PRIVACY = `UKART Fresh Ventures respects your privacy. This Privacy Policy explains how we handle your information when you use the UKART app. We collect your name, email, phone number, and delivery address solely to process your orders, coordinate delivery, and keep you updated on order status. We also store your saved delivery addresses and preferences to make future orders faster. When you save a payment card, only the last four digits and card brand are retained — your full card number is never stored. We do not sell or rent your personal data. Order and delivery information is shared with our delivery riders only as needed to fulfil your order. You may request access to, correction of, or deletion of your personal data at any time by contacting support. By using UKART, you consent to the collection and use of your information as described here.`;
 
 export default function About() {
   return (
     <div className="p-4 space-y-4">
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col items-center text-center">
-        <div
-          className="w-20 h-20 rounded-3xl flex items-center justify-center mb-3 shadow-lg"
-          style={{ background: 'linear-gradient(135deg, #1B7F3A, #2E9E44)' }}
-        >
-          <ShoppingBag className="w-10 h-10 text-white" strokeWidth={2.5} />
-        </div>
-        <h1 className="text-xl font-bold text-gray-900">Ukart</h1>
+      <div className="flex flex-col items-center text-center">
+        <Image
+          src={LOGO_URL}
+          fittingType="fit"
+          className="w-32 h-32"
+        />
+        <h1 className="text-2xl font-bold text-gray-900 mt-2">UKART</h1>
         <p className="text-sm text-gray-500">No Market Wahala</p>
         <span className="mt-2 text-[11px] font-bold text-[#2E7D32] bg-[#E8F5E9] px-3 py-1 rounded-full">
           Version {APP_VERSION}
@@ -37,13 +33,36 @@ export default function About() {
       </div>
 
       <div className="bg-white rounded-2xl border border-gray-100 p-5">
-        <h2 className="text-sm font-bold text-gray-900 mb-2">About Ukart</h2>
+        <h2 className="text-sm font-bold text-gray-900 mb-2">About UKART</h2>
         <p className="text-sm text-gray-600 leading-relaxed">
-          Ukart is a premium grocery delivery service for Lagos, offering curated shopping
-          packages, budget-based browsing, and fast, reliable home delivery. We source fresh
-          produce, proteins and everyday essentials so you can skip the market and shop from
-          your phone.
+          UKART is a modern online grocery platform built to make grocery shopping easier
+          across Lagos. Whether customers need everyday groceries or carefully curated grocery
+          packages, UKART delivers fresh products directly to their doorstep. Our mission is
+          simple: No Market Wahala. We help customers save time, shop conveniently, and enjoy
+          reliable delivery through a simple, modern mobile experience.
         </p>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-100 p-5">
+        <h2 className="text-sm font-bold text-gray-900 mb-3">Company Information</h2>
+        <div className="space-y-2.5 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-500">Company</span>
+            <span className="font-medium text-gray-900">UKART Fresh Ventures</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-500">Location</span>
+            <span className="font-medium text-gray-900">Lagos, Nigeria</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-500">Founder</span>
+            <span className="font-medium text-gray-900">Steve Obiora</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-500">Version</span>
+            <span className="font-medium text-gray-900">{APP_VERSION}</span>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
@@ -87,7 +106,7 @@ export default function About() {
         </Accordion>
       </div>
 
-      <p className="text-center text-xs text-gray-400">© 2026 Ukart Fresh Ventures. All rights reserved.</p>
+      <p className="text-center text-xs text-gray-400">© 2026 UKART Fresh Ventures. All rights reserved.</p>
     </div>
   );
 }
