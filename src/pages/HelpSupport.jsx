@@ -26,7 +26,7 @@ const FAQS = [
   },
   {
     q: 'What are the delivery fees?',
-    a: 'Delivery is free for orders above ₦30,000. Orders below that attract a flat ₦1,500 delivery fee.',
+    a: 'A normal delivery fee applies to help get your order to you quickly and reliably. The exact amount is shown at checkout before you place your order.',
   },
   {
     q: 'How do I track my order?',
