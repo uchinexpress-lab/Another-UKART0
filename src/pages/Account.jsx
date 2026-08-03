@@ -1,0 +1,187 @@
+import React, { useState, useEffect } from 'react';
+import { base44 } from '@/api/base44Client';
+import { User, Phone, Mail, Camera, Loader2, KeyRound, Save } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Image } from '@/components/ui/image';
+import { toast } from '@/components/ui/use-toast';
+
+export default function Account() {
+  const [user, setUser] = useState(null);
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    base44.auth
+      .me()
+      .then((u) => {
+        setUser(u);
+        setFullName(u?.full_name || '');
+        setPhone(u?.phone || '');
+        setEmail(u?.email || '');
+      })
+      .catch(() => {});
+  }, []);
+
+  const onPickPhoto = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const u = await base44.auth.updateMe({ avatar_url: file_url });
+      setUser(u);
+      toast({ title: 'Profile photo updated' });
+    } catch {
+      toast({ title: 'Could not upload photo', variant: 'destructive' });
+    }
+    setUploading(false);
+  };
+
+  const save = async () => {
+    if (!fullName.trim()) {
+      toast({ title: 'Name is required', variant: 'destructive' });
+      return;
+    }
+    setSaving(true);
+    try {
+      const u = await base44.auth.updateMe({
+        full_name: fullName.trim(),
+        phone: phone.trim(),
+      });
+      setUser(u);
+      toast({ title: 'Profile updated' });
+    } catch {
+      toast({ title: 'Could not update profile', variant: 'destructive' });
+    }
+    setSaving(false);
+  };
+
+  const changePassword = async () => {
+    if (!email) return;
+    try {
+      await base44.auth.resetPasswordRequest(email);
+      toast({
+        title: 'Password reset link sent',
+        description: `Check ${email} to reset your password.`,
+      });
+    } catch {
+      toast({ title: 'Could not send reset link', variant: 'destructive' });
+    }
+  };
+
+  const fieldClass = 'w-full text-sm border border-gray-200 rounded-xl pl-10 h-12 outline-none focus:border-[#2E7D32]';
+
+  if (!user)
+    return (
+      <div className="flex justify-center py-16">
+        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+      </div>
+    );
+
+  return (
+    <div className="p-4 space-y-4">
+      <div className="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col items-center">
+        <div className="relative">
+          {user.avatar_url ? (
+            <Image
+              src={user.avatar_url}
+              fittingType="fill"
+              className="w-24 h-24 rounded-full object-cover"
+            />
+          ) : (
+            <div
+              className="w-24 h-24 rounded-full flex items-center justify-center text-white"
+              style={{ background: 'linear-gradient(135deg, #76C237, #2E7D32)' }}
+            >
+              <User className="w-12 h-12" />
+            </div>
+          )}
+          <label className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#2E7D32] flex items-center justify-center shadow-lg cursor-pointer active:scale-90 transition-transform">
+            {uploading ? (
+              <Loader2 className="w-4 h-4 text-white animate-spin" />
+            ) : (
+              <Camera className="w-4 h-4 text-white" />
+            )}
+            <input type="file" accept="image/*" onChange={onPickPhoto} className="hidden" />
+          </label>
+        </div>
+        <p className="text-sm font-bold text-gray-900 mt-3">{user.full_name || 'Ukart User'}</p>
+        <p className="text-xs text-gray-500">{user.email}</p>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-4">
+        <div>
+          <Label className="mb-1.5">Full Name</Label>
+          <div className="relative">
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="pl-10 h-12 rounded-xl"
+              placeholder="Your full name"
+            />
+          </div>
+        </div>
+        <div>
+          <Label className="mb-1.5">Email Address</Label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              value={email}
+              disabled
+              className="pl-10 h-12 rounded-xl bg-gray-50 text-gray-500"
+            />
+          </div>
+          <p className="text-[11px] text-gray-400 mt-1">Email cannot be changed. Contact support to update.</p>
+        </div>
+        <div>
+          <Label className="mb-1.5">Phone Number</Label>
+          <div className="relative">
+            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              inputMode="tel"
+              className="pl-10 h-12 rounded-xl"
+              placeholder="e.g. 0803 123 4567"
+            />
+          </div>
+        </div>
+      </div>
+
+      <button
+        onClick={changePassword}
+        className="w-full bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3 active:bg-gray-50"
+      >
+        <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
+          <KeyRound className="w-5 h-5 text-gray-700" />
+        </div>
+        <div className="flex-1 text-left">
+          <p className="text-sm font-semibold text-gray-900">Change Password</p>
+          <p className="text-xs text-gray-500">We'll email you a reset link</p>
+        </div>
+      </button>
+
+      <Button
+        className="w-full h-12 rounded-xl"
+        onClick={save}
+        disabled={saving}
+      >
+        {saving ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...
+          </>
+        ) : (
+          <>
+            <Save className="w-4 h-4 mr-2" /> Save Changes
+          </>
+        )}
+      </Button>
+    </div>
+  );
+}

@@ -34,6 +34,14 @@ import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
+import Orders from '@/pages/Orders';
+import OrderDetail from '@/pages/OrderDetail';
+import PaymentMethods from '@/pages/PaymentMethods';
+import Notifications from '@/pages/Notifications';
+import HelpSupport from '@/pages/HelpSupport';
+import About from '@/pages/About';
+import SettingsPage from '@/pages/Settings';
+import Account from '@/pages/Account';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
@@ -76,6 +84,14 @@ const AuthenticatedApp = () => {
               <Route path="/track" element={<OrderTracking />} />
               <Route path="/admin/settings" element={<GuestGate><AdminSettings /></GuestGate>} />
               <Route path="/admin/orders" element={<GuestGate><AdminOrders /></GuestGate>} />
+              <Route path="/orders" element={<GuestGate><Orders /></GuestGate>} />
+              <Route path="/orders/:id" element={<GuestGate><OrderDetail /></GuestGate>} />
+              <Route path="/payment-methods" element={<GuestGate><PaymentMethods /></GuestGate>} />
+              <Route path="/notifications" element={<GuestGate><Notifications /></GuestGate>} />
+              <Route path="/support" element={<HelpSupport />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/settings" element={<GuestGate><SettingsPage /></GuestGate>} />
+              <Route path="/account" element={<GuestGate><Account /></GuestGate>} />
             </Route>
           </Route>
           <Route path="*" element={<PageNotFound />} />

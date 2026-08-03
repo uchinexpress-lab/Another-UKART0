@@ -7,6 +7,33 @@
         "admin",
         "user"
       ]
+    },
+    "phone": {
+      "type": "string"
+    },
+    "avatar_url": {
+      "type": "string"
+    },
+    "saved_addresses": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "saved_cards": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "notification_preferences": {
+      "type": "object"
+    },
+    "language": {
+      "type": "string"
+    },
+    "deletion_requested": {
+      "type": "boolean"
     }
   },
   "required": [

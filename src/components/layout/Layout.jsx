@@ -22,6 +22,14 @@ function getPageTitle(pathname) {
   if (pathname.startsWith('/track')) return 'Order Tracking';
   if (pathname.startsWith('/admin/settings')) return 'Settings';
   if (pathname.startsWith('/admin/orders')) return 'Orders';
+  if (pathname.startsWith('/orders/')) return 'Order Details';
+  if (pathname.startsWith('/orders')) return 'My Orders';
+  if (pathname.startsWith('/payment-methods')) return 'Payment Methods';
+  if (pathname.startsWith('/notifications')) return 'Notifications';
+  if (pathname.startsWith('/support')) return 'Help & Support';
+  if (pathname.startsWith('/about')) return 'About Ukart';
+  if (pathname.startsWith('/settings')) return 'Settings';
+  if (pathname.startsWith('/account')) return 'Edit Profile';
   return 'Ukart';
 }
 
