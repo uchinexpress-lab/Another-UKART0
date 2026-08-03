@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, Truck, Shield } from 'lucide-react';
+import { Leaf, Truck, Shield } from 'lucide-react';
 import { Image } from '@/components/ui/image';
 import {
   Accordion,
@@ -69,7 +69,7 @@ export default function About() {
         {[
           { icon: Truck, label: 'Fast Delivery' },
           { icon: Shield, label: 'Quality Assured' },
-          { icon: Heart, label: 'Lagos Grown' },
+          { icon: Leaf, label: 'Always Fresh' },
         ].map((f, i) => {
           const Icon = f.icon;
           return (
