@@ -11,13 +11,12 @@ import { base44 } from '@/api/base44Client';
 import { useCart } from '@/context/CartContext';
 import { useDeliveryLocation } from '@/hooks/useDeliveryLocation';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer';
 
 const LAGOS_AREAS = {
   island: [
@@ -57,6 +56,7 @@ export default function TopNav() {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [firstName, setFirstName] = useState('');
+  const [areaOpen, setAreaOpen] = useState(false);
 
   useEffect(() => {
     base44.auth
@@ -74,7 +74,7 @@ export default function TopNav() {
 
   return (
     <header className="sticky top-0 z-50 bg-gradient-to-br from-[#1B7F3A] via-[#2E9E44] to-[#5FCF65] shadow-[0_2px_16px_rgba(0,0,0,0.12)]">
-      <div className="max-w-md mx-auto w-full px-4 pt-4 pb-3">
+      <div className="max-w-md mx-auto w-full px-4 pb-3" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}>
         {/* Greeting + right actions */}
         <div className="flex items-start justify-between">
           <div className="text-white">
@@ -104,8 +104,8 @@ export default function TopNav() {
         </div>
 
         {/* Location selector */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+        <Drawer open={areaOpen} onOpenChange={setAreaOpen}>
+          <DrawerTrigger asChild>
             <button className="flex items-center gap-1 text-white text-sm font-medium mt-3 -ml-1 px-1 py-0.5 rounded-lg active:scale-95 transition-transform no-tap-highlight">
               <MapPin className="w-4 h-4 shrink-0" />
               <span className="flex flex-col items-start leading-tight">
@@ -116,35 +116,43 @@ export default function TopNav() {
               </span>
               <ChevronDown className="w-4 h-4 text-white/80 shrink-0" />
             </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-60 max-h-80 overflow-y-auto">
-            <DropdownMenuLabel className="text-[#2E9E44] font-semibold">
-              Lagos Island · 35–90 mins
-            </DropdownMenuLabel>
-            {LAGOS_AREAS.island.map((area) => (
-              <DropdownMenuItem
-                key={area}
-                onClick={() => setManual(area)}
-                className={location?.area === area ? 'bg-[#2E9E44]/10 font-semibold' : ''}
-              >
-                {area}
-              </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel className="text-[#2E9E44] font-semibold">
-              Lagos Mainland · Same Day
-            </DropdownMenuLabel>
-            {LAGOS_AREAS.mainland.map((area) => (
-              <DropdownMenuItem
-                key={area}
-                onClick={() => setManual(area)}
-                className={location?.area === area ? 'bg-[#2E9E44]/10 font-semibold' : ''}
-              >
-                {area}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </DrawerTrigger>
+          <DrawerContent className="max-h-[80vh]">
+            <DrawerHeader className="text-left">
+              <DrawerTitle>Choose delivery area</DrawerTitle>
+            </DrawerHeader>
+            <div className="overflow-y-auto px-4 pb-8 space-y-4">
+              <div>
+                <p className="text-xs font-bold text-[#2E9E44] uppercase mb-2">Lagos Island · 35–90 mins</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {LAGOS_AREAS.island.map((area) => (
+                    <button
+                      key={area}
+                      onClick={() => { setManual(area); setAreaOpen(false); }}
+                      className={`text-left text-sm px-3 py-2.5 rounded-xl border ${location?.area === area ? 'bg-[#2E9E44]/10 border-[#2E9E44] font-semibold text-[#1B7F3A]' : 'border-gray-100 text-gray-700 active:bg-gray-50'}`}
+                    >
+                      {area}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-bold text-[#2E9E44] uppercase mb-2">Lagos Mainland · Same Day</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {LAGOS_AREAS.mainland.map((area) => (
+                    <button
+                      key={area}
+                      onClick={() => { setManual(area); setAreaOpen(false); }}
+                      className={`text-left text-sm px-3 py-2.5 rounded-xl border ${location?.area === area ? 'bg-[#2E9E44]/10 border-[#2E9E44] font-semibold text-[#1B7F3A]' : 'border-gray-100 text-gray-700 active:bg-gray-50'}`}
+                    >
+                      {area}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </DrawerContent>
+        </Drawer>
 
         {/* Search bar */}
         <form onSubmit={handleSearch} className="relative mt-3">

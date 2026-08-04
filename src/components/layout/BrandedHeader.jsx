@@ -1,9 +1,13 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+
+const TAB_ROOTS = ['/packages', '/offers', '/wishlist', '/profile'];
 
 export default function BrandedHeader({ title }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isTabRoot = TAB_ROOTS.includes(location.pathname);
 
   const goBack = () => {
     if (window.history.length > 1) {
@@ -43,14 +47,19 @@ export default function BrandedHeader({ title }) {
       </svg>
 
       {/* Controls */}
-      <div className="relative flex items-center gap-3 px-4 pt-14 pb-6 max-w-md mx-auto w-full">
-        <button
-          onClick={goBack}
-          aria-label="Back"
-          className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center active:scale-90 transition-transform"
-        >
-          <ArrowLeft className="w-5 h-5 text-white" />
-        </button>
+      <div
+        className={`relative flex items-center gap-3 px-4 pb-6 max-w-md mx-auto w-full ${isTabRoot ? 'justify-center' : ''}`}
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 44px)' }}
+      >
+        {!isTabRoot && (
+          <button
+            onClick={goBack}
+            aria-label="Back"
+            className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center active:scale-90 transition-transform"
+          >
+            <ArrowLeft className="w-5 h-5 text-white" />
+          </button>
+        )}
         <h1 className="text-white font-bold text-lg tracking-tight">{title}</h1>
       </div>
     </header>

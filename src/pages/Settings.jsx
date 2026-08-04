@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Moon, Sun, Globe, LogOut, Trash2, Loader2 } from 'lucide-react';
+import { Moon, Sun, Globe, LogOut, Trash2, Loader2, ChevronDown } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,9 +33,15 @@ const LANGUAGES = [
 
 export default function Settings() {
   const navigate = useNavigate();
-  const [dark, setDark] = useState(() => localStorage.getItem('ukart_theme') === 'dark');
+  const [dark, setDark] = useState(() => {
+    const stored = localStorage.getItem('ukart_theme');
+    if (stored === 'dark') return true;
+    if (stored === 'light') return false;
+    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+  });
   const [lang, setLang] = useState(() => localStorage.getItem('ukart_lang') || 'en');
   const [busy, setBusy] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark);
@@ -93,18 +99,30 @@ export default function Settings() {
             <p className="text-sm font-semibold text-gray-900">Language</p>
             <p className="text-xs text-gray-500">Choose your preferred language</p>
           </div>
-          <Select value={lang} onValueChange={changeLang}>
-            <SelectTrigger className="w-32 h-9 rounded-xl text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {LANGUAGES.map((l) => (
-                <SelectItem key={l.value} value={l.value}>
-                  {l.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Drawer open={langOpen} onOpenChange={setLangOpen}>
+            <DrawerTrigger asChild>
+              <button className="flex items-center gap-1 text-sm font-medium text-gray-900 px-3 h-9 rounded-xl border border-gray-100 active:scale-95 transition-transform">
+                {LANGUAGES.find((l) => l.value === lang)?.label || 'English'}
+                <ChevronDown className="w-4 h-4 text-gray-400" />
+              </button>
+            </DrawerTrigger>
+            <DrawerContent>
+              <DrawerHeader className="text-left">
+                <DrawerTitle>Choose language</DrawerTitle>
+              </DrawerHeader>
+              <div className="px-4 pb-8 space-y-1">
+                {LANGUAGES.map((l) => (
+                  <button
+                    key={l.value}
+                    onClick={() => { changeLang(l.value); setLangOpen(false); }}
+                    className={`w-full text-left text-sm px-4 py-3 rounded-xl ${lang === l.value ? 'bg-[#2E9E44]/10 font-semibold text-[#1B7F3A]' : 'text-gray-700 active:bg-gray-50'}`}
+                  >
+                    {l.label}
+                  </button>
+                ))}
+              </div>
+            </DrawerContent>
+          </Drawer>
         </div>
       </div>
 

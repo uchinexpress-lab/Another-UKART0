@@ -11,6 +11,7 @@ import PopularMealKits from '@/components/home/PopularMealKits';
 import MealKitBanner from '@/components/home/MealKitBanner';
 import CustomerReviews from '@/components/home/CustomerReviews';
 import InfiniteProductGrid from '@/components/home/InfiniteProductGrid';
+import PullToRefresh from '@/components/home/PullToRefresh';
 
 export default function Home() {
   const [packages, setPackages] = useState([]);
@@ -18,7 +19,7 @@ export default function Home() {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const loadData = () =>
     Promise.all([
       base44.entities.Package.list(),
       base44.entities.Product.list(),
@@ -29,6 +30,9 @@ export default function Home() {
       setReviews(revs);
       setLoading(false);
     });
+
+  useEffect(() => {
+    loadData();
   }, []);
 
   if (loading) {
@@ -43,6 +47,7 @@ export default function Home() {
   const weeklyDeals = products.filter((p) => p.is_weekly_deal);
 
   return (
+    <PullToRefresh onRefresh={loadData}>
     <div className="space-y-8 pb-4">
       <div className="px-4 pt-3">
         <QuickCategories />
@@ -60,5 +65,6 @@ export default function Home() {
       <CustomerReviews reviews={reviews} />
       <InfiniteProductGrid products={products} />
     </div>
+    </PullToRefresh>
   );
 }
