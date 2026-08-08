@@ -10,25 +10,25 @@ import {
   Mail,
   Phone,
   MapPin,
-  RefreshCw,
-} from 'lucide-react';
+  RefreshCw } from
+'lucide-react';
 
 const STATUSES = [
-  { value: 'new', label: 'Order Placed', color: 'bg-gray-100 text-gray-700' },
-  { value: 'processing', label: 'Being Prepared', color: 'bg-amber-100 text-amber-700' },
-  { value: 'ready', label: 'Ready for Delivery', color: 'bg-blue-100 text-blue-700' },
-  { value: 'on_the_way', label: 'Out for Delivery', color: 'bg-purple-100 text-purple-700' },
-  { value: 'delivered', label: 'Delivered', color: 'bg-green-100 text-green-700' },
-  { value: 'cancelled', label: 'Cancelled', color: 'bg-red-100 text-red-700' },
-];
+{ value: 'new', label: 'Order Placed', color: 'bg-gray-100 text-gray-700' },
+{ value: 'processing', label: 'Being Prepared', color: 'bg-amber-100 text-amber-700' },
+{ value: 'ready', label: 'Ready for Delivery', color: 'bg-blue-100 text-blue-700' },
+{ value: 'on_the_way', label: 'Out for Delivery', color: 'bg-purple-100 text-purple-700' },
+{ value: 'delivered', label: 'Delivered', color: 'bg-green-100 text-green-700' },
+{ value: 'cancelled', label: 'Cancelled', color: 'bg-red-100 text-red-700' }];
+
 
 function StatusBadge({ status }) {
   const s = STATUSES.find((x) => x.value === status) || STATUSES[0];
   return (
     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${s.color}`}>
       {s.label}
-    </span>
-  );
+    </span>);
+
 }
 
 function OrderCard({ order, onStatusChange, updatingId, highlighted }) {
@@ -37,13 +37,13 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted }) {
   return (
     <div
       className={`bg-white rounded-2xl border p-4 ${
-        highlighted ? 'border-[#2E7D32] ring-1 ring-[#2E7D32]/20' : 'border-gray-100'
-      }`}
-    >
+      highlighted ? 'border-[#2E7D32] ring-1 ring-[#2E7D32]/20' : 'border-gray-100'}`
+      }>
+      
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between"
-      >
+        className="w-full flex items-center justify-between">
+        
         <div className="text-left">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-sm font-bold text-gray-900">{order.order_number}</span>
@@ -56,8 +56,8 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted }) {
         </div>
       </button>
 
-      {expanded && (
-        <div className="mt-3 pt-3 border-t border-gray-50 space-y-3">
+      {expanded &&
+      <div className="mt-3 pt-3 border-t border-gray-50 space-y-3">
           {/* Customer info */}
           <div className="space-y-1.5">
             <p className="text-xs text-gray-500 flex items-center gap-1.5">
@@ -77,8 +77,8 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted }) {
 
           {/* Items */}
           <div className="bg-gray-50 rounded-xl p-2 space-y-1">
-            {order.items?.map((item, i) => (
-              <div key={i} className="flex justify-between text-xs">
+            {order.items?.map((item, i) =>
+          <div key={i} className="flex justify-between text-xs">
                 <span className="text-gray-700">
                   {item.quantity}x {item.name}
                 </span>
@@ -86,7 +86,7 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted }) {
                   ₦{((item.price || 0) * (item.quantity || 1)).toLocaleString()}
                 </span>
               </div>
-            ))}
+          )}
           </div>
 
           {/* Total */}
@@ -101,31 +101,31 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted }) {
           <div>
             <p className="text-xs font-semibold text-gray-600 mb-1.5">Update Status</p>
             <div className="flex flex-wrap gap-1.5">
-              {STATUSES.map((s) => (
-                <button
-                  key={s.value}
-                  onClick={() => onStatusChange(order.id, s.value)}
-                  disabled={updatingId === order.id || order.status === s.value}
-                  className={`text-[11px] font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${
-                    order.status === s.value
-                      ? 'bg-[#2E7D32] text-white border-[#2E7D32]'
-                      : 'bg-white text-gray-700 border-gray-200 hover:border-[#2E7D32]'
-                  } ${updatingId === order.id ? 'opacity-50' : ''}`}
-                >
+              {STATUSES.map((s) =>
+            <button
+              key={s.value}
+              onClick={() => onStatusChange(order.id, s.value)}
+              disabled={updatingId === order.id || order.status === s.value}
+              className={`text-[11px] font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${
+              order.status === s.value ?
+              'bg-[#2E7D32] text-white border-[#2E7D32]' :
+              'bg-white text-gray-700 border-gray-200 hover:border-[#2E7D32]'} ${
+              updatingId === order.id ? 'opacity-50' : ''}`}>
+              
                   {s.label}
                 </button>
-              ))}
+            )}
             </div>
-            {updatingId === order.id && (
-              <p className="text-[10px] text-gray-400 mt-1.5 flex items-center gap-1">
+            {updatingId === order.id &&
+          <p className="text-[10px] text-gray-400 mt-1.5 flex items-center gap-1">
                 <Loader2 className="w-3 h-3 animate-spin" /> Updating & sending email...
               </p>
-            )}
+          }
           </div>
         </div>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 }
 
 export default function AdminOrders() {
@@ -153,8 +153,8 @@ export default function AdminOrders() {
   };
 
   useEffect(() => {
-    if (user?.role === 'admin') loadOrders();
-    else if (user !== null) setLoading(false);
+    if (user?.role === 'admin') loadOrders();else
+    if (user !== null) setLoading(false);
   }, [user]);
 
   const handleStatusChange = async (orderId, newStatus) => {
@@ -162,7 +162,7 @@ export default function AdminOrders() {
     try {
       await base44.entities.Order.update(orderId, { status: newStatus });
       setOrders((prev) =>
-        prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
+      prev.map((o) => o.id === orderId ? { ...o, status: newStatus } : o)
       );
       await notifyOrderStatusChanged(orderId, newStatus);
     } catch (e) {
@@ -176,8 +176,8 @@ export default function AdminOrders() {
     return (
       <div className="p-8 text-center">
         <Loader2 className="w-6 h-6 animate-spin text-[#2E7D32] mx-auto" />
-      </div>
-    );
+      </div>);
+
   }
 
   if (user.role !== 'admin') {
@@ -191,8 +191,8 @@ export default function AdminOrders() {
         <Link to="/" className="text-[#2E7D32] font-bold text-sm">
           Back to Home
         </Link>
-      </div>
-    );
+      </div>);
+
   }
 
   return (
@@ -200,15 +200,15 @@ export default function AdminOrders() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Link to="/profile" className="p-1.5 -ml-1.5 rounded-full hover:bg-black/5">
-            <ArrowLeft className="w-5 h-5 text-gray-700" />
+            <ArrowLeft className="w-5 h-5 text-gray-700 hidden" />
           </Link>
           <h1 className="text-xl font-bold text-gray-900">Manage Orders</h1>
         </div>
         <button
           onClick={loadOrders}
           className="p-2 rounded-full hover:bg-gray-100"
-          title="Refresh"
-        >
+          title="Refresh">
+          
           <RefreshCw className="w-4 h-4 text-gray-500" />
         </button>
       </div>
@@ -218,23 +218,23 @@ export default function AdminOrders() {
         automatically when the status changes.
       </p>
 
-      {orders.length === 0 ? (
-        <div className="text-center py-16">
+      {orders.length === 0 ?
+      <div className="text-center py-16">
           <p className="text-sm text-gray-400">No orders yet.</p>
+        </div> :
+
+      <div className="space-y-3">
+          {orders.map((order) =>
+        <OrderCard
+          key={order.id}
+          order={order}
+          onStatusChange={handleStatusChange}
+          updatingId={updatingId}
+          highlighted={highlightOrder === order.order_number} />
+
+        )}
         </div>
-      ) : (
-        <div className="space-y-3">
-          {orders.map((order) => (
-            <OrderCard
-              key={order.id}
-              order={order}
-              onStatusChange={handleStatusChange}
-              updatingId={updatingId}
-              highlighted={highlightOrder === order.order_number}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 }
