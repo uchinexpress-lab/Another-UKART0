@@ -200,7 +200,7 @@ export default function AdminOrders() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Link to="/profile" className="p-1.5 -ml-1.5 rounded-full hover:bg-black/5">
-            <ArrowLeft className="w-5 h-5 text-gray-700 hidden" />
+            
           </Link>
           <h1 className="text-xl font-bold text-gray-900">Manage Orders</h1>
         </div>
