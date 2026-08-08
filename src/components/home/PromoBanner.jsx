@@ -7,18 +7,18 @@ export default function PromoBanner() {
 
   return (
     <div className="relative rounded-3xl overflow-hidden h-44">
-      <img
-        src="https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=600&h=400&fit=crop"
-        alt="Fresh grocery shelf"
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+      <img src="https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/1b8471b1c_E6368BC8-8322-4173-8F74-3A2085F760ED.PNG"
+
+      alt="Fresh grocery shelf"
+      className="absolute inset-0 w-full h-full object-cover" />
+      
       <div
         className="absolute inset-0"
         style={{
           background:
-            'linear-gradient(135deg, rgba(27,94,32,0.55) 0%, rgba(46,125,50,0.30) 100%)',
-        }}
-      />
+          'linear-gradient(135deg, rgba(27,94,32,0.55) 0%, rgba(46,125,50,0.30) 100%)'
+        }} />
+      
       <div className="relative p-5 h-full flex flex-col justify-center">
         <span className="inline-block bg-white/25 backdrop-blur-sm text-white text-[10px] font-semibold px-2.5 py-1 rounded-full mb-2 tracking-wide w-fit">
           Delivering Across Lagos
@@ -31,11 +31,11 @@ export default function PromoBanner() {
         </p>
         <button
           onClick={() => navigate('/categories')}
-          className="inline-flex items-center gap-1.5 bg-white text-[#2E7D32] text-xs font-bold px-4 py-2 rounded-full hover:bg-gray-50 active:scale-95 transition-all w-fit shadow-md"
-        >
+          className="inline-flex items-center gap-1.5 bg-white text-[#2E7D32] text-xs font-bold px-4 py-2 rounded-full hover:bg-gray-50 active:scale-95 transition-all w-fit shadow-md">
+          
           Shop Now <ArrowRight className="w-3 h-3" />
         </button>
       </div>
-    </div>
-  );
+    </div>);
+
 }
