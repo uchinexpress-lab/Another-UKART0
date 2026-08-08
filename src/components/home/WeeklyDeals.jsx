@@ -8,7 +8,7 @@ export default function WeeklyDeals({ products }) {
   const deals = products.slice(0, 6);
 
   return (
-    <section className="px-3">
+    <section className="px-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Flame className="w-5 h-5 text-[#FF6B35]" />
