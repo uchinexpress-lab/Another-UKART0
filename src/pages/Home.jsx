@@ -52,7 +52,7 @@ export default function Home() {
       <div className="px-4 pt-3">
         <QuickCategories />
       </div>
-      <div className="px-4 opacity-95">
+      <div className="px-4 opacity-100">
         <PromoBanner />
       </div>
       <WeeklyDeals products={weeklyDeals} />

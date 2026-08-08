@@ -10,7 +10,7 @@ export default function PromoBanner() {
       <img src="https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/bb0ab3609_04724820-6E3F-45F0-B429-BA6C62A01A7A.PNG"
 
       alt="Fresh grocery shelf"
-      className="absolute inset-0 w-full h-full object-cover opacity-100" />
+      className="absolute inset-0 w-full h-full object-cover" />
       
       <div
         className="absolute inset-0"
@@ -19,7 +19,7 @@ export default function PromoBanner() {
           'linear-gradient(135deg, rgba(27,94,32,0.55) 0%, rgba(46,125,50,0.30) 100%)'
         }} />
       
-      <div className="relative p-5 h-full flex flex-col justify-center">
+      <div className="relative p-5 h-full flex flex-col justify-center opacity-100">
         <span className="inline-block bg-white/25 backdrop-blur-sm text-white text-[10px] font-semibold px-2.5 py-1 rounded-full mb-2 tracking-wide w-fit">
           Delivering Across Lagos
         </span>
