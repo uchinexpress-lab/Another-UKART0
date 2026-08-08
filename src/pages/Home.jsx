@@ -20,16 +20,16 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   const loadData = () =>
-    Promise.all([
-      base44.entities.Package.list(),
-      base44.entities.Product.list(),
-      base44.entities.Review.list(),
-    ]).then(([pkgs, prods, revs]) => {
-      setPackages(pkgs);
-      setProducts(prods);
-      setReviews(revs);
-      setLoading(false);
-    });
+  Promise.all([
+  base44.entities.Package.list(),
+  base44.entities.Product.list(),
+  base44.entities.Review.list()]
+  ).then(([pkgs, prods, revs]) => {
+    setPackages(pkgs);
+    setProducts(prods);
+    setReviews(revs);
+    setLoading(false);
+  });
 
   useEffect(() => {
     loadData();
@@ -39,8 +39,8 @@ export default function Home() {
     return (
       <div className="flex justify-center p-8">
         <div className="w-8 h-8 border-4 border-gray-200 border-t-[#2E7D32] rounded-full animate-spin" />
-      </div>
-    );
+      </div>);
+
   }
 
   const bestSellers = products.filter((p) => p.is_best_seller);
@@ -52,7 +52,7 @@ export default function Home() {
       <div className="px-4 pt-3">
         <QuickCategories />
       </div>
-      <div className="px-4">
+      <div className="px-4 opacity-95">
         <PromoBanner />
       </div>
       <WeeklyDeals products={weeklyDeals} />
@@ -65,6 +65,6 @@ export default function Home() {
       <CustomerReviews reviews={reviews} />
       <InfiniteProductGrid products={products} />
     </div>
-    </PullToRefresh>
-  );
+    </PullToRefresh>);
+
 }

@@ -10,7 +10,7 @@ export default function PromoBanner() {
       <img src="https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/bb0ab3609_04724820-6E3F-45F0-B429-BA6C62A01A7A.PNG"
 
       alt="Fresh grocery shelf"
-      className="absolute inset-0 w-full h-full object-cover" />
+      className="absolute inset-0 w-full h-full object-cover opacity-100" />
       
       <div
         className="absolute inset-0"
