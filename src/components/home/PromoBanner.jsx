@@ -7,7 +7,7 @@ export default function PromoBanner() {
 
   return (
     <div className="relative rounded-3xl overflow-hidden h-44">
-      <img src="https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/1b8471b1c_E6368BC8-8322-4173-8F74-3A2085F760ED.PNG"
+      <img src="https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/bb0ab3609_04724820-6E3F-45F0-B429-BA6C62A01A7A.PNG"
 
       alt="Fresh grocery shelf"
       className="absolute inset-0 w-full h-full object-cover" />
