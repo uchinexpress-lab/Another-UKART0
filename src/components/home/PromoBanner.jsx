@@ -13,7 +13,7 @@ export default function PromoBanner() {
       className="absolute inset-0 w-full h-full object-cover" />
       
       <div
-        className="absolute inset-0 opacity-15"
+        className="absolute inset-0 opacity-40"
         style={{
           background:
           'linear-gradient(135deg, rgba(27,94,32,0.55) 0%, rgba(46,125,50,0.30) 100%)'
