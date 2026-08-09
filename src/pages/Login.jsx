@@ -21,8 +21,8 @@ export default function Login() {
   useEffect(() => {
     const ua = navigator.userAgent;
     const ios =
-      /iPad|iPhone|iPod/.test(ua) ||
-      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    /iPad|iPhone|iPod/.test(ua) ||
+    navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
     setIsIOS(ios);
   }, []);
 
@@ -74,21 +74,21 @@ export default function Login() {
 
       <div className="flex-1 px-6 -mt-6">
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 space-y-3">
-          {isIOS && (
-            <Button
-              variant="outline"
-              className="w-full h-12 text-sm font-medium rounded-xl"
-              onClick={handleApple}
-            >
-              <AppleIcon className="w-5 h-5 mr-2" />
-              Continue with Apple
-            </Button>
-          )}
+          {isIOS &&
           <Button
             variant="outline"
             className="w-full h-12 text-sm font-medium rounded-xl"
-            onClick={handleGoogle}
-          >
+            onClick={handleApple}>
+            
+              <AppleIcon className="w-5 h-5 mr-2" />
+              Continue with Apple
+            </Button>
+          }
+          <Button
+            variant="outline"
+            className="w-full h-12 text-sm font-medium rounded-xl"
+            onClick={handleGoogle}>
+            
             <GoogleIcon className="w-5 h-5 mr-2" />
             Continue with Google
           </Button>
@@ -102,9 +102,9 @@ export default function Login() {
             </div>
           </div>
 
-          {error && (
-            <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">{error}</div>
-          )}
+          {error &&
+          <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">{error}</div>
+          }
 
           <form onSubmit={handleSubmit} className="space-y-3">
             <div className="space-y-1.5">
@@ -118,8 +118,8 @@ export default function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10 h-12 rounded-xl"
-                  required
-                />
+                  required />
+                
               </div>
             </div>
             <div className="space-y-1.5">
@@ -127,8 +127,8 @@ export default function Login() {
                 <Label htmlFor="password">Password</Label>
                 <Link
                   to="/forgot-password"
-                  className="text-xs text-[#2E7D32] font-medium hover:underline"
-                >
+                  className="text-xs text-[#2E7D32] font-medium hover:underline">
+                  
                   Forgot Password?
                 </Link>
               </div>
@@ -141,23 +141,23 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10 h-12 rounded-xl"
-                  required
-                />
+                  required />
+                
               </div>
             </div>
             <Button
               type="submit"
               className="w-full h-12 font-semibold rounded-xl"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
+              disabled={loading}>
+              
+              {loading ?
+              <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Logging in...
-                </>
-              ) : (
-                "Log In"
-              )}
+                </> :
+
+              "Log In"
+              }
             </Button>
           </form>
         </div>
@@ -171,14 +171,14 @@ export default function Login() {
 
         <button
           onClick={handleGuest}
-          className="w-full mt-4 flex items-center justify-center gap-1 text-sm font-medium text-gray-500 hover:text-[#2E7D32] transition-colors"
-        >
+          className="w-full mt-4 flex items-center justify-center gap-1 text-sm font-medium text-gray-500 hover:text-[#2E7D32] transition-colors">
+          
           Continue as Guest <ChevronRight className="w-4 h-4" />
         </button>
-        <p className="text-center text-xs text-gray-400 mt-1.5 px-4">
-          Browse products freely. Sign in to place an order.
+        <p className="text-center text-xs text-gray-400 mt-1.5 px-4">Browse products freely. Sign in when you ready to order.
+
         </p>
       </div>
-    </div>
-  );
+    </div>);
+
 }
