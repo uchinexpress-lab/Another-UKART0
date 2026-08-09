@@ -35,12 +35,12 @@ export default function PackageDetail() {
     <div className="pb-40">
       <div className="relative h-64 bg-gray-100">
         <img src={pkg.image} alt={pkg.name} className="w-full h-full object-cover" />
-        <button
-          onClick={() => navigate(-1)}
-          className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-sm hidden">
-          
-          <ArrowLeft className="w-5 h-5 text-gray-700" />
-        </button>
+        
+
+
+
+
+        
       </div>
 
       <div className="px-4 -mt-6 relative">
