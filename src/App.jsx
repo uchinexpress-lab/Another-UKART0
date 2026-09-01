@@ -35,6 +35,7 @@ import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import Orders from '@/pages/Orders';
+import Order from '@/pages/Order';
 import OrderDetail from '@/pages/OrderDetail';
 import PaymentMethods from '@/pages/PaymentMethods';
 import Notifications from '@/pages/Notifications';
@@ -77,6 +78,7 @@ const AuthenticatedApp = () => {
               <Route path="/search" element={<SearchResults />} />
               <Route path="/offers" element={<Offers />} />
               <Route path="/cart" element={<Cart />} />
+          <Route path="/order" element={<Order />} />
               <Route path="/checkout" element={<GuestGate><Checkout /></GuestGate>} />
               <Route path="/wishlist" element={<Wishlist />} />
               <Route path="/profile" element={<GuestGate><Profile /></GuestGate>} />

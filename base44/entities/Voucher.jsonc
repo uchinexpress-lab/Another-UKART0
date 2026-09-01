@@ -1,0 +1,30 @@
+{
+  "name": "Voucher",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string"
+    },
+    "discount_percent": {
+      "type": "number",
+      "default": 10
+    },
+    "max_uses": {
+      "type": "number"
+    },
+    "uses": {
+      "type": "number",
+      "default": 0
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "code"
+  ]
+}

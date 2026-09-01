@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 
-const TAB_ROOTS = ['/packages', '/offers', '/wishlist', '/profile'];
+const TAB_ROOTS = ['/packages', '/order', '/wishlist', '/profile'];
 
 export default function BrandedHeader({ title }) {
   const navigate = useNavigate();

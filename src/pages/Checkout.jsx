@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
 import { base44 } from '@/api/base44Client';
 import { notifyOrderCreated } from '@/lib/notifications';
-import { ArrowLeft, MapPin, Navigation, Phone, User, Loader2, CheckCircle2, ShoppingBag, Tag } from 'lucide-react';
+import { ArrowLeft, MapPin, Navigation, Phone, User, Loader2, CheckCircle2, ShoppingBag, Tag, History, X } from 'lucide-react';
 
 const REWARD_AMOUNT = 1000;
 
@@ -19,13 +19,16 @@ export default function Checkout() {
   const [done, setDone] = useState(null);
   const [referralDiscount, setReferralDiscount] = useState(0);
   const [rewardRef, setRewardRef] = useState(null);
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [voucherCode, setVoucherCode] = useState('');
+  const [voucher, setVoucher] = useState(null);
+  const [voucherError, setVoucherError] = useState('');
 
   useEffect(() => {
     (async () => {
       try {
         const me = await base44.auth.me();
         if (!me?.id) return;
-        // Referred user's available reward (after their first order was placed)
         const asReferred = await base44.entities.Referral.filter({
           referred_user_id: me.id,
           status: 'first_order_placed',
@@ -36,7 +39,6 @@ export default function Checkout() {
           setRewardRef({ id: asReferred[0].id, type: 'referred' });
           return;
         }
-        // Referrer's available reward (after their friend's first order was placed)
         const asReferrer = await base44.entities.Referral.filter({
           referrer_id: me.id,
           status: 'first_order_placed',
@@ -50,10 +52,78 @@ export default function Checkout() {
     })();
   }, []);
 
-  const appliedDiscount = Math.min(referralDiscount, total);
+  useEffect(() => {
+    (async () => {
+      try {
+        const me = await base44.auth.me();
+        if (!me?.email) return;
+        const prev = await base44.entities.Order.filter(
+          { customer_email: me.email },
+          '-created_date',
+          50
+        );
+        const seen = new Set();
+        const addrs = [];
+        prev.forEach((o) => {
+          const key = `${o.customer_name}|${o.customer_phone}|${o.customer_address}|${o.landmark}`;
+          if (o.customer_address && !seen.has(key)) {
+            seen.add(key);
+            addrs.push({
+              name: o.customer_name,
+              phone: o.customer_phone,
+              address: o.customer_address,
+              landmark: o.landmark,
+            });
+          }
+        });
+        setSavedAddresses(addrs);
+        if (addrs.length > 0) {
+          setName(addrs[0].name || '');
+          setPhone(addrs[0].phone || '');
+          setAddress(addrs[0].address || '');
+          setLandmark(addrs[0].landmark || '');
+        }
+      } catch {}
+    })();
+  }, []);
+
+  const voucherDiscount = voucher
+    ? Math.round((total * (voucher.discount_percent || 0)) / 100)
+    : 0;
+  const appliedDiscount = Math.min(referralDiscount + voucherDiscount, total);
   const grandTotal = total - appliedDiscount + deliveryFee;
 
   const canPlace = name.trim() && phone.trim() && address.trim() && landmark.trim() && !placing;
+
+  const applyVoucher = async () => {
+    setVoucherError('');
+    if (!voucherCode.trim()) return;
+    try {
+      const found = await base44.entities.Voucher.filter({
+        code: voucherCode.trim().toUpperCase(),
+        active: true,
+      });
+      if (found.length === 0) {
+        setVoucherError('Invalid or expired voucher code');
+        return;
+      }
+      const v = found[0];
+      if (v.max_uses && (v.uses || 0) >= v.max_uses) {
+        setVoucherError('This voucher has reached its usage limit');
+        return;
+      }
+      setVoucher(v);
+    } catch {
+      setVoucherError('Could not validate voucher');
+    }
+  };
+
+  const applySaved = (a) => {
+    setName(a.name || '');
+    setPhone(a.phone || '');
+    setAddress(a.address || '');
+    setLandmark(a.landmark || '');
+  };
 
   const placeOrder = async () => {
     if (!canPlace) return;
@@ -73,6 +143,7 @@ export default function Checkout() {
         subtotal: total,
         delivery_fee: deliveryFee,
         discount: appliedDiscount,
+        voucher_code: voucher ? voucher.code : '',
         total: grandTotal,
         customer_name: name,
         customer_phone: phone,
@@ -88,7 +159,6 @@ export default function Checkout() {
       } catch (e) {
         console.error('Notification error:', e);
       }
-      // Apply referral reward and mark the referred user's first order
       try {
         if (rewardRef) {
           await base44.entities.Referral.update(
@@ -107,6 +177,13 @@ export default function Checkout() {
         }
       } catch (e) {
         console.error('Referral reward error:', e);
+      }
+      if (voucher) {
+        try {
+          await base44.entities.Voucher.update(voucher.id, { uses: (voucher.uses || 0) + 1 });
+        } catch (e) {
+          console.error('Voucher update error:', e);
+        }
       }
       clearCart();
       setDone(orderNumber);
@@ -130,8 +207,8 @@ export default function Checkout() {
         <Link to={`/track?order=${done}`} className="bg-[#2E7D32] text-white text-sm font-bold px-6 py-3 rounded-full mb-3">
           Track My Order
         </Link>
-        <Link to="/" className="text-[#2E7D32] text-sm font-medium px-6 py-3 rounded-full border border-[#2E7D32]/20">
-          Continue Shopping
+        <Link to="/order" className="text-[#2E7D32] text-sm font-medium px-6 py-3 rounded-full border border-[#2E7D32]/20">
+          View My Orders
         </Link>
       </div>
     );
@@ -157,7 +234,7 @@ export default function Checkout() {
   const labelClass = 'text-xs font-semibold text-gray-600 flex items-center gap-1.5 mb-1.5';
 
   return (
-    <div className="p-4 pb-40">
+    <div className="p-4 pb-44">
       <div className="flex items-center gap-2 mb-4">
         <button onClick={() => navigate(-1)} className="p-1.5 -ml-1.5 rounded-full hover:bg-black/5">
           <ArrowLeft className="w-5 h-5 text-gray-700" />
@@ -174,9 +251,14 @@ export default function Checkout() {
             ₦{grandTotal.toLocaleString()}
           </span>
         </div>
-        {appliedDiscount > 0 && (
+        {referralDiscount > 0 && (
           <div className="flex items-center gap-1.5 text-xs text-[#2E7D32] font-medium mb-2">
-            <Tag className="w-3.5 h-3.5" /> Referral reward −₦{appliedDiscount.toLocaleString()} applied
+            <Tag className="w-3.5 h-3.5" /> Referral reward −₦{Math.min(referralDiscount, total).toLocaleString()} applied
+          </div>
+        )}
+        {voucherDiscount > 0 && (
+          <div className="flex items-center gap-1.5 text-xs text-[#2E7D32] font-medium mb-2">
+            <Tag className="w-3.5 h-3.5" /> Voucher {voucher.code} −₦{voucherDiscount.toLocaleString()} applied
           </div>
         )}
         <div className="flex gap-1 overflow-x-auto scrollbar-hide">
@@ -190,6 +272,66 @@ export default function Checkout() {
           ))}
         </div>
       </div>
+
+      {/* Voucher / Promo code */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
+        <label className={labelClass}>
+          <Tag className="w-3.5 h-3.5" /> Voucher / Promo Code
+        </label>
+        {voucher ? (
+          <div className="flex items-center justify-between bg-[#E8F5E9] rounded-xl px-3 py-2.5">
+            <span className="text-sm font-semibold text-[#2E7D32]">
+              {voucher.code} ({voucher.discount_percent}% off)
+            </span>
+            <button
+              onClick={() => {
+                setVoucher(null);
+                setVoucherCode('');
+              }}
+              className="text-[#2E7D32]"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <input
+              value={voucherCode}
+              onChange={(e) => setVoucherCode(e.target.value)}
+              placeholder="Enter code"
+              className="flex-1 text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none focus:border-[#2E7D32]"
+            />
+            <button
+              onClick={applyVoucher}
+              className="px-4 rounded-xl bg-[#2E7D32] text-white text-sm font-semibold"
+            >
+              Apply
+            </button>
+          </div>
+        )}
+        {voucherError && <p className="text-xs text-red-500 mt-1.5">{voucherError}</p>}
+      </div>
+
+      {/* Saved addresses from previous orders */}
+      {savedAddresses.length > 0 && (
+        <div className="mb-4">
+          <p className="text-xs font-semibold text-gray-500 flex items-center gap-1.5 mb-2">
+            <History className="w-3.5 h-3.5" /> Use a saved address
+          </p>
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+            {savedAddresses.map((a, i) => (
+              <button
+                key={i}
+                onClick={() => applySaved(a)}
+                className="flex-shrink-0 text-left text-xs bg-white border border-gray-100 rounded-xl px-3 py-2 w-44 active:scale-95 transition-transform"
+              >
+                <span className="font-semibold text-gray-900 block line-clamp-1">{a.name}</span>
+                <span className="text-gray-500 line-clamp-2">{a.address}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-4">
         <div>
@@ -240,10 +382,15 @@ export default function Checkout() {
         </div>
       </div>
 
-      <div className="fixed bottom-16 left-0 right-0 max-w-md mx-auto px-4 py-3 bg-white border-t border-gray-100">
+      <div
+        className="fixed left-0 right-0 max-w-md mx-auto px-4 py-3 bg-white border-t border-gray-100"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom) + 76px)' }}
+      >
         {appliedDiscount > 0 && (
           <div className="flex items-center justify-between text-xs mb-2">
-            <span className="text-gray-500">Referral discount</span>
+            <span className="text-gray-500">
+              Discount {voucher ? `(${voucher.code})` : ''}
+            </span>
             <span className="text-[#2E7D32] font-semibold">−₦{appliedDiscount.toLocaleString()}</span>
           </div>
         )}

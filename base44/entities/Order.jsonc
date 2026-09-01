@@ -35,6 +35,9 @@
       "type": "number",
       "default": 0
     },
+    "voucher_code": {
+      "type": "string"
+    },
     "total": {
       "type": "number"
     },

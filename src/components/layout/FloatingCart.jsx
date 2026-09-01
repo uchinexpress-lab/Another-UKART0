@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 
+const HIDDEN_ON = ["/cart", "/order", "/checkout"];
+
 export default function FloatingCart() {
   const { itemCount, total } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
   const prevCount = useRef(itemCount);
   const [bump, setBump] = useState(0);
 
@@ -20,7 +23,7 @@ export default function FloatingCart() {
 
   return (
     <AnimatePresence>
-      {itemCount > 0 && (
+      {itemCount > 0 && !HIDDEN_ON.some((p) => location.pathname.startsWith(p)) && (
         <motion.div
           initial={{ scale: 0, opacity: 0, y: 24 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}

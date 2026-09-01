@@ -55,10 +55,6 @@ export default function About() {
             <span className="font-medium text-gray-900">Lagos, Nigeria</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500">Founder</span>
-            <span className="font-medium text-gray-900">Steve Obiora</span>
-          </div>
-          <div className="flex justify-between">
             <span className="text-gray-500">Version</span>
             <span className="font-medium text-gray-900">{APP_VERSION}</span>
           </div>
