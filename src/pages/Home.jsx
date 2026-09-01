@@ -56,9 +56,9 @@ export default function Home() {
       <div className="px-4 opacity-100">
         <PromoBanner />
       </div>
+      <AIMealKits />
       <WeeklyDeals products={weeklyDeals} />
       <MealKitBanner />
-      <AIMealKits />
       <PopularMealKits packages={packages} />
       <PackageCarousel packages={packages} />
       <ShopByBudget />
