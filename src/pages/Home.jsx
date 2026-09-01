@@ -9,6 +9,7 @@ import BestSellers from '@/components/home/BestSellers';
 import WeeklyDeals from '@/components/home/WeeklyDeals';
 import PopularMealKits from '@/components/home/PopularMealKits';
 import MealKitBanner from '@/components/home/MealKitBanner';
+import AIMealKits from '@/components/home/AIMealKits';
 import CustomerReviews from '@/components/home/CustomerReviews';
 import InfiniteProductGrid from '@/components/home/InfiniteProductGrid';
 import PullToRefresh from '@/components/home/PullToRefresh';
@@ -57,6 +58,7 @@ export default function Home() {
       </div>
       <WeeklyDeals products={weeklyDeals} />
       <MealKitBanner />
+      <AIMealKits />
       <PopularMealKits packages={packages} />
       <PackageCarousel packages={packages} />
       <ShopByBudget />

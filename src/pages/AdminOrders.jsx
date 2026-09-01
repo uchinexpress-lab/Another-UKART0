@@ -31,7 +31,7 @@ function StatusBadge({ status }) {
 
 }
 
-function OrderCard({ order, onStatusChange, updatingId, highlighted }) {
+function OrderCard({ order, onStatusChange, updatingId, highlighted, onViewCustomer }) {
   const [expanded, setExpanded] = useState(highlighted);
 
   return (
@@ -75,6 +75,14 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted }) {
             </p>
           </div>
 
+          {onViewCustomer && order.customer_email && (
+            <button
+              onClick={() => onViewCustomer(order.customer_email)}
+              className="text-xs font-semibold text-[#2E7D32] flex items-center gap-1"
+            >
+              View this customer's order history →
+            </button>
+          )}
           {/* Items */}
           <div className="bg-gray-50 rounded-xl p-2 space-y-1">
             {order.items?.map((item, i) =>
@@ -135,6 +143,7 @@ export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
+  const [customerFilter, setCustomerFilter] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -195,8 +204,29 @@ export default function AdminOrders() {
 
   }
 
+  const visibleOrders = customerFilter
+    ? orders.filter((o) => o.customer_email === customerFilter)
+    : orders;
+
   return (
     <div className="p-4 pb-10">
+      {customerFilter && (
+        <div className="flex items-center justify-between bg-[#E8F5E9] rounded-2xl px-4 py-3 mb-4">
+          <div>
+            <p className="text-sm font-bold text-[#2E7D32]">{customerFilter}</p>
+            <p className="text-xs text-gray-600">
+              {visibleOrders.length} order{visibleOrders.length !== 1 ? 's' : ''} · ₦
+              {visibleOrders.reduce((s, o) => s + (o.total || 0), 0).toLocaleString()} spent
+            </p>
+          </div>
+          <button
+            onClick={() => setCustomerFilter(null)}
+            className="text-xs font-semibold text-[#2E7D32] underline"
+          >
+            Clear
+          </button>
+        </div>
+      )}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Link to="/profile" className="p-1.5 -ml-1.5 rounded-full hover:bg-black/5">
@@ -218,19 +248,20 @@ export default function AdminOrders() {
         automatically when the status changes.
       </p>
 
-      {orders.length === 0 ?
+      {visibleOrders.length === 0 ?
       <div className="text-center py-16">
-          <p className="text-sm text-gray-400">No orders yet.</p>
+          <p className="text-sm text-gray-400">No orders found.</p>
         </div> :
 
       <div className="space-y-3">
-          {orders.map((order) =>
+          {visibleOrders.map((order) =>
         <OrderCard
           key={order.id}
           order={order}
           onStatusChange={handleStatusChange}
           updatingId={updatingId}
-          highlighted={highlightOrder === order.order_number} />
+          highlighted={highlightOrder === order.order_number}
+          onViewCustomer={setCustomerFilter} />
 
         )}
         </div>
