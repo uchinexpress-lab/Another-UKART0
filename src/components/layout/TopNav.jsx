@@ -71,10 +71,11 @@ export default function TopNav() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-gradient-to-br from-[#1B7F3A] via-[#2E9E44] to-[#5FCF65] shadow-[0_2px_16px_rgba(0,0,0,0.12)]">
-      <div className="max-w-md mx-auto w-full px-4 pb-3" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}>
-        {/* Greeting + right actions */}
-        <div className="flex items-start justify-between">
+    <>
+      {/* Greeting — scrolls away */}
+      <div className="bg-gradient-to-br from-[#1B7F3A] via-[#2E9E44] to-[#5FCF65]">
+        <div className="max-w-md mx-auto w-full px-4 pb-2" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}>
+          <div className="flex items-start justify-between">
           <div className="text-white">
             <p className="text-lg font-bold leading-tight">
               Hello, {firstName} 👋
@@ -95,8 +96,12 @@ export default function TopNav() {
               <Headset className="w-5 h-5 text-white" strokeWidth={2} />
             </Link>
           </div>
+          </div>
         </div>
-
+      </div>
+      {/* Location + search — sticky */}
+      <div className="sticky top-0 z-50 bg-gradient-to-br from-[#1B7F3A] via-[#2E9E44] to-[#5FCF65] shadow-[0_2px_16px_rgba(0,0,0,0.12)]">
+      <div className="max-w-md mx-auto w-full px-4 pb-3" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 4px)' }}>
         {/* Location selector */}
         <Drawer open={areaOpen} onOpenChange={setAreaOpen}>
           <DrawerTrigger asChild>
@@ -165,6 +170,7 @@ export default function TopNav() {
           </button>
         </form>
       </div>
-    </header>
+      </div>
+    </>
   );
 }
