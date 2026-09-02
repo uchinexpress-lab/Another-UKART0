@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Bell,
@@ -55,12 +55,25 @@ export default function TopNav() {
   const [query, setQuery] = useState('');
   const [firstName, setFirstName] = useState('');
   const [areaOpen, setAreaOpen] = useState(false);
+  const greetingRef = useRef(null);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     base44.auth
       .me()
       .then((u) => setFirstName((u?.full_name || 'there').split(' ')[0]))
       .catch(() => setFirstName('there'));
+  }, []);
+
+  useEffect(() => {
+    const el = greetingRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setScrolled(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   const areaDisplay = location?.area ?? 'your area';
@@ -73,7 +86,7 @@ export default function TopNav() {
   return (
     <>
       {/* Greeting — scrolls away */}
-      <div className="bg-gradient-to-br from-[#1B7F3A] via-[#2E9E44] to-[#5FCF65]">
+      <div ref={greetingRef} className="bg-gradient-to-br from-[#1B7F3A] via-[#2E9E44] to-[#5FCF65]">
         <div className="max-w-md mx-auto w-full px-4 pb-2" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}>
           <div className="flex items-start justify-between">
           <div className="text-white">
@@ -85,9 +98,13 @@ export default function TopNav() {
             </p>
           </div>
           <div className="flex items-center gap-1.5">
-            <button className="relative p-2 rounded-full hover:bg-white/15 active:scale-90 transition-transform">
+            <Link
+              to="/notifications"
+              className="relative p-2 rounded-full hover:bg-white/15 active:scale-90 transition-transform"
+              aria-label="Notifications"
+            >
               <Bell className="w-5 h-5 text-white" strokeWidth={2} />
-            </button>
+            </Link>
             <Link
               to="/tickets"
               className="relative p-2 rounded-full hover:bg-white/15 active:scale-90 transition-transform"
@@ -102,10 +119,11 @@ export default function TopNav() {
       {/* Location + search — sticky */}
       <div className="sticky top-0 z-50 bg-gradient-to-br from-[#1B7F3A] via-[#2E9E44] to-[#5FCF65] shadow-[0_2px_16px_rgba(0,0,0,0.12)]">
       <div className="max-w-md mx-auto w-full px-4 pb-3" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 4px)' }}>
+        <div className="flex items-center justify-between mt-3">
         {/* Location selector */}
         <Drawer open={areaOpen} onOpenChange={setAreaOpen}>
           <DrawerTrigger asChild>
-            <button className="flex items-center gap-1 text-white text-sm font-medium mt-3 -ml-1 px-1 py-0.5 rounded-lg active:scale-95 transition-transform no-tap-highlight">
+            <button className="flex items-center gap-1 text-white text-sm font-medium -ml-1 px-1 py-0.5 rounded-lg active:scale-95 transition-transform no-tap-highlight">
               <MapPin className="w-4 h-4 shrink-0" />
               <span className="flex flex-col items-start leading-tight">
                 <span className="truncate max-w-[180px]">{areaDisplay}, Lagos</span>
@@ -152,6 +170,25 @@ export default function TopNav() {
             </div>
           </DrawerContent>
         </Drawer>
+        {scrolled && (
+          <div className="flex items-center gap-1.5">
+            <Link
+              to="/notifications"
+              className="relative p-2 rounded-full hover:bg-white/15 active:scale-90 transition-transform"
+              aria-label="Notifications"
+            >
+              <Bell className="w-5 h-5 text-white" strokeWidth={2} />
+            </Link>
+            <Link
+              to="/tickets"
+              className="relative p-2 rounded-full hover:bg-white/15 active:scale-90 transition-transform"
+              aria-label="Customer care"
+            >
+              <Headset className="w-5 h-5 text-white" strokeWidth={2} />
+            </Link>
+          </div>
+        )}
+        </div>
 
         {/* Search bar */}
         <form onSubmit={handleSearch} className="relative mt-3">

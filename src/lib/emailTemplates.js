@@ -145,7 +145,7 @@ const STATUS_TEMPLATES = {
     subject: '\uD83C\uDF89 Your Ukart Order #{ORDER} Has Been Delivered',
     title: 'Your Order Has Been Delivered',
     message:
-      'Your order has been delivered. Enjoy your groceries! Thank you for choosing Ukart.',
+      'Your order has been delivered. Enjoy your groceries! We\u2019d love to hear how it went \u2014 please rate your delivery below.',
     showEta: false,
   },
   cancelled: {
@@ -162,13 +162,21 @@ export function statusEmail(order, status) {
   if (!template) return null;
   const appUrl = getAppUrl();
   const trackUrl = `${appUrl}/track?order=${order.order_number}`;
+  const rateUrl = `${appUrl}/notifications`;
+  const supportUrl = `${appUrl}/tickets`;
+  const actionHtml =
+    status === 'delivered'
+      ? button(rateUrl, 'Rate Your Delivery')
+      : status === 'cancelled'
+      ? button(supportUrl, 'Contact Support')
+      : button(trackUrl, 'Track My Order');
   const subject = template.subject.replace('{ORDER}', order.order_number);
   const content = `
     <h2 style="margin:0 0 8px;color:${BRAND.green};font-size:20px;">${template.title}</h2>
     <p style="margin:0 0 8px;color:#444;font-size:14px;line-height:1.6;">Hi ${order.customer_name || 'there'},</p>
     <p style="margin:0 0 20px;color:#444;font-size:14px;line-height:1.6;">${template.message}</p>
     <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">${infoRow('Order Number', order.order_number)}${template.showEta ? infoRow('Estimated Delivery', '30-60 minutes (Lagos)') : ''}${infoRow('Delivery Address', order.customer_address)}</table>
-    <div style="text-align:center;margin-top:20px;">${button(trackUrl, 'Track My Order')}</div>
+    <div style="text-align:center;margin-top:20px;">${actionHtml}</div>
     <p style="margin:16px 0 0;color:#999;font-size:12px;text-align:center;">Thank you for choosing Ukart. No Market Wahala! \uD83D\uDCA1</p>`;
   return { subject, html: emailShell(content) };
 }
