@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft } from 'lucide-react';
 import ProductCard from '@/components/product/ProductCard';
 import { getBroadCategory } from '@/lib/broadCategories';
 
 export default function Shop() {
   const { slug } = useParams();
-  const navigate = useNavigate();
   const broad = getBroadCategory(slug);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,12 +49,6 @@ export default function Shop() {
 
   return (
     <div className="p-4">
-      <button
-        onClick={() => navigate(-1)}
-        className="mb-4 flex items-center gap-2 text-gray-700"
-      >
-        <ArrowLeft className="w-5 h-5" /> Back
-      </button>
       <h1 className="text-2xl font-bold text-gray-900 mb-1">
         {broad.icon} {broad.name}
       </h1>

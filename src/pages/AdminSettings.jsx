@@ -6,7 +6,6 @@ import {
   updateNotificationSettings,
 } from '@/lib/notifications';
 import {
-  ArrowLeft,
   Mail,
   Settings,
   Loader2,
@@ -111,12 +110,7 @@ export default function AdminSettings() {
 
   return (
     <div className="p-4 pb-10">
-      <div className="flex items-center gap-2 mb-6">
-        <Link to="/profile" className="p-1.5 -ml-1.5 rounded-full hover:bg-black/5">
-          <ArrowLeft className="w-5 h-5 text-gray-700" />
-        </Link>
-        <h1 className="text-xl font-bold text-gray-900">Notification Settings</h1>
-      </div>
+      <h1 className="text-xl font-bold text-gray-900 mb-6">Notification Settings</h1>
 
       {/* Business email */}
       <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">

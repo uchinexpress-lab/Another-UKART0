@@ -96,9 +96,20 @@ export default function AdminTickets() {
 
   const sendMessage = async () => {
     if (!draft.trim() || !activeTicket) return;
-    setSending(true);
     const body = draft.trim();
+    const tempId = `temp_${Date.now()}`;
+    const optimistic = {
+      id: tempId,
+      ticket_id: activeTicket.id,
+      ticket_owner_id: activeTicket.created_by_id,
+      sender: 'admin',
+      body,
+      created_date: new Date().toISOString(),
+      _pending: true,
+    };
     setDraft('');
+    setSending(true);
+    setMessages((prev) => [...prev, optimistic]);
     try {
       const msg = await base44.entities.TicketMessage.create({
         ticket_id: activeTicket.id,
@@ -106,9 +117,12 @@ export default function AdminTickets() {
         sender: 'admin',
         body,
       });
-      setMessages((prev) =>
-        prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]
-      );
+      setMessages((prev) => {
+        let next = prev.filter((m) => m.id !== tempId);
+        if (!next.some((m) => m.id === msg.id)) next = [...next, msg];
+        else next = next.map((m) => (m.id === msg.id ? msg : m));
+        return next;
+      });
       const now = new Date().toISOString();
       await base44.entities.Ticket.update(activeTicket.id, {
         last_message_at: now,
@@ -127,6 +141,8 @@ export default function AdminTickets() {
       }
       loadTickets();
     } catch {
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
+      setDraft(body);
       alert('Could not send message. Please try again.');
     }
     setSending(false);
@@ -199,7 +215,7 @@ export default function AdminTickets() {
                     mine
                       ? 'bg-[#2E7D32] text-white rounded-br-md'
                       : 'bg-white border border-gray-100 text-gray-800 rounded-bl-md'
-                  }`}
+                  } ${m._pending ? 'opacity-60' : ''}`}
                 >
                   <p className="text-sm whitespace-pre-wrap leading-relaxed">
                     {m.body}

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import {
-  ArrowLeft,
   Search,
   Package,
   PackageCheck,
@@ -52,7 +51,6 @@ const STEP_ORDER = ['new', 'processing', 'ready', 'on_the_way', 'delivered'];
 
 export default function OrderTracking() {
   const [params, setParams] = useSearchParams();
-  const navigate = useNavigate();
   const queryOrder = params.get('order') || '';
   const [searchValue, setSearchValue] = useState(queryOrder);
   const [order, setOrder] = useState(null);
@@ -101,12 +99,7 @@ export default function OrderTracking() {
 
   return (
     <div className="p-4 pb-10">
-      <div className="flex items-center gap-2 mb-4">
-        <button onClick={() => navigate(-1)} className="p-1.5 -ml-1.5 rounded-full hover:bg-black/5">
-          <ArrowLeft className="w-5 h-5 text-gray-700" />
-        </button>
-        <h1 className="text-xl font-bold text-gray-900">Track Your Order</h1>
-      </div>
+      <h1 className="text-xl font-bold text-gray-900 mb-4">Track Your Order</h1>
 
       <form onSubmit={handleSearch} className="mb-6">
         <div className="relative">

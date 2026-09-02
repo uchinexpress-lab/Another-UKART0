@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { useNavigate } from 'react-router-dom';
+import SheetSelect from '@/components/SheetSelect';
 import {
   ArrowLeft,
   Plus,
@@ -107,9 +108,20 @@ export default function SupportTickets() {
 
   const sendMessage = async () => {
     if (!draft.trim() || !activeTicket) return;
-    setSending(true);
     const body = draft.trim();
+    const tempId = `temp_${Date.now()}`;
+    const optimistic = {
+      id: tempId,
+      ticket_id: activeTicket.id,
+      ticket_owner_id: me?.id || activeTicket.created_by_id,
+      sender: 'user',
+      body,
+      created_date: new Date().toISOString(),
+      _pending: true,
+    };
     setDraft('');
+    setSending(true);
+    setMessages((prev) => [...prev, optimistic]);
     try {
       const msg = await base44.entities.TicketMessage.create({
         ticket_id: activeTicket.id,
@@ -117,9 +129,12 @@ export default function SupportTickets() {
         sender: 'user',
         body,
       });
-      setMessages((prev) =>
-        prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]
-      );
+      setMessages((prev) => {
+        let next = prev.filter((m) => m.id !== tempId);
+        if (!next.some((m) => m.id === msg.id)) next = [...next, msg];
+        else next = next.map((m) => (m.id === msg.id ? msg : m));
+        return next;
+      });
       const now = new Date().toISOString();
       await base44.entities.Ticket.update(activeTicket.id, {
         last_message_at: now,
@@ -137,6 +152,8 @@ export default function SupportTickets() {
       }
       loadTickets();
     } catch {
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
+      setDraft(body);
       alert('Could not send message. Please try again.');
     }
     setSending(false);
@@ -218,17 +235,14 @@ export default function SupportTickets() {
             <label className="text-xs font-semibold text-gray-600 mb-1.5 block">
               Category
             </label>
-            <select
+            <SheetSelect
               value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value)}
-              className={inputClass}
-            >
-              {CATEGORIES.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
+              onChange={setNewCategory}
+              options={CATEGORIES}
+              placeholder="Select category"
+              title="Choose category"
+              triggerClassName="w-full flex items-center justify-between text-sm border border-gray-200 rounded-xl px-3 py-2.5 bg-white"
+            />
           </div>
           <div>
             <label className="text-xs font-semibold text-gray-600 mb-1.5 block">
@@ -312,7 +326,7 @@ export default function SupportTickets() {
                     mine
                       ? 'bg-[#2E7D32] text-white rounded-br-md'
                       : 'bg-white border border-gray-100 text-gray-800 rounded-bl-md'
-                  }`}
+                  } ${m._pending ? 'opacity-60' : ''}`}
                 >
                   <p className="text-sm whitespace-pre-wrap leading-relaxed">
                     {m.body}

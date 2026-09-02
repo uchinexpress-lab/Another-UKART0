@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { notifyOrderStatusChanged } from '@/lib/notifications';
+import SheetSelect from '@/components/SheetSelect';
 import { getStatusLabel } from '@/lib/emailTemplates';
 import {
   ArrowLeft,
@@ -287,16 +288,14 @@ export default function AdminOrders() {
           />
         </div>
         <div className="flex gap-2">
-          <select
+          <SheetSelect
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="flex-1 h-10 text-sm rounded-xl border border-gray-200 px-2 outline-none focus:border-[#2E7D32] bg-white"
-          >
-            <option value="all">All statuses</option>
-            {STATUSES.map((s) => (
-              <option key={s.value} value={s.value}>{s.label}</option>
-            ))}
-          </select>
+            onChange={setStatusFilter}
+            options={[{ value: 'all', label: 'All statuses' }, ...STATUSES]}
+            placeholder="All statuses"
+            title="Filter by status"
+            triggerClassName="flex-1 h-10 flex items-center justify-between text-sm rounded-xl border border-gray-200 px-3 bg-white"
+          />
           <div className="relative flex-1">
             <Calendar className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
