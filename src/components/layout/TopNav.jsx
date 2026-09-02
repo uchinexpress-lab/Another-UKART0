@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Bell,
-  ShoppingBasket,
+  Headset,
   MapPin,
   ChevronDown,
   Search,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { useCart } from '@/context/CartContext';
 import { useDeliveryLocation } from '@/hooks/useDeliveryLocation';
 import {
   Drawer,
@@ -52,7 +51,6 @@ const LAGOS_AREAS = {
 
 export default function TopNav() {
   const { location, status, setManual } = useDeliveryLocation();
-  const { itemCount } = useCart();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -90,15 +88,11 @@ export default function TopNav() {
               <Bell className="w-5 h-5 text-white" strokeWidth={2} />
             </button>
             <Link
-              to="/cart"
+              to="/tickets"
               className="relative p-2 rounded-full hover:bg-white/15 active:scale-90 transition-transform"
+              aria-label="Customer care"
             >
-              <ShoppingBasket className="w-5 h-5 text-white" strokeWidth={2} />
-              {itemCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-[#ff4d4d] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                  {itemCount}
-                </span>
-              )}
+              <Headset className="w-5 h-5 text-white" strokeWidth={2} />
             </Link>
           </div>
         </div>
