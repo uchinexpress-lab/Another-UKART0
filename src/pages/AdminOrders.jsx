@@ -10,7 +10,10 @@ import {
   Mail,
   Phone,
   MapPin,
-  RefreshCw } from
+  RefreshCw,
+  Search,
+  Calendar,
+  X } from
 'lucide-react';
 
 const STATUSES = [
@@ -144,6 +147,9 @@ export default function AdminOrders() {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const [customerFilter, setCustomerFilter] = useState(null);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('');
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -208,6 +214,27 @@ export default function AdminOrders() {
     ? orders.filter((o) => o.customer_email === customerFilter)
     : orders;
 
+  const filteredOrders = visibleOrders.filter((o) => {
+    if (statusFilter !== 'all' && o.status !== statusFilter) return false;
+    if (dateFilter) {
+      const d = o.created_date ? new Date(o.created_date).toISOString().slice(0, 10) : '';
+      if (d !== dateFilter) return false;
+    }
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      const hay = `${o.customer_name || ''} ${o.customer_email || ''} ${o.order_number || ''}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  const hasFilters = search.trim() || statusFilter !== 'all' || dateFilter;
+  const clearFilters = () => {
+    setSearch('');
+    setStatusFilter('all');
+    setDateFilter('');
+  };
+
   return (
     <div className="p-4 pb-10">
       {customerFilter && (
@@ -248,13 +275,59 @@ export default function AdminOrders() {
         automatically when the status changes.
       </p>
 
-      {visibleOrders.length === 0 ?
+      {/* Search & filters */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-3 mb-3 space-y-3">
+        <div className="relative">
+          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by name, email or order no."
+            className="w-full pl-9 pr-3 h-10 text-sm rounded-xl border border-gray-200 outline-none focus:border-[#2E7D32]"
+          />
+        </div>
+        <div className="flex gap-2">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="flex-1 h-10 text-sm rounded-xl border border-gray-200 px-2 outline-none focus:border-[#2E7D32] bg-white"
+          >
+            <option value="all">All statuses</option>
+            {STATUSES.map((s) => (
+              <option key={s.value} value={s.value}>{s.label}</option>
+            ))}
+          </select>
+          <div className="relative flex-1">
+            <Calendar className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="date"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="w-full pl-9 pr-2 h-10 text-sm rounded-xl border border-gray-200 outline-none focus:border-[#2E7D32]"
+            />
+          </div>
+        </div>
+        {hasFilters && (
+          <button
+            onClick={clearFilters}
+            className="text-xs font-semibold text-[#2E7D32] flex items-center gap-1"
+          >
+            <X className="w-3 h-3" /> Clear filters
+          </button>
+        )}
+      </div>
+
+      <p className="text-xs text-gray-400 mb-3 px-1">
+        {filteredOrders.length} order{filteredOrders.length !== 1 ? 's' : ''}
+      </p>
+
+      {filteredOrders.length === 0 ?
       <div className="text-center py-16">
-          <p className="text-sm text-gray-400">No orders found.</p>
+          <p className="text-sm text-gray-400">No orders match your filters.</p>
         </div> :
 
       <div className="space-y-3">
-          {visibleOrders.map((order) =>
+          {filteredOrders.map((order) =>
         <OrderCard
           key={order.id}
           order={order}
