@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Phone,
   Mail,
@@ -80,18 +81,21 @@ export default function HelpSupport() {
         </a>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3">
-        <div className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center">
-          <MessageCircle className="w-5 h-5 text-gray-400" />
+      <Link
+        to="/tickets"
+        className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3 active:scale-[0.98] transition-transform"
+      >
+        <div className="w-11 h-11 rounded-full bg-[#2E7D32]/10 flex items-center justify-center">
+          <MessageCircle className="w-5 h-5 text-[#2E7D32]" />
         </div>
         <div className="flex-1">
-          <p className="text-sm font-bold text-gray-900">Live Chat</p>
-          <p className="text-xs text-gray-500">Chat with our team in real time</p>
+          <p className="text-sm font-bold text-gray-900">Live Chat / Tickets</p>
+          <p className="text-xs text-gray-500">Open a ticket and chat with our team</p>
         </div>
-        <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-          Coming Soon
+        <span className="text-[10px] font-bold text-[#2E7D32] bg-[#E8F5E9] px-2 py-1 rounded-full">
+          Open
         </span>
-      </div>
+      </Link>
 
       <div>
         <h2 className="text-xs font-bold text-gray-400 uppercase mb-2 px-1">Frequently Asked Questions</h2>

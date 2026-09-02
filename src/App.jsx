@@ -40,6 +40,8 @@ import OrderDetail from '@/pages/OrderDetail';
 import PaymentMethods from '@/pages/PaymentMethods';
 import Notifications from '@/pages/Notifications';
 import HelpSupport from '@/pages/HelpSupport';
+import SupportTickets from '@/pages/SupportTickets';
+import AdminTickets from '@/pages/AdminTickets';
 import About from '@/pages/About';
 import SettingsPage from '@/pages/Settings';
 import Account from '@/pages/Account';
@@ -91,6 +93,8 @@ const AuthenticatedApp = () => {
               <Route path="/payment-methods" element={<GuestGate><PaymentMethods /></GuestGate>} />
               <Route path="/notifications" element={<GuestGate><Notifications /></GuestGate>} />
               <Route path="/support" element={<HelpSupport />} />
+              <Route path="/tickets" element={<GuestGate><SupportTickets /></GuestGate>} />
+              <Route path="/admin/tickets" element={<GuestGate><AdminTickets /></GuestGate>} />
               <Route path="/about" element={<About />} />
               <Route path="/settings" element={<GuestGate><SettingsPage /></GuestGate>} />
               <Route path="/account" element={<GuestGate><Account /></GuestGate>} />
