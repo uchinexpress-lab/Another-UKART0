@@ -14,6 +14,7 @@ import {
   RefreshCw,
   Search,
   Calendar,
+  Star,
   X } from
 'lucide-react';
 
@@ -37,6 +38,18 @@ function StatusBadge({ status }) {
 
 function OrderCard({ order, onStatusChange, updatingId, highlighted, onViewCustomer }) {
   const [expanded, setExpanded] = useState(highlighted);
+  const [review, setReview] = useState(null);
+  const [reviewLoaded, setReviewLoaded] = useState(false);
+
+  useEffect(() => {
+    if (expanded && order.status === 'delivered' && !reviewLoaded) {
+      base44.entities.DeliveryReview
+        .filter({ order_id: order.id })
+        .then((r) => setReview(r[0] || null))
+        .catch(() => {})
+        .finally(() => setReviewLoaded(true));
+    }
+  }, [expanded, order.status, order.id, reviewLoaded]);
 
   return (
     <div
@@ -108,6 +121,35 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted, onViewCusto
               ₦{order.total.toLocaleString()}
             </span>
           </div>
+
+          {/* Delivery rating */}
+          {order.status === 'delivered' && (
+            <div className="bg-[#E8F5E9] rounded-xl p-2.5">
+              <p className="text-xs font-semibold text-gray-600 mb-1">Delivery Rating</p>
+              {!reviewLoaded ? (
+                <p className="text-xs text-gray-400">Loading…</p>
+              ) : review ? (
+                <>
+                  <div className="flex items-center gap-0.5 mb-1">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <Star
+                        key={s}
+                        className={`w-3.5 h-3.5 ${
+                          s <= review.rating ? 'fill-[#FFB300] text-[#FFB300]' : 'text-gray-300'
+                        }`}
+                      />
+                    ))}
+                    <span className="text-xs text-gray-600 ml-1">{review.rating}/5</span>
+                  </div>
+                  {review.comment && (
+                    <p className="text-xs text-gray-700 italic">"{review.comment}"</p>
+                  )}
+                </>
+              ) : (
+                <p className="text-xs text-gray-400">No rating submitted yet</p>
+              )}
+            </div>
+          )}
 
           {/* Status selector */}
           <div>

@@ -15,6 +15,7 @@ import {
   Package,
   PackageCheck,
 } from 'lucide-react';
+import RateDeliveryCard from '@/components/notifications/RateDeliveryCard';
 
 const STEPS = [
   { key: 'new', title: 'Order Placed', icon: ShoppingBag, desc: 'We received your order.' },
@@ -189,6 +190,14 @@ export default function OrderDetail() {
           <XCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
           <p className="text-sm font-bold text-red-700">This order was cancelled</p>
           <p className="text-xs text-red-500 mt-1">Contact support if this is a mistake.</p>
+        </div>
+      )}
+
+      {order.status === 'delivered' && (
+        <div className="bg-white rounded-2xl border border-gray-100 p-4">
+          <h3 className="text-sm font-bold text-gray-900 mb-1">Rate your delivery</h3>
+          <p className="text-xs text-gray-500 mb-3">Tell us about your experience</p>
+          <RateDeliveryCard order={order} />
         </div>
       )}
 

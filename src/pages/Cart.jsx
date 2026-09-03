@@ -43,16 +43,16 @@ export default function Cart() {
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center"
+                className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center active:scale-90 transition-transform"
               >
-                <Minus className="w-3 h-3" />
+                <Minus className="w-4 h-4" />
               </button>
-              <span className="text-sm font-bold w-4 text-center">{item.quantity}</span>
+              <span className="text-sm font-bold w-5 text-center">{item.quantity}</span>
               <button
                 onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                className="w-7 h-7 rounded-full bg-[#2E7D32] flex items-center justify-center"
+                className="w-11 h-11 rounded-full bg-[#2E7D32] flex items-center justify-center active:scale-90 transition-transform"
               >
-                <Plus className="w-3 h-3 text-white" />
+                <Plus className="w-4 h-4 text-white" />
               </button>
             </div>
             <button onClick={() => removeItem(item.id)} className="p-1">

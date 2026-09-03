@@ -180,22 +180,22 @@ export default function Order() {
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => updateQuantity(i.id, i.quantity - 1)}
-                    className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center active:scale-90"
+                    className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center active:scale-90 transition-transform"
                   >
-                    <Minus className="w-3.5 h-3.5 text-gray-600" />
+                    <Minus className="w-4 h-4 text-gray-600" />
                   </button>
-                  <span className="text-sm font-bold w-5 text-center">{i.quantity}</span>
+                  <span className="text-sm font-bold w-6 text-center">{i.quantity}</span>
                   <button
                     onClick={() => updateQuantity(i.id, i.quantity + 1)}
-                    className="w-7 h-7 rounded-full bg-[#2E7D32] flex items-center justify-center active:scale-90"
+                    className="w-11 h-11 rounded-full bg-[#2E7D32] flex items-center justify-center active:scale-90 transition-transform"
                   >
-                    <Plus className="w-3.5 h-3.5 text-white" />
+                    <Plus className="w-4 h-4 text-white" />
                   </button>
                   <button
                     onClick={() => removeItem(i.id)}
-                    className="w-7 h-7 rounded-full bg-red-50 flex items-center justify-center active:scale-90 ml-1"
+                    className="w-11 h-11 rounded-full bg-red-50 flex items-center justify-center active:scale-90 transition-transform ml-1"
                   >
-                    <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                    <Trash2 className="w-4 h-4 text-red-500" />
                   </button>
                 </div>
               </div>

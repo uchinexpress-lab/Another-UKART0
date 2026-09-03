@@ -14,6 +14,7 @@ import Splash from '@/components/Splash';
 import BrowseGuard from '@/components/BrowseGuard';
 import GuestGate from '@/components/GuestGate';
 import { AnimatePresence } from 'framer-motion';
+import { ThemeProvider } from 'next-themes';
 import Home from '@/pages/Home';
 import PackageDetail from '@/pages/PackageDetail';
 import Packages from '@/pages/Packages';
@@ -131,13 +132,15 @@ function AppShell() {
 function App() {
   return (
     <AuthProvider>
-      <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <ScrollToTop />
-          <AppShell />
-        </Router>
-        <Toaster />
-      </QueryClientProvider>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <QueryClientProvider client={queryClientInstance}>
+          <Router>
+            <ScrollToTop />
+            <AppShell />
+          </Router>
+          <Toaster />
+        </QueryClientProvider>
+      </ThemeProvider>
     </AuthProvider>
   )
 }

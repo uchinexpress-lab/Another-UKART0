@@ -120,7 +120,7 @@ export default function MealKitCustomizer({ pkg }) {
                 <button
                   key={q}
                   onClick={() => setProteinQty(q)}
-                  className={`flex-1 py-2 rounded-xl text-sm font-semibold border transition-colors ${
+                  className={`flex-1 py-3 rounded-xl text-sm font-semibold border transition-colors ${
                     proteinQty === q
                       ? 'border-[#2E7D32] bg-[#2E7D32] text-white'
                       : 'border-gray-200 bg-white text-gray-700'

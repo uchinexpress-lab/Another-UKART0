@@ -112,4 +112,8 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+  .overflow-x-auto,
+  .overflow-x-scroll {
+    overscroll-behavior-x: contain;
+  }
 }

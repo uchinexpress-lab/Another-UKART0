@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Package, ClipboardList, Heart, User } from 'lucide-react';
 
 const navItems = [
@@ -12,6 +12,18 @@ const navItems = [
 
 export default function BottomNav() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const pathname = location.pathname;
+
+  const handleTap = (e, to) => {
+    e.preventDefault();
+    if (pathname === to) {
+      // Already on the tab root — reset nested view state (scroll to top)
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      navigate(to);
+    }
+  };
 
   return (
     <nav
@@ -20,11 +32,12 @@ export default function BottomNav() {
     >
       <div className="mx-4 w-full max-w-md flex items-center justify-around h-14 bg-white rounded-2xl shadow-lg shadow-black/5 border border-gray-100 px-1">
         {navItems.map(({ to, icon: Icon, label }) => {
-          const active = to === '/' ? location.pathname === '/' : location.pathname.startsWith(to);
+          const active = pathname === to;
           return (
             <Link
               key={to}
               to={to}
+              onClick={(e) => handleTap(e, to)}
               className="flex flex-col items-center gap-0.5 px-2 py-1 no-tap-highlight active:scale-90 transition-transform"
             >
               <Icon

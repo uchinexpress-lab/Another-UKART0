@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { useTheme } from 'next-themes';
 import { Moon, Sun, Globe, LogOut, Trash2, Loader2, ChevronDown } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -33,20 +34,11 @@ const LANGUAGES = [
 
 export default function Settings() {
   const navigate = useNavigate();
-  const [dark, setDark] = useState(() => {
-    const stored = localStorage.getItem('ukart_theme');
-    if (stored === 'dark') return true;
-    if (stored === 'light') return false;
-    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
-  });
+  const { setTheme, resolvedTheme } = useTheme();
+  const dark = resolvedTheme === 'dark';
   const [lang, setLang] = useState(() => localStorage.getItem('ukart_lang') || 'en');
   const [busy, setBusy] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', dark);
-    localStorage.setItem('ukart_theme', dark ? 'dark' : 'light');
-  }, [dark]);
 
   const changeLang = async (value) => {
     setLang(value);
@@ -88,7 +80,7 @@ export default function Settings() {
             <p className="text-sm font-semibold text-gray-900">Dark Mode</p>
             <p className="text-xs text-gray-500">Switch between light and dark themes</p>
           </div>
-          <Switch checked={dark} onCheckedChange={setDark} />
+          <Switch checked={dark} onCheckedChange={() => setTheme(dark ? 'light' : 'dark')} />
         </div>
 
         <div className="flex items-center gap-3 p-4">
