@@ -83,7 +83,7 @@ export default function InfiniteProductGrid({ products }) {
                 {p.name}
               </p>
               {p.unit && (
-                <p className="text-[10px] text-gray-400 mb-1">{p.unit}</p>
+                <p className="text-[11px] text-gray-400 mb-1">{p.unit}</p>
               )}
               <div className="flex items-center justify-between mt-auto">
                 <span className="text-sm font-bold text-[#2E7D32]">
@@ -91,7 +91,7 @@ export default function InfiniteProductGrid({ products }) {
                 </span>
                 <button
                   onClick={() => addItem(p)}
-                  className="w-10 h-10 rounded-full bg-[#2E7D32] text-white flex items-center justify-center active:scale-90 transition-transform"
+                  className="w-11 h-11 rounded-full bg-[#2E7D32] text-white flex items-center justify-center active:scale-90 transition-transform"
                 >
                   <Plus className="w-4 h-4" />
                 </button>

@@ -335,7 +335,7 @@ export default function SupportTickets() {
                     {m.body}
                   </p>
                   <p
-                    className={`text-[10px] mt-1 ${
+                    className={`text-[11px] mt-1 ${
                       mine ? 'text-white/70' : 'text-gray-400'
                     }`}
                   >
@@ -378,7 +378,7 @@ export default function SupportTickets() {
             <button
               onClick={sendMessage}
               disabled={!draft.trim() || sending}
-              className="w-10 h-10 rounded-full bg-[#2E7D32] text-white flex items-center justify-center disabled:opacity-50 flex-shrink-0"
+              className="w-11 h-11 rounded-full bg-[#2E7D32] text-white flex items-center justify-center disabled:opacity-50 flex-shrink-0"
             >
               {sending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -470,11 +470,11 @@ export default function SupportTickets() {
                   </p>
                 </div>
                 {t.status === 'open' ? (
-                  <span className="text-[10px] font-bold text-[#2E7D32] bg-[#E8F5E9] px-2 py-0.5 rounded-full">
+                  <span className="text-[11px] font-bold text-[#2E7D32] bg-[#E8F5E9] px-2 py-0.5 rounded-full">
                     Open
                   </span>
                 ) : (
-                  <span className="text-[10px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                  <span className="text-[11px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
                     Closed
                   </span>
                 )}

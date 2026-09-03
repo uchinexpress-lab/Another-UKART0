@@ -128,7 +128,7 @@ export default function TopNav() {
               <span className="flex flex-col items-start leading-tight">
                 <span className="truncate max-w-[180px]">{areaDisplay}, Lagos</span>
                 {location?.line2 && (
-                  <span className="text-[10px] text-white/80 font-normal">{location.line2}</span>
+                  <span className="text-[11px] text-white/80 font-normal">{location.line2}</span>
                 )}
               </span>
               <ChevronDown className="w-4 h-4 text-white/80 shrink-0" />

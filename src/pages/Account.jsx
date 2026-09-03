@@ -30,6 +30,9 @@ export default function Account() {
   const onPickPhoto = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const prevAvatar = user.avatar_url;
+    const preview = URL.createObjectURL(file);
+    setUser((u) => ({ ...u, avatar_url: preview }));
     setUploading(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
@@ -37,6 +40,7 @@ export default function Account() {
       setUser(u);
       toast({ title: 'Profile photo updated' });
     } catch {
+      setUser((u) => ({ ...u, avatar_url: prevAvatar }));
       toast({ title: 'Could not upload photo', variant: 'destructive' });
     }
     setUploading(false);
@@ -101,7 +105,7 @@ export default function Account() {
               <User className="w-12 h-12" />
             </div>
           )}
-          <label className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#2E7D32] flex items-center justify-center shadow-lg cursor-pointer active:scale-90 transition-transform">
+          <label className="absolute bottom-0 right-0 w-11 h-11 rounded-full bg-[#2E7D32] flex items-center justify-center shadow-lg cursor-pointer active:scale-90 transition-transform">
             {uploading ? (
               <Loader2 className="w-4 h-4 text-white animate-spin" />
             ) : (

@@ -144,7 +144,7 @@ export default function Notifications() {
                           ) : null}
                         </p>
                       </div>
-                      <span className="text-[10px] text-gray-400 shrink-0">{timeAgo(item.date)}</span>
+                      <span className="text-[11px] text-gray-400 shrink-0">{timeAgo(item.date)}</span>
                     </div>
                   </Link>
                 );
@@ -162,7 +162,7 @@ export default function Notifications() {
                         <p className="text-sm font-semibold text-gray-900">Order placed</p>
                         <p className="text-xs text-gray-500">#{o.order_number} · {naira(o.total)}</p>
                       </div>
-                      <span className="text-[10px] text-gray-400 shrink-0">{timeAgo(item.date)}</span>
+                      <span className="text-[11px] text-gray-400 shrink-0">{timeAgo(item.date)}</span>
                     </div>
                     {showTrack && (
                       <Link
@@ -186,7 +186,7 @@ export default function Notifications() {
                       <p className="text-sm font-semibold text-gray-900">Order delivered</p>
                       <p className="text-xs text-gray-500">#{o.order_number} · {naira(o.total)}</p>
                     </div>
-                    <span className="text-[10px] text-gray-400 shrink-0">{timeAgo(item.date)}</span>
+                    <span className="text-[11px] text-gray-400 shrink-0">{timeAgo(item.date)}</span>
                   </div>
                   <RateDeliveryCard order={o} />
                 </div>

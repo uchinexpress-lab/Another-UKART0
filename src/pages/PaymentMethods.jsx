@@ -69,7 +69,7 @@ export default function PaymentMethods() {
     setSaving(false);
   };
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     const brand = detectBrand(form.number);
     const digits = form.number.replace(/\s/g, '');
     if (digits.length < 16 || !form.holder.trim() || form.expiry.length < 5) {
@@ -84,7 +84,21 @@ export default function PaymentMethods() {
       expiry: form.expiry,
       is_default: cards.length === 0,
     };
-    persist([...cards, card]);
+    const prevCards = cards;
+    const nextCards = [...cards, card];
+    setCards(nextCards);
+    setSheetOpen(false);
+    setForm({ number: '', holder: '', expiry: '' });
+    setSaving(true);
+    try {
+      const u = await base44.auth.updateMe({ saved_cards: nextCards });
+      setCards(u?.saved_cards || nextCards);
+      toast({ title: 'Card saved' });
+    } catch {
+      setCards(prevCards);
+      toast({ title: 'Could not save card', variant: 'destructive' });
+    }
+    setSaving(false);
   };
 
   const handleDelete = (id) => persist(cards.filter((c) => c.id !== id));
@@ -127,7 +141,7 @@ export default function PaymentMethods() {
                 </p>
               </div>
               {c.is_default && (
-                <span className="text-[10px] font-bold text-amber-600 flex items-center gap-0.5">
+                <span className="text-[11px] font-bold text-amber-600 flex items-center gap-0.5">
                   <Star className="w-3 h-3 fill-amber-500 text-amber-500" /> Default
                 </span>
               )}

@@ -30,7 +30,7 @@ const STATUSES = [
 function StatusBadge({ status }) {
   const s = STATUSES.find((x) => x.value === status) || STATUSES[0];
   return (
-    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${s.color}`}>
+    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${s.color}`}>
       {s.label}
     </span>);
 
@@ -171,7 +171,7 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted, onViewCusto
             )}
             </div>
             {updatingId === order.id &&
-          <p className="text-[10px] text-gray-400 mt-1.5 flex items-center gap-1">
+          <p className="text-[11px] text-gray-400 mt-1.5 flex items-center gap-1">
                 <Loader2 className="w-3 h-3 animate-spin" /> Updating & sending email...
               </p>
           }
@@ -308,7 +308,7 @@ export default function AdminOrders() {
         </div>
         <button
           onClick={loadOrders}
-          className="p-2 rounded-full hover:bg-gray-100"
+          className="w-11 h-11 rounded-full hover:bg-gray-100 flex items-center justify-center"
           title="Refresh">
           
           <RefreshCw className="w-4 h-4 text-gray-500" />

@@ -1,16 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
+import { useOutlet, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import TopNav from './TopNav';
 import BrandedHeader from './BrandedHeader';
 import FloatingCart from './FloatingCart';
 import BottomNav from './BottomNav';
-import GuestGate from '@/components/GuestGate';
-import Home from '@/pages/Home';
-import Packages from '@/pages/Packages';
-import Order from '@/pages/Order';
-import Wishlist from '@/pages/Wishlist';
-import Profile from '@/pages/Profile';
 
 const TAB_ROUTES = ['/', '/packages', '/order', '/wishlist', '/profile'];
 
@@ -42,65 +36,69 @@ function getPageTitle(pathname) {
   return 'Ukart';
 }
 
+const Fallback = (
+  <div className="flex justify-center py-16">
+    <div className="w-8 h-8 border-4 border-gray-200 border-t-[#2E7D32] rounded-full animate-spin" />
+  </div>
+);
+
 export default function Layout() {
   const location = useLocation();
   const pathname = location.pathname;
   const isHome = pathname === '/';
   const isTab = TAB_ROUTES.includes(pathname);
+  const outlet = useOutlet();
 
-  // Lazy-mount each tab panel on first visit, then keep it alive so its state,
+  // Keep-alive: cache each visited tab's outlet element so its state,
   // scroll height, and inputs persist across tab switches.
-  const [mounted, setMounted] = useState(() =>
-    isTab ? { [pathname]: true } : {}
-  );
+  const cached = useRef({});
+  const [cachedTabs, setCachedTabs] = useState(() => (isTab ? [pathname] : []));
+
+  if (isTab) {
+    cached.current[pathname] = outlet;
+  }
 
   useEffect(() => {
-    if (TAB_ROUTES.includes(pathname)) {
-      setMounted((prev) => (prev[pathname] ? prev : { ...prev, [pathname]: true }));
+    if (isTab && !cachedTabs.includes(pathname)) {
+      setCachedTabs((prev) => [...prev, pathname]);
     }
-  }, [pathname]);
+  }, [pathname, isTab, cachedTabs]);
+
+  const tabsToRender =
+    isTab && !cachedTabs.includes(pathname) ? [...cachedTabs, pathname] : cachedTabs;
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col relative">
       {isHome ? <TopNav /> : <BrandedHeader title={getPageTitle(pathname)} />}
       <main className="flex-1 pb-20 max-w-md mx-auto w-full">
-        {mounted['/'] && (
-          <div className={pathname === '/' ? 'block' : 'hidden'}>
-            <Home />
-          </div>
-        )}
-        {mounted['/packages'] && (
-          <div className={pathname === '/packages' ? 'block' : 'hidden'}>
-            <Packages />
-          </div>
-        )}
-        {mounted['/order'] && (
-          <div className={pathname === '/order' ? 'block' : 'hidden'}>
-            <Order />
-          </div>
-        )}
-        {mounted['/wishlist'] && (
-          <div className={pathname === '/wishlist' ? 'block' : 'hidden'}>
-            <Wishlist />
-          </div>
-        )}
-        {mounted['/profile'] && (
-          <div className={pathname === '/profile' ? 'block' : 'hidden'}>
-            <GuestGate>
-              <Profile />
-            </GuestGate>
-          </div>
-        )}
-        {!isTab && (
-          <motion.div
-            key={pathname}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, ease: 'easeOut' }}
-          >
-            <Outlet />
-          </motion.div>
-        )}
+        <Suspense fallback={Fallback}>
+          {/* Tab panels — cached outlets, kept alive, fade on switch */}
+          {tabsToRender.map((p) => (
+            <motion.div
+              key={p}
+              className={p === pathname ? 'block' : 'hidden'}
+              initial={false}
+              animate={{ opacity: p === pathname ? 1 : 0 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+            >
+              {cached.current[p]}
+            </motion.div>
+          ))}
+          {/* Non-tab child screens — push navigation with slide-in-from-right */}
+          <AnimatePresence mode="wait">
+            {!isTab && (
+              <motion.div
+                key={pathname}
+                initial={{ opacity: 0, x: 24 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -24 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+              >
+                {outlet}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Suspense>
       </main>
       <FloatingCart />
       <BottomNav />

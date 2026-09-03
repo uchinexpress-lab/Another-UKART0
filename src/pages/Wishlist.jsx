@@ -33,7 +33,7 @@ export default function Wishlist() {
               <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
               <button
                 onClick={() => removeItem(item.id)}
-                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center shadow-sm"
+                className="absolute top-2 right-2 w-11 h-11 rounded-full bg-white/90 flex items-center justify-center shadow-sm active:scale-90 transition-transform"
               >
                 <Heart className="w-4 h-4 fill-[#2E7D32] text-[#2E7D32]" />
               </button>
@@ -46,7 +46,7 @@ export default function Wishlist() {
                 </span>
                 <button
                   onClick={() => addItem(item)}
-                  className="w-8 h-8 rounded-full bg-[#2E7D32] flex items-center justify-center"
+                  className="w-11 h-11 rounded-full bg-[#2E7D32] flex items-center justify-center active:scale-90 transition-transform"
                 >
                   <Plus className="w-4 h-4 text-white" strokeWidth={2.5} />
                 </button>

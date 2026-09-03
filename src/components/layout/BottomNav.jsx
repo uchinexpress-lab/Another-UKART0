@@ -44,7 +44,7 @@ export default function BottomNav() {
                 className={`w-[18px] h-[18px] ${active ? 'text-[#2E7D32]' : 'text-gray-400'}`}
                 strokeWidth={active ? 2.5 : 2}
               />
-              <span className={`text-[9px] font-medium ${active ? 'text-[#2E7D32]' : 'text-gray-400'}`}>
+              <span className={`text-[11px] font-medium ${active ? 'text-[#2E7D32]' : 'text-gray-400'}`}>
                 {label}
               </span>
             </Link>

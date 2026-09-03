@@ -30,19 +30,19 @@ export default function ProductCard({ product }) {
           </div>
         )}
         {comingSoon ? (
-          <span className="absolute top-2 left-2 bg-gray-700/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+          <span className="absolute top-2 left-2 bg-gray-700/90 text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
             Coming Soon
           </span>
         ) : (
           discount > 0 && (
-            <span className="absolute top-2 left-2 bg-[#2E7D32] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+            <span className="absolute top-2 left-2 bg-[#2E7D32] text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
               -{discount}%
             </span>
           )
         )}
         <button
           onClick={() => toggleItem(product)}
-          className="absolute top-2 right-2 w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-sm active:scale-90 transition-transform"
+          className="absolute top-2 right-2 w-11 h-11 rounded-full bg-white/90 flex items-center justify-center shadow-sm active:scale-90 transition-transform"
         >
           <Heart
             className={`w-4 h-4 ${wished ? 'fill-[#2E7D32] text-[#2E7D32]' : 'text-gray-400'}`}
@@ -52,12 +52,12 @@ export default function ProductCard({ product }) {
       <div className="p-2.5 flex flex-col flex-1">
         <div className="flex items-center gap-1 mb-0.5">
           <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-          <span className="text-[10px] text-gray-500 font-medium">{product.rating || 4.5}</span>
+          <span className="text-[11px] text-gray-500 font-medium">{product.rating || 4.5}</span>
         </div>
         <h3 className="text-xs font-semibold text-gray-900 leading-tight mb-0.5 line-clamp-2">
           {product.name}
         </h3>
-        <span className="text-[10px] text-gray-400 mb-2">{product.unit || '1 pack'}</span>
+        <span className="text-[11px] text-gray-400 mb-2">{product.unit || '1 pack'}</span>
         <div className="flex items-center justify-between mt-auto">
           {comingSoon ? (
             <span className="text-xs font-bold text-gray-500">Coming Soon</span>
@@ -67,7 +67,7 @@ export default function ProductCard({ product }) {
                 ₦{product.price.toLocaleString()}
               </span>
               {product.original_price && (
-                <span className="text-[10px] text-gray-400 line-through block">
+                <span className="text-[11px] text-gray-400 line-through block">
                   ₦{product.original_price.toLocaleString()}
                 </span>
               )}
@@ -76,7 +76,7 @@ export default function ProductCard({ product }) {
           <button
             onClick={() => !comingSoon && addItem(product)}
             disabled={comingSoon}
-            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90 flex-shrink-0 ${
+            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all active:scale-90 flex-shrink-0 ${
               comingSoon ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#2E7D32] hover:bg-[#1B5E20]'
             }`}
           >
