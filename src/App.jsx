@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
@@ -15,37 +15,37 @@ import BrowseGuard from '@/components/BrowseGuard';
 import GuestGate from '@/components/GuestGate';
 import { AnimatePresence } from 'framer-motion';
 import { ThemeProvider } from 'next-themes';
-import Home from '@/pages/Home';
-import PackageDetail from '@/pages/PackageDetail';
-import Packages from '@/pages/Packages';
-import Categories from '@/pages/Categories';
-import CategoryProducts from '@/pages/CategoryProducts';
-import SearchResults from '@/pages/SearchResults';
-import Offers from '@/pages/Offers';
-import Cart from '@/pages/Cart';
-import Checkout from '@/pages/Checkout';
-import Shop from '@/pages/Shop';
-import Wishlist from '@/pages/Wishlist';
-import Profile from '@/pages/Profile';
-import BudgetShop from '@/pages/BudgetShop';
-import OrderTracking from '@/pages/OrderTracking';
-import AdminSettings from '@/pages/AdminSettings';
-import AdminOrders from '@/pages/AdminOrders';
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
-import ForgotPassword from '@/pages/ForgotPassword';
-import ResetPassword from '@/pages/ResetPassword';
-import Orders from '@/pages/Orders';
-import Order from '@/pages/Order';
-import OrderDetail from '@/pages/OrderDetail';
-import PaymentMethods from '@/pages/PaymentMethods';
-import Notifications from '@/pages/Notifications';
-import HelpSupport from '@/pages/HelpSupport';
-import SupportTickets from '@/pages/SupportTickets';
-import AdminTickets from '@/pages/AdminTickets';
-import About from '@/pages/About';
-import SettingsPage from '@/pages/Settings';
-import Account from '@/pages/Account';
+const Home = lazy(() => import('@/pages/Home'));
+const PackageDetail = lazy(() => import('@/pages/PackageDetail'));
+const Packages = lazy(() => import('@/pages/Packages'));
+const Categories = lazy(() => import('@/pages/Categories'));
+const CategoryProducts = lazy(() => import('@/pages/CategoryProducts'));
+const SearchResults = lazy(() => import('@/pages/SearchResults'));
+const Offers = lazy(() => import('@/pages/Offers'));
+const Cart = lazy(() => import('@/pages/Cart'));
+const Checkout = lazy(() => import('@/pages/Checkout'));
+const Shop = lazy(() => import('@/pages/Shop'));
+const Wishlist = lazy(() => import('@/pages/Wishlist'));
+const Profile = lazy(() => import('@/pages/Profile'));
+const BudgetShop = lazy(() => import('@/pages/BudgetShop'));
+const OrderTracking = lazy(() => import('@/pages/OrderTracking'));
+const AdminSettings = lazy(() => import('@/pages/AdminSettings'));
+const AdminOrders = lazy(() => import('@/pages/AdminOrders'));
+const Login = lazy(() => import('@/pages/Login'));
+const Register = lazy(() => import('@/pages/Register'));
+const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
+const Orders = lazy(() => import('@/pages/Orders'));
+const Order = lazy(() => import('@/pages/Order'));
+const OrderDetail = lazy(() => import('@/pages/OrderDetail'));
+const PaymentMethods = lazy(() => import('@/pages/PaymentMethods'));
+const Notifications = lazy(() => import('@/pages/Notifications'));
+const HelpSupport = lazy(() => import('@/pages/HelpSupport'));
+const SupportTickets = lazy(() => import('@/pages/SupportTickets'));
+const AdminTickets = lazy(() => import('@/pages/AdminTickets'));
+const About = lazy(() => import('@/pages/About'));
+const SettingsPage = lazy(() => import('@/pages/Settings'));
+const Account = lazy(() => import('@/pages/Account'));
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
@@ -64,8 +64,9 @@ const AuthenticatedApp = () => {
 
   return (
     <CartProvider>
-      <WishlistProvider>
-        <Routes>
+    <WishlistProvider>
+      <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-[#2E7D32] rounded-full animate-spin" /></div>}>
+      <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -103,6 +104,7 @@ const AuthenticatedApp = () => {
           </Route>
           <Route path="*" element={<PageNotFound />} />
         </Routes>
+        </Suspense>
       </WishlistProvider>
     </CartProvider>
   );

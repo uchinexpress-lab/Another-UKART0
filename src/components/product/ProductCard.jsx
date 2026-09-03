@@ -42,7 +42,7 @@ export default function ProductCard({ product }) {
         )}
         <button
           onClick={() => toggleItem(product)}
-          className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center shadow-sm"
+          className="absolute top-2 right-2 w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-sm active:scale-90 transition-transform"
         >
           <Heart
             className={`w-4 h-4 ${wished ? 'fill-[#2E7D32] text-[#2E7D32]' : 'text-gray-400'}`}
@@ -76,7 +76,7 @@ export default function ProductCard({ product }) {
           <button
             onClick={() => !comingSoon && addItem(product)}
             disabled={comingSoon}
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-90 flex-shrink-0 ${
+            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-90 flex-shrink-0 ${
               comingSoon ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#2E7D32] hover:bg-[#1B5E20]'
             }`}
           >

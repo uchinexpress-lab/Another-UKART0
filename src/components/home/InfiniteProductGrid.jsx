@@ -91,7 +91,7 @@ export default function InfiniteProductGrid({ products }) {
                 </span>
                 <button
                   onClick={() => addItem(p)}
-                  className="w-7 h-7 rounded-full bg-[#2E7D32] text-white flex items-center justify-center active:scale-90 transition-transform"
+                  className="w-10 h-10 rounded-full bg-[#2E7D32] text-white flex items-center justify-center active:scale-90 transition-transform"
                 >
                   <Plus className="w-4 h-4" />
                 </button>

@@ -22,15 +22,15 @@ export default function DealCard({ product }) {
         )}
         <button
           onClick={() => toggleItem(product)}
-          className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-white/90 flex items-center justify-center shadow-sm"
+          className="absolute top-1.5 right-1.5 w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-sm active:scale-90 transition-transform"
         >
           <Heart
-            className={`w-3.5 h-3.5 ${wished ? 'fill-[#2E7D32] text-[#2E7D32]' : 'text-gray-400'}`}
+            className={`w-4 h-4 ${wished ? 'fill-[#2E7D32] text-[#2E7D32]' : 'text-gray-400'}`}
           />
         </button>
       </div>
       <div className="p-2 flex flex-col flex-1">
-        <h3 className="text-[11px] font-semibold text-gray-900 leading-tight line-clamp-1 mb-1.5">
+        <h3 className="text-xs font-semibold text-gray-900 leading-tight line-clamp-1 mb-1.5">
           {product.name}
         </h3>
         <div className="flex items-center justify-between mt-auto">
@@ -46,9 +46,9 @@ export default function DealCard({ product }) {
           </div>
           <button
             onClick={() => addItem(product)}
-            className="w-7 h-7 rounded-full bg-[#2E7D32] flex items-center justify-center hover:bg-[#1B5E20] transition-colors flex-shrink-0"
+            className="w-10 h-10 rounded-full bg-[#2E7D32] flex items-center justify-center hover:bg-[#1B5E20] transition-colors flex-shrink-0 active:scale-90"
           >
-            <Plus className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
+            <Plus className="w-4 h-4 text-white" strokeWidth={2.5} />
           </button>
         </div>
       </div>

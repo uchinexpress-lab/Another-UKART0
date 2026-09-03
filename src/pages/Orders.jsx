@@ -10,6 +10,7 @@ import {
   ChevronRight,
   ShoppingBag,
 } from 'lucide-react';
+import PullToRefresh from '@/components/home/PullToRefresh';
 
 const ACTIVE = ['new', 'processing', 'ready', 'on_the_way'];
 
@@ -57,19 +58,21 @@ export default function Orders() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('active');
 
+  const loadOrders = async () => {
+    try {
+      const me = await base44.auth.me();
+      const list = await base44.entities.Order.filter(
+        { customer_email: me?.email || '' },
+        '-created_date',
+        100
+      );
+      setOrders(list);
+    } catch {}
+    setLoading(false);
+  };
+
   useEffect(() => {
-    (async () => {
-      try {
-        const me = await base44.auth.me();
-        const list = await base44.entities.Order.filter(
-          { customer_email: me?.email || '' },
-          '-created_date',
-          100
-        );
-        setOrders(list);
-      } catch {}
-      setLoading(false);
-    })();
+    loadOrders();
   }, []);
 
   const filtered = orders.filter((o) => {
@@ -79,6 +82,7 @@ export default function Orders() {
   });
 
   return (
+    <PullToRefresh onRefresh={loadOrders}>
     <div className="p-4">
       <div className="flex bg-gray-100 rounded-2xl p-1 mb-4">
         {TABS.map((t) => (
@@ -136,5 +140,6 @@ export default function Orders() {
         </div>
       )}
     </div>
+    </PullToRefresh>
   );
 }

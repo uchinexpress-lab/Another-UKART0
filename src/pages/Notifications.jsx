@@ -13,6 +13,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/components/ui/use-toast';
 import RateDeliveryCard from '@/components/notifications/RateDeliveryCard';
+import PullToRefresh from '@/components/home/PullToRefresh';
 
 const DEFAULTS = {
   order_updates: true,
@@ -51,23 +52,25 @@ export default function Notifications() {
   const [weeklyDeals, setWeeklyDeals] = useState([]);
   const [feed, setFeed] = useState([]);
 
+  const loadData = async () => {
+    let u = null;
+    try {
+      u = await base44.auth.me();
+      setPrefs({ ...DEFAULTS, ...(u?.notification_preferences || {}) });
+    } catch {}
+    try {
+      const [prods, ords] = await Promise.all([
+        base44.entities.Product.list(),
+        base44.entities.Order.list('-created_date', 50),
+      ]);
+      setWeeklyDeals(prods.filter((p) => p.is_weekly_deal));
+      setOrders(u?.id ? ords.filter((o) => o.created_by_id === u.id) : ords);
+    } catch {}
+    setLoading(false);
+  };
+
   useEffect(() => {
-    (async () => {
-      let u = null;
-      try {
-        u = await base44.auth.me();
-        setPrefs({ ...DEFAULTS, ...(u?.notification_preferences || {}) });
-      } catch {}
-      try {
-        const [prods, ords] = await Promise.all([
-          base44.entities.Product.list(),
-          base44.entities.Order.list('-created_date', 50),
-        ]);
-        setWeeklyDeals(prods.filter((p) => p.is_weekly_deal));
-        setOrders(u?.id ? ords.filter((o) => o.created_by_id === u.id) : ords);
-      } catch {}
-      setLoading(false);
-    })();
+    loadData();
   }, []);
 
   useEffect(() => {
@@ -103,6 +106,7 @@ export default function Notifications() {
     );
 
   return (
+    <PullToRefresh onRefresh={loadData}>
     <div className="p-4 space-y-6">
       {/* Feed */}
       <div>
@@ -227,5 +231,6 @@ export default function Notifications() {
         </p>
       </div>
     </div>
+    </PullToRefresh>
   );
 }

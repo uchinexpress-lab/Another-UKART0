@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
-import { useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft,
   Send,
@@ -31,11 +31,12 @@ const timeFmt = (d) =>
     : '';
 
 export default function AdminTickets() {
-  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [tickets, setTickets] = useState([]);
   const [tab, setTab] = useState('open');
-  const [view, setView] = useState('list');
-  const [activeTicket, setActiveTicket] = useState(null);
+  const view = searchParams.get('view') || 'list';
+  const activeTicketId = searchParams.get('ticket');
+  const activeTicket = tickets.find((t) => t.id === activeTicketId) || null;
   const [messages, setMessages] = useState([]);
   const [draft, setDraft] = useState('');
   const [loading, setLoading] = useState(true);
@@ -56,10 +57,29 @@ export default function AdminTickets() {
     loadTickets();
   }, []);
 
+  // Load messages when entering a chat
   useEffect(() => {
-    if (!activeTicket) return;
+    if (view === 'chat' && activeTicketId) {
+      base44.entities.TicketMessage
+        .filter({ ticket_id: activeTicketId })
+        .then((msgs) =>
+          setMessages(
+            msgs.sort(
+              (a, b) => new Date(a.created_date) - new Date(b.created_date)
+            )
+          )
+        )
+        .catch(() => setMessages([]));
+    } else {
+      setMessages([]);
+    }
+  }, [view, activeTicketId]);
+
+  // Realtime subscription
+  useEffect(() => {
+    if (!activeTicketId) return;
     const unsub = base44.entities.TicketMessage.subscribe((event) => {
-      if (event.data?.ticket_id !== activeTicket.id) return;
+      if (event.data?.ticket_id !== activeTicketId) return;
       if (event.type === 'create') {
         setMessages((prev) =>
           prev.some((m) => m.id === event.data.id) ? prev : [...prev, event.data]
@@ -71,28 +91,11 @@ export default function AdminTickets() {
       }
     });
     return unsub;
-  }, [activeTicket]);
+  }, [activeTicketId]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
-  const openTicket = async (t) => {
-    setActiveTicket(t);
-    setView('chat');
-    try {
-      const msgs = await base44.entities.TicketMessage.filter({
-        ticket_id: t.id,
-      });
-      setMessages(
-        msgs.sort(
-          (a, b) => new Date(a.created_date) - new Date(b.created_date)
-        )
-      );
-    } catch {
-      setMessages([]);
-    }
-  };
 
   const sendMessage = async () => {
     if (!draft.trim() || !activeTicket) return;
@@ -129,7 +132,13 @@ export default function AdminTickets() {
         status: 'open',
         closed_reason: 'manual',
       });
-      setActiveTicket({ ...activeTicket, last_message_at: now, status: 'open' });
+      setTickets((prev) =>
+        prev.map((t) =>
+          t.id === activeTicket.id
+            ? { ...t, last_message_at: now, status: 'open', closed_reason: 'manual' }
+            : t
+        )
+      );
       try {
         await base44.functions.invoke('notifyTicketReply', {
           ticket_id: activeTicket.id,
@@ -156,7 +165,13 @@ export default function AdminTickets() {
         status: 'closed',
         closed_reason: 'manual',
       });
-      setActiveTicket({ ...activeTicket, status: 'closed', closed_reason: 'manual' });
+      setTickets((prev) =>
+        prev.map((t) =>
+          t.id === activeTicket.id
+            ? { ...t, status: 'closed', closed_reason: 'manual' }
+            : t
+        )
+      );
       loadTickets();
     } catch {
       alert('Could not close ticket.');
@@ -175,10 +190,7 @@ export default function AdminTickets() {
       <div className="flex flex-col" style={{ minHeight: 'calc(100vh - 64px)' }}>
         <div className="flex items-center gap-2 p-4 border-b border-gray-100 bg-white sticky top-0 z-10">
           <button
-            onClick={() => {
-              setView('list');
-              setActiveTicket(null);
-            }}
+            onClick={() => setSearchParams({})}
             className="p-1.5 -ml-1.5 rounded-full hover:bg-black/5"
           >
             <ArrowLeft className="w-5 h-5 text-gray-700" />
@@ -308,7 +320,7 @@ export default function AdminTickets() {
           {visibleTickets.map((t) => (
             <button
               key={t.id}
-              onClick={() => openTicket(t)}
+              onClick={() => setSearchParams({ view: 'chat', ticket: t.id })}
               className="w-full text-left bg-white rounded-2xl border border-gray-100 p-4 active:scale-[0.98] transition-transform"
             >
               <div className="flex items-start gap-3">

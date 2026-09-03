@@ -2,16 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Tag } from 'lucide-react';
 import ProductCard from '@/components/product/ProductCard';
+import PullToRefresh from '@/components/home/PullToRefresh';
 
 export default function Offers() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    base44.entities.Product.list().then((prods) => {
+  const loadOffers = async () => {
+    try {
+      const prods = await base44.entities.Product.list();
       setProducts(prods.filter((p) => p.is_weekly_deal));
-      setLoading(false);
-    });
+    } catch {}
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadOffers();
   }, []);
 
   if (loading) {
@@ -23,6 +29,7 @@ export default function Offers() {
   }
 
   return (
+    <PullToRefresh onRefresh={loadOffers}>
     <div className="p-4">
       <div className="flex items-center gap-2 mb-1">
         <Tag className="w-5 h-5 text-[#2E7D32]" />
@@ -39,5 +46,6 @@ export default function Offers() {
         </div>
       )}
     </div>
+    </PullToRefresh>
   );
 }

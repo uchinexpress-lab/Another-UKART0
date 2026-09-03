@@ -216,14 +216,16 @@ export default function AdminOrders() {
   }, [user]);
 
   const handleStatusChange = async (orderId, newStatus) => {
+    const snapshot = orders;
+    setOrders((prev) =>
+      prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
+    );
     setUpdatingId(orderId);
     try {
       await base44.entities.Order.update(orderId, { status: newStatus });
-      setOrders((prev) =>
-      prev.map((o) => o.id === orderId ? { ...o, status: newStatus } : o)
-      );
       await notifyOrderStatusChanged(orderId, newStatus);
     } catch (e) {
+      setOrders(snapshot);
       alert('Failed to update order status.');
     } finally {
       setUpdatingId(null);

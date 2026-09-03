@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import PackageCard from '@/components/package/PackageCard';
 import MealKitCard from '@/components/package/MealKitCard';
+import PullToRefresh from '@/components/home/PullToRefresh';
 
 export default function Packages() {
   const location = useLocation();
@@ -10,11 +11,16 @@ export default function Packages() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('essentials');
 
-  useEffect(() => {
-    base44.entities.Package.list().then((pkgs) => {
+  const loadPackages = async () => {
+    try {
+      const pkgs = await base44.entities.Package.list();
       setPackages(pkgs);
-      setLoading(false);
-    });
+    } catch {}
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadPackages();
   }, []);
 
   useEffect(() => {
@@ -33,6 +39,7 @@ export default function Packages() {
   const mealKits = packages.filter((p) => p.group === 'meal_kits');
 
   return (
+    <PullToRefresh onRefresh={loadPackages}>
     <div className="p-4">
       <h1 className="text-2xl font-bold text-gray-900 mb-1">Grocery Packages</h1>
       <p className="text-sm text-gray-500 mb-4">Curated bundles for every lifestyle</p>
@@ -70,5 +77,6 @@ export default function Packages() {
         </div>
       )}
     </div>
+    </PullToRefresh>
   );
 }

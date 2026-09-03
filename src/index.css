@@ -117,3 +117,21 @@
     overscroll-behavior-x: contain;
   }
 }
+
+/* Dark mode adaptation for legacy gray/white utility classes */
+.dark .bg-white { background-color: hsl(var(--card)); }
+.dark .bg-gray-50,
+.dark .bg-gray-100,
+.dark .bg-gray-200 { background-color: hsl(var(--muted)); }
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-gray-700 { color: hsl(var(--foreground)); }
+.dark .text-gray-600,
+.dark .text-gray-500,
+.dark .text-gray-400,
+.dark .text-gray-300 { color: hsl(var(--muted-foreground)); }
+.dark .border-gray-50,
+.dark .border-gray-100,
+.dark .border-gray-200 { border-color: hsl(var(--border)); }
+.dark .divide-gray-50 > :not([hidden]) ~ :not([hidden]) { border-color: hsl(var(--border)); }
+.dark .ring-gray-200 { --tw-ring-color: hsl(var(--border)); }
