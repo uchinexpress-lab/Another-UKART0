@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Package } from 'lucide-react';
+import { Image } from '@/components/ui/image';
 
 const badgeColors = {
   'Budget Friendly': 'bg-blue-100 text-blue-700',
@@ -18,15 +19,29 @@ export default function PackageCard({ pkg, className }) {
       whileTap={{ scale: 0.97 }}
       transition={{ type: 'spring', stiffness: 400, damping: 20 }}
       className={`${widthClass} bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm`}>
-      
-      <div className="relative h-40 bg-gray-50">
-        <img src={pkg.image} alt={pkg.name} className="w-full h-full object-cover opacity-100" />
+
+      <div className="relative h-40 bg-gradient-to-br from-[#E8F5E9] to-[#F1F8F1]">
+        {pkg.image ? (
+          <Image
+            src={pkg.image}
+            alt={pkg.name}
+            fittingType="fill"
+            className="w-full h-full"
+          />
+        ) : (
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-[#2E9E44]">
+            <Package className="w-10 h-10 opacity-40" />
+            <span className="text-2xl font-bold opacity-20 mt-1">
+              {(pkg.name || '?').charAt(0)}
+            </span>
+          </div>
+        )}
         {pkg.badge &&
         <span
-          className={`absolute top-3 left-3 text-[10px] font-bold px-2.5 py-1 rounded-full ${
+          className={`absolute top-3 left-3 text-[11px] font-bold px-2.5 py-1 rounded-full ${
           badgeColors[pkg.badge] || 'bg-gray-100 text-gray-700'}`
           }>
-          
+
             {pkg.badge}
           </span>
         }
@@ -40,7 +55,7 @@ export default function PackageCard({ pkg, className }) {
         </div>
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-[10px] text-gray-400 block">Starting from</span>
+            <span className="text-[11px] text-gray-400 block">Starting from</span>
             <div className="text-lg font-bold text-[#2E7D32]">
               ₦{pkg.starting_price.toLocaleString()}
             </div>
@@ -48,7 +63,7 @@ export default function PackageCard({ pkg, className }) {
           <button
             onClick={() => navigate(`/package/${pkg.id}`)}
             className="flex items-center gap-1 bg-[#2E7D32] text-white text-xs font-semibold px-3 py-2 rounded-full hover:bg-[#1B5E20] transition-all active:scale-95">
-            
+
             View Package <ArrowRight className="w-3 h-3" />
           </button>
         </div>

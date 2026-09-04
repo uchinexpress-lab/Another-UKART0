@@ -42,9 +42,9 @@ export default function Packages() {
     <PullToRefresh onRefresh={loadPackages}>
     <div className="p-4">
       <h1 className="text-2xl font-bold text-gray-900 mb-1">Grocery Packages</h1>
-      <p className="text-sm text-gray-500 mb-4">Curated bundles for every lifestyle</p>
+      <p className="text-sm text-gray-500 mb-3">Curated bundles for every lifestyle</p>
 
-      <div className="flex gap-2 p-1 bg-gray-100 rounded-full mb-4 sticky top-16 z-30">
+      <div className="flex gap-2 p-1 bg-gray-100 rounded-full mb-3 sticky top-16 z-30">
         <button
           onClick={() => setTab('essentials')}
           className={`flex-1 py-2 rounded-full text-sm font-semibold transition-colors ${

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import {
@@ -30,6 +30,12 @@ const ITEMS = [
   { key: 'new_products', label: 'New Products', desc: 'Fresh arrivals and restocks', icon: Star },
 ];
 
+const STATUS_LABELS = {
+  processing: 'Being Prepared',
+  ready: 'Ready for Delivery',
+  on_the_way: 'Out for Delivery',
+};
+
 const timeAgo = (d) => {
   if (!d) return '';
   const diff = Date.now() - new Date(d).getTime();
@@ -45,6 +51,14 @@ const timeAgo = (d) => {
 
 const naira = (n) => '\u20A6' + (n || 0).toLocaleString();
 
+const itemKey = (it) => {
+  if (it.kind === 'deal') return `deal-${it.product.id}`;
+  if (it.kind === 'placed') return `placed-${it.order.id}`;
+  if (it.kind === 'status') return `status-${it.order.id}-${it.order.status}`;
+  if (it.kind === 'delivered') return `delivered-${it.order.id}`;
+  return '';
+};
+
 export default function Notifications() {
   const [prefs, setPrefs] = useState(DEFAULTS);
   const [loading, setLoading] = useState(true);
@@ -52,11 +66,16 @@ export default function Notifications() {
   const [weeklyDeals, setWeeklyDeals] = useState([]);
   const [feed, setFeed] = useState([]);
 
+  const seenRef = useRef(new Set());
+  const firstLoadRef = useRef(true);
+  const pushEnabledRef = useRef(true);
+
   const loadData = async () => {
     let u = null;
     try {
       u = await base44.auth.me();
       setPrefs({ ...DEFAULTS, ...(u?.notification_preferences || {}) });
+      pushEnabledRef.current = !!(u?.notification_preferences?.push_enabled ?? true);
     } catch {}
     try {
       const [prods, ords] = await Promise.all([
@@ -73,6 +92,16 @@ export default function Notifications() {
     loadData();
   }, []);
 
+  // Realtime: refresh the feed whenever an order or product changes
+  useEffect(() => {
+    const unsubO = base44.entities.Order.subscribe(() => loadData());
+    const unsubP = base44.entities.Product.subscribe(() => loadData());
+    return () => {
+      unsubO();
+      unsubP();
+    };
+  }, []);
+
   useEffect(() => {
     const items = [];
     weeklyDeals.forEach((p) =>
@@ -80,6 +109,9 @@ export default function Notifications() {
     );
     orders.forEach((o) => {
       items.push({ kind: 'placed', date: o.created_date, order: o });
+      if (STATUS_LABELS[o.status]) {
+        items.push({ kind: 'status', date: o.updated_date || o.created_date, order: o });
+      }
       if (o.status === 'delivered')
         items.push({ kind: 'delivered', date: o.updated_date || o.created_date, order: o });
     });
@@ -87,13 +119,69 @@ export default function Notifications() {
     setFeed(items);
   }, [orders, weeklyDeals]);
 
+  const fireNotification = (title, body) => {
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+    if (!pushEnabledRef.current) return;
+    try {
+      const n = new Notification(title, { body, tag: title + body });
+      setTimeout(() => n.close(), 6000);
+    } catch {}
+  };
+
+  // Fire a browser push notification for newly-seen feed items
+  useEffect(() => {
+    if (loading) return;
+    if (firstLoadRef.current) {
+      feed.forEach((it) => seenRef.current.add(itemKey(it)));
+      firstLoadRef.current = false;
+      return;
+    }
+    feed.forEach((it) => {
+      const k = itemKey(it);
+      if (!seenRef.current.has(k)) {
+        seenRef.current.add(k);
+        if (it.kind === 'deal') fireNotification('\uD83D\uDED2 New weekly deal', it.product.name);
+        else if (it.kind === 'placed')
+          fireNotification('\uD83D\uDED2 Order placed', `#${it.order.order_number} confirmed`);
+        else if (it.kind === 'status')
+          fireNotification('\uD83D\uDEF5 Order update', `#${it.order.order_number}: ${STATUS_LABELS[it.order.status]}`);
+        else if (it.kind === 'delivered')
+          fireNotification('\u2705 Delivered', `#${it.order.order_number} has been delivered`);
+      }
+    });
+  }, [feed, loading]);
+
   const toggle = async (key) => {
+    // Enabling push -> request browser notification permission first
+    if (key === 'push_enabled' && !prefs.push_enabled) {
+      if (typeof Notification !== 'undefined' && Notification.permission !== 'granted') {
+        try {
+          const perm = await Notification.requestPermission();
+          if (perm !== 'granted') {
+            toast({
+              title: 'Push blocked',
+              description: 'Enable notifications in your browser settings to get alerts.',
+              variant: 'destructive',
+            });
+            return;
+          }
+        } catch {
+          toast({ title: 'Could not enable push', variant: 'destructive' });
+          return;
+        }
+      }
+    }
     const next = { ...prefs, [key]: !prefs[key] };
     setPrefs(next);
+    pushEnabledRef.current = next.push_enabled;
     try {
       await base44.auth.updateMe({ notification_preferences: next });
+      if (key === 'push_enabled') {
+        toast({ title: next.push_enabled ? 'Push notifications on' : 'Push notifications off' });
+      }
     } catch {
       setPrefs(prefs);
+      pushEnabledRef.current = prefs.push_enabled;
       toast({ title: 'Could not update preference', variant: 'destructive' });
     }
   };
@@ -172,6 +260,29 @@ export default function Notifications() {
                         Track order
                       </Link>
                     )}
+                  </div>
+                );
+              }
+              if (item.kind === 'status') {
+                const o = item.order;
+                return (
+                  <div key={`status-${o.id}-${o.status}`} className="bg-white rounded-2xl border border-gray-100 p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-[#2E7D32]/10 flex items-center justify-center shrink-0">
+                        <Truck className="w-5 h-5 text-[#2E7D32]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-gray-900">{STATUS_LABELS[o.status]}</p>
+                        <p className="text-xs text-gray-500">#{o.order_number} · {naira(o.total)}</p>
+                      </div>
+                      <span className="text-[11px] text-gray-400 shrink-0">{timeAgo(item.date)}</span>
+                    </div>
+                    <Link
+                      to={`/track?order=${o.order_number}`}
+                      className="mt-3 inline-flex text-xs font-semibold text-[#2E7D32] bg-[#E8F5E9] px-3 py-1.5 rounded-full"
+                    >
+                      Track order
+                    </Link>
                   </div>
                 );
               }

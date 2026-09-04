@@ -5,7 +5,7 @@ import { Home, Package, ClipboardList, Heart, User } from 'lucide-react';
 const navItems = [
   { to: '/', icon: Home, label: 'Home' },
   { to: '/packages', icon: Package, label: 'Packages' },
-  { to: '/order', icon: ClipboardList, label: 'Order' },
+  { to: '/order', icon: ClipboardList, label: 'Orders' },
   { to: '/wishlist', icon: Heart, label: 'Wishlist' },
   { to: '/profile', icon: User, label: 'Profile' },
 ];

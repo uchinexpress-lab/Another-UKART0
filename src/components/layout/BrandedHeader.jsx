@@ -48,8 +48,8 @@ export default function BrandedHeader({ title }) {
 
       {/* Controls */}
       <div
-        className={`relative flex items-center gap-3 px-4 pb-6 max-w-md mx-auto w-full ${isTabRoot ? 'justify-center' : ''}`}
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 44px)' }}
+        className={`relative flex items-center gap-3 px-4 pb-4 max-w-md mx-auto w-full ${isTabRoot ? 'justify-center' : ''}`}
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 36px)' }}
       >
         {!isTabRoot && (
           <button
