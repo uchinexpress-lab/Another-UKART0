@@ -65,9 +65,9 @@ export default function TopNav() {
 
   return (
     <div className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm shadow-[0_1px_8px_rgba(0,0,0,0.05)] overflow-hidden">
-      {/* subtle pale-green decoration */}
-      <div className="absolute -top-10 -right-12 w-40 h-40 rounded-full bg-[#E8F5E9] opacity-60 blur-2xl pointer-events-none" />
-      <div className="absolute top-1 right-14 w-20 h-20 rounded-full bg-[#D6F0DD] opacity-40 blur-xl pointer-events-none" />
+      {/* subtle brand-green decoration */}
+      <div className="absolute -top-10 -right-12 w-40 h-40 rounded-full bg-primary/10 opacity-60 blur-2xl pointer-events-none" />
+      <div className="absolute top-1 right-14 w-20 h-20 rounded-full bg-primary/5 opacity-40 blur-xl pointer-events-none" />
       <div
         className="relative max-w-md mx-auto w-full px-4 pb-3"
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 10px)' }}
@@ -76,18 +76,18 @@ export default function TopNav() {
         <div className="flex items-center gap-2 mt-2">
           <Drawer open={areaOpen} onOpenChange={setAreaOpen}>
             <DrawerTrigger asChild>
-              <button className="flex-1 min-w-0 flex items-center justify-between bg-[#EEF8EE] rounded-full pl-3.5 pr-4 py-2.5 active:scale-[0.98] transition-transform">
+              <button className="flex-1 min-w-0 flex items-center justify-between bg-primary rounded-full pl-3.5 pr-4 py-2.5 active:scale-[0.98] transition-transform">
                 <span className="flex items-center gap-1.5 min-w-0">
-                  <MapPin className="w-4 h-4 text-[#2E7D32] shrink-0" />
-                  <span className="text-xs font-semibold text-foreground truncate flex items-center gap-0.5">
+                  <MapPin className="w-4 h-4 text-primary-foreground shrink-0" />
+                  <span className="text-xs font-semibold text-primary-foreground truncate flex items-center gap-0.5">
                     {areaDisplay}, Lagos
-                    <ChevronDown className="w-3.5 h-3.5 text-[#2E7D32] shrink-0" />
+                    <ChevronDown className="w-3.5 h-3.5 text-primary-foreground shrink-0" />
                   </span>
                 </span>
-                <span className="w-px h-4 bg-gray-200 mx-1 shrink-0" />
+                <span className="w-px h-4 bg-primary-foreground/30 mx-1 shrink-0" />
                 <span className="flex items-center gap-1.5 shrink-0">
-                  <Bike className="w-4 h-4 text-[#2E7D32]" />
-                  <span className="text-xs font-semibold text-foreground">
+                  <Bike className="w-4 h-4 text-primary-foreground" />
+                  <span className="text-xs font-semibold text-primary-foreground">
                     {deliveryShort}
                   </span>
                 </span>
@@ -151,38 +151,38 @@ export default function TopNav() {
           <div className="flex items-center gap-2 shrink-0">
             <Link
               to="/notifications"
-              className="relative w-10 h-10 rounded-full bg-[#EEF8EE] flex items-center justify-center active:scale-90 transition-transform"
+              className="relative w-10 h-10 rounded-full bg-primary flex items-center justify-center active:scale-90 transition-transform"
               aria-label="Notifications"
             >
-              <Bell className="w-5 h-5 text-[#2E7D32]" strokeWidth={2} />
-              <span className="absolute top-2 right-2.5 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white" />
+              <Bell className="w-5 h-5 text-primary-foreground" strokeWidth={2} />
+              <span className="absolute top-2 right-2.5 w-2 h-2 rounded-full bg-red-500 ring-2 ring-primary" />
             </Link>
             <Link
               to="/tickets"
-              className="w-10 h-10 rounded-full bg-[#EEF8EE] flex items-center justify-center active:scale-90 transition-transform"
+              className="w-10 h-10 rounded-full bg-primary flex items-center justify-center active:scale-90 transition-transform"
               aria-label="Customer care"
             >
-              <Headset className="w-5 h-5 text-[#2E7D32]" strokeWidth={2} />
+              <Headset className="w-5 h-5 text-primary-foreground" strokeWidth={2} />
             </Link>
           </div>
         </div>
 
         {/* Search bar */}
         <form onSubmit={handleSearch} className="relative mt-3">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search for groceries, packages, meal kits…"
-            className="w-full pl-11 pr-14 h-12 rounded-full bg-white border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 shadow-sm focus:ring-2 focus:ring-[#2E7D32]/30 focus:border-[#2E7D32] outline-none transition-all"
+            className="w-full pl-11 pr-14 h-12 rounded-full bg-card border border-border text-sm font-medium text-foreground placeholder:text-muted-foreground shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
           />
           <button
             type="submit"
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#2E7D32] flex items-center justify-center active:scale-90 transition-transform"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-primary flex items-center justify-center active:scale-90 transition-transform"
             aria-label="Search"
           >
-            <Search className="w-4 h-4 text-white" strokeWidth={2.5} />
+            <Search className="w-4 h-4 text-primary-foreground" strokeWidth={2.5} />
           </button>
         </form>
       </div>

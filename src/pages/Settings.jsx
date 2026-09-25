@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useTheme } from 'next-themes';
-import { Moon, Sun, Globe, LogOut, Trash2, Loader2, ChevronDown } from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
+import { Moon, Sun, Monitor, Globe, LogOut, Trash2, Loader2, ChevronDown } from 'lucide-react';
 import {
   Drawer,
   DrawerContent,
@@ -34,8 +33,7 @@ const LANGUAGES = [
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { setTheme, resolvedTheme } = useTheme();
-  const dark = resolvedTheme === 'dark';
+  const { theme, setTheme } = useTheme();
   const [lang, setLang] = useState(() => localStorage.getItem('ukart_lang') || 'en');
   const [busy, setBusy] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
@@ -72,15 +70,40 @@ export default function Settings() {
   return (
     <div className="p-4 space-y-4">
       <div className="bg-card rounded-2xl border border-border divide-y divide-gray-50">
-        <div className="flex items-center gap-3 p-4">
-          <div className="w-10 h-10 rounded-xl bg-[#2E7D32]/10 flex items-center justify-center">
-            {dark ? <Moon className="w-5 h-5 text-[#2E7D32]" /> : <Sun className="w-5 h-5 text-[#2E7D32]" />}
+        <div className="p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Sun className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-foreground">Appearance</p>
+              <p className="text-xs text-muted-foreground">Choose light, dark, or system theme</p>
+            </div>
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-foreground">Dark Mode</p>
-            <p className="text-xs text-muted-foreground">Switch between light and dark themes</p>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { key: 'light', label: 'Light', icon: Sun },
+              { key: 'dark', label: 'Dark', icon: Moon },
+              { key: 'system', label: 'System', icon: Monitor },
+            ].map((opt) => {
+              const Icon = opt.icon;
+              const active = (theme || 'system') === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  onClick={() => setTheme(opt.key)}
+                  className={`flex flex-col items-center gap-1.5 py-3 rounded-xl border text-xs font-semibold transition-colors ${
+                    active
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-card text-muted-foreground border-border active:bg-muted/50'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {opt.label}
+                </button>
+              );
+            })}
           </div>
-          <Switch checked={dark} onCheckedChange={() => setTheme(dark ? 'light' : 'dark')} />
         </div>
 
         <div className="flex items-center gap-3 p-4">
