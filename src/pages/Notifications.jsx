@@ -9,6 +9,8 @@ import {
   Truck,
   Star,
   Bell,
+  Megaphone,
+  Percent,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/components/ui/use-toast';
@@ -52,6 +54,7 @@ const timeAgo = (d) => {
 const naira = (n) => '\u20A6' + (n || 0).toLocaleString();
 
 const itemKey = (it) => {
+  if (it.kind === 'alert') return `alert-${it.alert.id}`;
   if (it.kind === 'deal') return `deal-${it.product.id}`;
   if (it.kind === 'placed') return `placed-${it.order.id}`;
   if (it.kind === 'status') return `status-${it.order.id}-${it.order.status}`;
@@ -65,6 +68,7 @@ export default function Notifications() {
   const [orders, setOrders] = useState([]);
   const [weeklyDeals, setWeeklyDeals] = useState([]);
   const [feed, setFeed] = useState([]);
+  const [dealAlerts, setDealAlerts] = useState([]);
 
   const seenRef = useRef(new Set());
   const firstLoadRef = useRef(true);
@@ -78,11 +82,13 @@ export default function Notifications() {
       pushEnabledRef.current = !!(u?.notification_preferences?.push_enabled ?? true);
     } catch {}
     try {
-      const [prods, ords] = await Promise.all([
+      const [prods, ords, alerts] = await Promise.all([
         base44.entities.Product.list(),
         base44.entities.Order.list('-created_date', 50),
+        base44.entities.DealAlert.list('-created_date', 20),
       ]);
       setWeeklyDeals(prods.filter((p) => p.is_weekly_deal));
+      setDealAlerts(alerts.filter((a) => a.active));
       setOrders(u?.id ? ords.filter((o) => o.created_by_id === u.id) : ords);
     } catch {}
     setLoading(false);
@@ -96,14 +102,19 @@ export default function Notifications() {
   useEffect(() => {
     const unsubO = base44.entities.Order.subscribe(() => loadData());
     const unsubP = base44.entities.Product.subscribe(() => loadData());
+    const unsubA = base44.entities.DealAlert.subscribe(() => loadData());
     return () => {
       unsubO();
       unsubP();
+      unsubA();
     };
   }, []);
 
   useEffect(() => {
     const items = [];
+    dealAlerts.forEach((a) =>
+      items.push({ kind: 'alert', date: a.created_date, alert: a })
+    );
     weeklyDeals.forEach((p) =>
       items.push({ kind: 'deal', date: p.updated_date || p.created_date, product: p })
     );
@@ -117,7 +128,7 @@ export default function Notifications() {
     });
     items.sort((a, b) => new Date(b.date) - new Date(a.date));
     setFeed(items);
-  }, [orders, weeklyDeals]);
+  }, [orders, weeklyDeals, dealAlerts]);
 
   const fireNotification = (title, body) => {
     if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
@@ -140,7 +151,8 @@ export default function Notifications() {
       const k = itemKey(it);
       if (!seenRef.current.has(k)) {
         seenRef.current.add(k);
-        if (it.kind === 'deal') fireNotification('\uD83D\uDED2 New weekly deal', it.product.name);
+        if (it.kind === 'alert') fireNotification(it.alert.title, it.alert.body);
+        else if (it.kind === 'deal') fireNotification('\uD83D\uDED2 New weekly deal', it.product.name);
         else if (it.kind === 'placed')
           fireNotification('\uD83D\uDED2 Order placed', `#${it.order.order_number} confirmed`);
         else if (it.kind === 'status')
@@ -210,6 +222,42 @@ export default function Notifications() {
         ) : (
           <div className="space-y-3">
             {feed.map((item, i) => {
+              if (item.kind === 'alert') {
+                const a = item.alert;
+                const isDiscount = a.type === 'discount_code';
+                const isWeekly = a.type === 'weekly_deal';
+                return (
+                  <div
+                    key={`alert-${a.id}`}
+                    className="bg-card rounded-2xl border border-border p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${isDiscount ? 'bg-rose-50' : isWeekly ? 'bg-amber-100' : 'bg-[#2E7D32]/10'}`}>
+                        {isDiscount ? (
+                          <Percent className="w-5 h-5 text-rose-600" />
+                        ) : isWeekly ? (
+                          <Tag className="w-5 h-5 text-amber-600" />
+                        ) : (
+                          <Megaphone className="w-5 h-5 text-[#2E7D32]" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-xs font-semibold ${isDiscount ? 'text-rose-600' : isWeekly ? 'text-amber-600' : 'text-[#2E7D32]'}`}>
+                          {isDiscount ? 'Discount Code' : isWeekly ? 'Weekly Deal' : 'Announcement'}
+                        </p>
+                        <p className="text-sm font-semibold text-foreground line-clamp-1">{a.title}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-2">{a.body}</p>
+                        {a.voucher_code && (
+                          <p className="text-xs font-bold text-[#2E7D32] mt-1">
+                            Code: {a.voucher_code} · {a.discount_percent}% off
+                          </p>
+                        )}
+                      </div>
+                      <span className="text-[11px] text-gray-400 shrink-0">{timeAgo(item.date)}</span>
+                    </div>
+                  </div>
+                );
+              }
               if (item.kind === 'deal') {
                 const p = item.product;
                 return (

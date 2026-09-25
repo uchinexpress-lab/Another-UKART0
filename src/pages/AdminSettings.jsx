@@ -12,7 +12,13 @@ import {
   Lock,
   Save,
   CheckCircle2,
+  Megaphone,
+  Send,
+  Trash2,
+  Tag,
+  Percent,
 } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 const toggleFields = [
   {
@@ -39,10 +45,69 @@ export default function AdminSettings() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [businessEmail, setBusinessEmail] = useState('');
+  const [alerts, setAlerts] = useState([]);
+  const [alertForm, setAlertForm] = useState({
+    title: '',
+    body: '',
+    type: 'announcement',
+    voucher_code: '',
+    discount_percent: '',
+  });
+  const [sendingAlert, setSendingAlert] = useState(false);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
   }, []);
+
+  const loadAlerts = async () => {
+    try {
+      const list = await base44.entities.DealAlert.list('-created_date', 20);
+      setAlerts(list);
+    } catch (e) {
+      console.error('Failed to load alerts:', e);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.role === 'admin') loadAlerts();
+  }, [user]);
+
+  const broadcastAlert = async () => {
+    if (!alertForm.title.trim() || !alertForm.body.trim()) {
+      toast({ title: 'Title and message are required', variant: 'destructive' });
+      return;
+    }
+    setSendingAlert(true);
+    try {
+      const payload = {
+        title: alertForm.title.trim(),
+        body: alertForm.body.trim(),
+        type: alertForm.type,
+        active: true,
+      };
+      if (alertForm.type === 'discount_code') {
+        payload.voucher_code = alertForm.voucher_code.trim().toUpperCase();
+        payload.discount_percent = Number(alertForm.discount_percent) || 10;
+      }
+      await base44.entities.DealAlert.create(payload);
+      toast({ title: 'Deal alert broadcast to all users' });
+      setAlertForm({ title: '', body: '', type: 'announcement', voucher_code: '', discount_percent: '' });
+      loadAlerts();
+    } catch (e) {
+      toast({ title: 'Could not broadcast alert', variant: 'destructive' });
+    }
+    setSendingAlert(false);
+  };
+
+  const deleteAlert = async (id) => {
+    try {
+      await base44.entities.DealAlert.delete(id);
+      setAlerts((prev) => prev.filter((a) => a.id !== id));
+      toast({ title: 'Alert removed' });
+    } catch {
+      toast({ title: 'Could not remove alert', variant: 'destructive' });
+    }
+  };
 
   const loadSettings = async () => {
     setLoading(true);
@@ -188,6 +253,134 @@ export default function AdminSettings() {
           </>
         )}
       </button>
+
+      {/* Deal & Discount Broadcast */}
+      <div className="mt-8">
+        <h1 className="text-xl font-bold text-foreground mb-4">Deal & Discount Broadcasts</h1>
+
+        <div className="bg-card rounded-2xl border border-border p-4 mb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Megaphone className="w-4 h-4 text-[#2E7D32]" />
+            </div>
+            <h2 className="text-sm font-bold text-foreground">Broadcast New Alert</h2>
+          </div>
+          <p className="text-xs text-muted-foreground mb-4">
+            Publish a deal or discount code alert. All users with push notifications enabled will receive it instantly.
+          </p>
+
+          {/* Alert type selector */}
+          <div className="flex gap-2 mb-3">
+            {[
+              { key: 'weekly_deal', label: 'Weekly Deal', icon: Tag },
+              { key: 'discount_code', label: 'Discount Code', icon: Percent },
+              { key: 'announcement', label: 'Announcement', icon: Megaphone },
+            ].map((opt) => {
+              const Icon = opt.icon;
+              const active = alertForm.type === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  onClick={() => setAlertForm((f) => ({ ...f, type: opt.key }))}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold border transition-colors ${
+                    active
+                      ? 'bg-[#2E7D32] text-white border-[#2E7D32]'
+                      : 'bg-card text-muted-foreground border-gray-200'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="space-y-3">
+            <input
+              value={alertForm.title}
+              onChange={(e) => setAlertForm((f) => ({ ...f, title: e.target.value }))}
+              placeholder="Alert title (e.g. 'Fresh Tomatoes Week Deal!')"
+              className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none focus:border-[#2E7D32]"
+            />
+            <textarea
+              value={alertForm.body}
+              onChange={(e) => setAlertForm((f) => ({ ...f, body: e.target.value }))}
+              placeholder="Message (e.g. 'Get fresh tomatoes at 20% off this week only!')"
+              rows={2}
+              className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none focus:border-[#2E7D32] resize-none"
+            />
+            {alertForm.type === 'discount_code' && (
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  value={alertForm.voucher_code}
+                  onChange={(e) => setAlertForm((f) => ({ ...f, voucher_code: e.target.value }))}
+                  placeholder="Code (e.g. FRESH20)"
+                  className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none focus:border-[#2E7D32] uppercase"
+                />
+                <input
+                  value={alertForm.discount_percent}
+                  onChange={(e) => setAlertForm((f) => ({ ...f, discount_percent: e.target.value }))}
+                  type="number"
+                  placeholder="% off (e.g. 20)"
+                  className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none focus:border-[#2E7D32]"
+                />
+              </div>
+            )}
+            <button
+              onClick={broadcastAlert}
+              disabled={sendingAlert}
+              className="w-full h-11 rounded-xl bg-[#2E7D32] text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#1B5E20] disabled:opacity-50"
+            >
+              {sendingAlert ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" /> Broadcasting...
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4" /> Broadcast Alert
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Existing alerts */}
+        {alerts.length > 0 && (
+          <div className="bg-card rounded-2xl border border-border p-4">
+            <h2 className="text-sm font-bold text-foreground mb-3">Published Alerts</h2>
+            <div className="space-y-2">
+              {alerts.map((a) => (
+                <div key={a.id} className="flex items-start gap-3 p-3 rounded-xl bg-muted/50">
+                  <div className="w-8 h-8 rounded-lg bg-[#2E7D32]/10 flex items-center justify-center shrink-0">
+                    {a.type === 'discount_code' ? (
+                      <Percent className="w-4 h-4 text-[#2E7D32]" />
+                    ) : a.type === 'weekly_deal' ? (
+                      <Tag className="w-4 h-4 text-[#2E7D32]" />
+                    ) : (
+                      <Megaphone className="w-4 h-4 text-[#2E7D32]" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground line-clamp-1">{a.title}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-1">{a.body}</p>
+                    {a.voucher_code && (
+                      <p className="text-[11px] font-bold text-[#2E7D32] mt-0.5">
+                        Code: {a.voucher_code} · {a.discount_percent}% off
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => deleteAlert(a.id)}
+                    className="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center shrink-0 active:scale-90 transition-transform"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Image } from '@/components/ui/image';
 import { toast } from '@/components/ui/use-toast';
+import OrderHistory from '@/components/account/OrderHistory';
 
 export default function Account() {
   const [user, setUser] = useState(null);
@@ -177,6 +178,14 @@ export default function Account() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Order history */}
+      <div>
+        <h2 className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-2 px-1">
+          Order History
+        </h2>
+        <OrderHistory />
       </div>
 
       {/* Change password */}
