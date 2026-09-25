@@ -188,7 +188,7 @@ export default function AdminTickets() {
     const closed = activeTicket.status === 'closed';
     return (
       <div className="flex flex-col" style={{ minHeight: 'calc(100vh - 64px)' }}>
-        <div className="flex items-center gap-2 p-4 border-b border-gray-100 bg-white sticky top-0 z-10">
+        <div className="flex items-center gap-2 p-4 border-b border-border bg-card sticky top-0 z-10">
           <button
             onClick={() => setSearchParams({})}
             className="p-1.5 -ml-1.5 rounded-full hover:bg-black/5"
@@ -196,10 +196,10 @@ export default function AdminTickets() {
             <ArrowLeft className="w-5 h-5 text-gray-700" />
           </button>
           <div className="min-w-0 flex-1">
-            <h1 className="text-sm font-bold text-gray-900 line-clamp-1">
+            <h1 className="text-sm font-bold text-foreground line-clamp-1">
               {activeTicket.subject}
             </h1>
-            <p className="text-[11px] text-gray-500">
+            <p className="text-[11px] text-muted-foreground">
               {activeTicket.user_name || 'Customer'} · {activeTicket.user_email || ''}
             </p>
           </div>
@@ -207,14 +207,14 @@ export default function AdminTickets() {
             <button
               onClick={closeTicket}
               disabled={closing}
-              className="text-[11px] font-semibold text-gray-600 bg-gray-100 px-2.5 py-1.5 rounded-full flex items-center gap-1 disabled:opacity-50"
+              className="text-[11px] font-semibold text-gray-600 bg-muted px-2.5 py-1.5 rounded-full flex items-center gap-1 disabled:opacity-50"
             >
               <Lock className="w-3 h-3" /> Close
             </button>
           )}
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-muted/50">
           {messages.map((m) => {
             const mine = m.sender === 'admin';
             return (
@@ -226,7 +226,7 @@ export default function AdminTickets() {
                   className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 ${
                     mine
                       ? 'bg-[#2E7D32] text-white rounded-br-md'
-                      : 'bg-white border border-gray-100 text-gray-800 rounded-bl-md'
+                      : 'bg-card border border-border text-gray-800 rounded-bl-md'
                   } ${m._pending ? 'opacity-60' : ''}`}
                 >
                   <p className="text-sm whitespace-pre-wrap leading-relaxed">
@@ -247,11 +247,11 @@ export default function AdminTickets() {
         </div>
 
         {closed ? (
-          <div className="p-4 border-t border-gray-100 bg-white text-center">
-            <p className="text-xs text-gray-500">This ticket is closed.</p>
+          <div className="p-4 border-t border-border bg-card text-center">
+            <p className="text-xs text-muted-foreground">This ticket is closed.</p>
           </div>
         ) : (
-          <div className="p-3 border-t border-gray-100 bg-white flex items-center gap-2">
+          <div className="p-3 border-t border-border bg-card flex items-center gap-2">
             <textarea
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
@@ -285,15 +285,15 @@ export default function AdminTickets() {
   // ---- List view ----
   return (
     <div className="p-4 pb-10">
-      <h1 className="text-xl font-bold text-gray-900 mb-4">Support Tickets</h1>
+      <h1 className="text-xl font-bold text-foreground mb-4">Support Tickets</h1>
 
-      <div className="flex bg-gray-100 rounded-full p-1 mb-4">
+      <div className="flex bg-muted rounded-full p-1 mb-4">
         {['open', 'closed'].map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={`flex-1 text-xs font-semibold py-2 rounded-full transition-colors ${
-              tab === t ? 'bg-white text-[#2E7D32] shadow-sm' : 'text-gray-500'
+              tab === t ? 'bg-card text-[#2E7D32] shadow-sm' : 'text-muted-foreground'
             }`}
           >
             {t === 'open' ? 'Open' : 'Closed'}
@@ -310,10 +310,10 @@ export default function AdminTickets() {
         </div>
       ) : visibleTickets.length === 0 ? (
         <div className="flex flex-col items-center justify-center text-center py-16">
-          <div className="w-16 h-16 rounded-full bg-[#E8F5E9] flex items-center justify-center mb-3">
+          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-3">
             <Headset className="w-8 h-8 text-[#2E7D32]" />
           </div>
-          <p className="text-sm font-semibold text-gray-900">No {tab} tickets</p>
+          <p className="text-sm font-semibold text-foreground">No {tab} tickets</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -321,17 +321,17 @@ export default function AdminTickets() {
             <button
               key={t.id}
               onClick={() => setSearchParams({ view: 'chat', ticket: t.id })}
-              className="w-full text-left bg-white rounded-2xl border border-gray-100 p-4 active:scale-[0.98] transition-transform"
+              className="w-full text-left bg-card rounded-2xl border border-border p-4 active:scale-[0.98] transition-transform"
             >
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-[#E8F5E9] flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <MessageCircle className="w-5 h-5 text-[#2E7D32]" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-gray-900 line-clamp-1">
+                  <p className="text-sm font-bold text-foreground line-clamp-1">
                     {t.subject}
                   </p>
-                  <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">
+                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
                     {t.user_name || 'Customer'}
                     {t.user_email ? ` · ${t.user_email}` : ''}
                   </p>
@@ -340,11 +340,11 @@ export default function AdminTickets() {
                   </p>
                 </div>
                 {t.status === 'open' ? (
-                  <span className="text-[11px] font-bold text-[#2E7D32] bg-[#E8F5E9] px-2 py-0.5 rounded-full">
+                  <span className="text-[11px] font-bold text-[#2E7D32] bg-primary/10 px-2 py-0.5 rounded-full">
                     Open
                   </span>
                 ) : (
-                  <span className="text-[11px] font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                  <span className="text-[11px] font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                     Closed
                   </span>
                 )}

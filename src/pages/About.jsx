@@ -25,15 +25,15 @@ export default function About() {
           fittingType="fit"
           className="w-32 h-32"
         />
-        <h1 className="text-2xl font-bold text-gray-900 mt-2">UKART</h1>
-        <p className="text-sm text-gray-500">No Market Wahala</p>
-        <span className="mt-2 text-[11px] font-bold text-[#2E7D32] bg-[#E8F5E9] px-3 py-1 rounded-full">
+        <h1 className="text-2xl font-bold text-foreground mt-2">UKART</h1>
+        <p className="text-sm text-muted-foreground">No Market Wahala</p>
+        <span className="mt-2 text-[11px] font-bold text-[#2E7D32] bg-primary/10 px-3 py-1 rounded-full">
           Version {APP_VERSION}
         </span>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 p-5">
-        <h2 className="text-sm font-bold text-gray-900 mb-2">About UKART</h2>
+      <div className="bg-card rounded-2xl border border-border p-5">
+        <h2 className="text-sm font-bold text-foreground mb-2">About UKART</h2>
         <p className="text-sm text-gray-600 leading-relaxed">
           UKART is a modern online grocery platform built to make grocery shopping easier
           across Lagos. Whether customers need everyday groceries or carefully curated grocery
@@ -43,20 +43,20 @@ export default function About() {
         </p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 p-5">
-        <h2 className="text-sm font-bold text-gray-900 mb-3">Company Information</h2>
+      <div className="bg-card rounded-2xl border border-border p-5">
+        <h2 className="text-sm font-bold text-foreground mb-3">Company Information</h2>
         <div className="space-y-2.5 text-sm">
           <div className="flex justify-between">
-            <span className="text-gray-500">Company</span>
-            <span className="font-medium text-gray-900">UKART Fresh Ventures</span>
+            <span className="text-muted-foreground">Company</span>
+            <span className="font-medium text-foreground">UKART Fresh Ventures</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500">Location</span>
-            <span className="font-medium text-gray-900">Lagos, Nigeria</span>
+            <span className="text-muted-foreground">Location</span>
+            <span className="font-medium text-foreground">Lagos, Nigeria</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-500">Version</span>
-            <span className="font-medium text-gray-900">{APP_VERSION}</span>
+            <span className="text-muted-foreground">Version</span>
+            <span className="font-medium text-foreground">{APP_VERSION}</span>
           </div>
         </div>
       </div>
@@ -71,7 +71,7 @@ export default function About() {
           return (
             <div
               key={i}
-              className="bg-white rounded-2xl border border-gray-100 p-3 flex flex-col items-center text-center"
+              className="bg-card rounded-2xl border border-border p-3 flex flex-col items-center text-center"
             >
               <Icon className="w-5 h-5 text-[#2E7D32] mb-1" />
               <span className="text-[11px] font-medium text-gray-600">{f.label}</span>
@@ -82,20 +82,20 @@ export default function About() {
 
       <div>
         <h2 className="text-xs font-bold text-gray-400 uppercase mb-2 px-1">Legal</h2>
-        <Accordion type="single" collapsible className="bg-white rounded-2xl border border-gray-100 px-4">
+        <Accordion type="single" collapsible className="bg-card rounded-2xl border border-border px-4">
           <AccordionItem value="terms" className="border-b border-gray-50 last:border-0">
-            <AccordionTrigger className="text-sm font-semibold text-gray-900 text-left py-4">
+            <AccordionTrigger className="text-sm font-semibold text-foreground text-left py-4">
               Terms & Conditions
             </AccordionTrigger>
-            <AccordionContent className="text-sm text-gray-500 pb-4 leading-relaxed">
+            <AccordionContent className="text-sm text-muted-foreground pb-4 leading-relaxed">
               {TERMS}
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="privacy" className="border-b border-gray-50 last:border-0">
-            <AccordionTrigger className="text-sm font-semibold text-gray-900 text-left py-4">
+            <AccordionTrigger className="text-sm font-semibold text-foreground text-left py-4">
               Privacy Policy
             </AccordionTrigger>
-            <AccordionContent className="text-sm text-gray-500 pb-4 leading-relaxed">
+            <AccordionContent className="text-sm text-muted-foreground pb-4 leading-relaxed">
               {PRIVACY}
             </AccordionContent>
           </AccordionItem>

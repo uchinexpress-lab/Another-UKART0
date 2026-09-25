@@ -88,7 +88,7 @@ export default function HelpSupport() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search help topics..."
-          className="w-full pl-10 pr-4 h-12 rounded-full bg-white border border-gray-200 text-sm outline-none focus:border-[#2E7D32] focus:ring-2 focus:ring-[#2E7D32]/20 transition-all"
+          className="w-full pl-10 pr-4 h-12 rounded-full bg-card border border-gray-200 text-sm outline-none focus:border-[#2E7D32] focus:ring-2 focus:ring-[#2E7D32]/20 transition-all"
         />
       </div>
 
@@ -107,7 +107,7 @@ export default function HelpSupport() {
                 className={`rounded-2xl border p-3 flex flex-col items-center gap-1.5 active:scale-95 transition-transform ${
                   active
                     ? 'border-[#2E7D32] bg-[#EEF8EE]'
-                    : 'border-gray-100 bg-white'
+                    : 'border-border bg-card'
                 }`}
               >
                 <div
@@ -134,8 +134,8 @@ export default function HelpSupport() {
           Frequently Asked Questions
         </h2>
         {filtered.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 p-6 text-center">
-            <p className="text-sm text-gray-500">
+          <div className="bg-card rounded-2xl border border-border p-6 text-center">
+            <p className="text-sm text-muted-foreground">
               No articles match your search.
             </p>
           </div>
@@ -143,7 +143,7 @@ export default function HelpSupport() {
           <Accordion
             type="single"
             collapsible
-            className="bg-white rounded-2xl border border-gray-100 px-4"
+            className="bg-card rounded-2xl border border-border px-4"
           >
             {filtered.map((f, i) => (
               <AccordionItem
@@ -151,10 +151,10 @@ export default function HelpSupport() {
                 value={`item-${i}`}
                 className="border-b border-gray-50 last:border-0"
               >
-                <AccordionTrigger className="text-sm font-semibold text-gray-900 text-left py-4">
+                <AccordionTrigger className="text-sm font-semibold text-foreground text-left py-4">
                   {f.q}
                 </AccordionTrigger>
-                <AccordionContent className="text-sm text-gray-500 pb-4">
+                <AccordionContent className="text-sm text-muted-foreground pb-4">
                   {f.a}
                 </AccordionContent>
               </AccordionItem>
@@ -168,19 +168,19 @@ export default function HelpSupport() {
         <h2 className="text-sm font-bold text-[#1a2238] mb-2 px-1">
           Still need help?
         </h2>
-        <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50">
+        <div className="bg-card rounded-2xl border border-border divide-y divide-gray-50">
           <Link
             to="/tickets"
-            className="flex items-center gap-3 p-4 active:bg-gray-50"
+            className="flex items-center gap-3 p-4 active:bg-muted/50"
           >
             <div className="w-10 h-10 rounded-xl bg-[#EEF8EE] flex items-center justify-center">
               <MessageCircle className="w-5 h-5 text-[#2E7D32]" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-gray-900">
+              <p className="text-sm font-semibold text-foreground">
                 Chat with our support team
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Open a ticket, we reply fast
               </p>
             </div>
@@ -188,27 +188,27 @@ export default function HelpSupport() {
           </Link>
           <a
             href={`tel:${SUPPORT_PHONE}`}
-            className="flex items-center gap-3 p-4 active:bg-gray-50"
+            className="flex items-center gap-3 p-4 active:bg-muted/50"
           >
             <div className="w-10 h-10 rounded-xl bg-[#EEF8EE] flex items-center justify-center">
               <Phone className="w-5 h-5 text-[#2E7D32]" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-gray-900">Call Support</p>
-              <p className="text-xs text-gray-500">Mon–Sat, 8am–8pm</p>
+              <p className="text-sm font-semibold text-foreground">Call Support</p>
+              <p className="text-xs text-muted-foreground">Mon–Sat, 8am–8pm</p>
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </a>
           <a
             href={`mailto:${SUPPORT_EMAIL}`}
-            className="flex items-center gap-3 p-4 active:bg-gray-50"
+            className="flex items-center gap-3 p-4 active:bg-muted/50"
           >
             <div className="w-10 h-10 rounded-xl bg-[#EEF8EE] flex items-center justify-center">
               <Mail className="w-5 h-5 text-[#2E7D32]" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-gray-900">Email Support</p>
-              <p className="text-xs text-gray-500">Reply within 24h</p>
+              <p className="text-sm font-semibold text-foreground">Email Support</p>
+              <p className="text-xs text-muted-foreground">Reply within 24h</p>
             </div>
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </a>
@@ -216,8 +216,8 @@ export default function HelpSupport() {
       </div>
 
       {/* Report a problem */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-4">
-        <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2 mb-2">
+      <div className="bg-card rounded-2xl border border-border p-4">
+        <h2 className="text-sm font-bold text-foreground flex items-center gap-2 mb-2">
           <AlertTriangle className="w-4 h-4 text-amber-500" /> Report a Problem
         </h2>
         <Textarea

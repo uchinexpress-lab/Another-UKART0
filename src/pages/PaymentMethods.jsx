@@ -120,23 +120,23 @@ export default function PaymentMethods() {
       {cards.length === 0 ? (
         <div className="text-center py-10">
           <CreditCard className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-sm text-gray-500">No saved cards yet.</p>
+          <p className="text-sm text-muted-foreground">No saved cards yet.</p>
         </div>
       ) : (
         <div className="space-y-3">
           {cards.map((c) => (
             <div
               key={c.id}
-              className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3"
+              className="bg-card rounded-2xl border border-border p-4 flex items-center gap-3"
             >
               <div className="w-11 h-11 rounded-xl bg-[#2E7D32]/10 flex items-center justify-center">
                 <CreditCard className="w-5 h-5 text-[#2E7D32]" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-gray-900">
+                <p className="text-sm font-bold text-foreground">
                   {brandLabel(c.brand)} •••• {c.last4}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-muted-foreground">
                   {c.holder} · Exp {c.expiry}
                 </p>
               </div>
@@ -149,7 +149,7 @@ export default function PaymentMethods() {
                 {!c.is_default && (
                   <button
                     onClick={() => handleDefault(c.id)}
-                    className="p-1.5 rounded-lg hover:bg-gray-50 text-gray-400 hover:text-amber-500"
+                    className="p-1.5 rounded-lg hover:bg-muted/50 text-gray-400 hover:text-amber-500"
                     title="Set as default"
                   >
                     <Star className="w-4 h-4" />
@@ -157,7 +157,7 @@ export default function PaymentMethods() {
                 )}
                 <button
                   onClick={() => handleDelete(c.id)}
-                  className="p-1.5 rounded-lg hover:bg-gray-50 text-gray-400 hover:text-red-500"
+                  className="p-1.5 rounded-lg hover:bg-muted/50 text-gray-400 hover:text-red-500"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -175,7 +175,7 @@ export default function PaymentMethods() {
         <Plus className="w-4 h-4 mr-1" /> Add New Card
       </Button>
 
-      <div className="bg-[#E8F5E9] rounded-2xl p-4 flex items-start gap-3">
+      <div className="bg-primary/10 rounded-2xl p-4 flex items-start gap-3">
         <ShieldCheck className="w-5 h-5 text-[#2E7D32] flex-shrink-0 mt-0.5" />
         <div>
           <p className="text-sm font-bold text-[#2E7D32]">Paystack Secure Payments</p>

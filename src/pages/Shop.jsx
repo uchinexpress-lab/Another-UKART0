@@ -44,19 +44,19 @@ export default function Shop() {
   }
 
   if (!broad) {
-    return <div className="p-8 text-center text-gray-500">Category not found</div>;
+    return <div className="p-8 text-center text-muted-foreground">Category not found</div>;
   }
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">
+      <h1 className="text-2xl font-bold text-foreground mb-1">
         {broad.icon} {broad.name}
       </h1>
-      <p className="text-sm text-gray-500 mb-4">
+      <p className="text-sm text-muted-foreground mb-4">
         {broad.example} · {products.length} products
       </p>
       {products.length === 0 ? (
-        <p className="text-gray-500 text-center py-12">No products in this category yet</p>
+        <p className="text-muted-foreground text-center py-12">No products in this category yet</p>
       ) : (
         <div className="grid grid-cols-2 gap-3">
           {products.map((p) => (

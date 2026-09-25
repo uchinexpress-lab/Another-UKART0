@@ -41,14 +41,14 @@ export default function Packages() {
   return (
     <PullToRefresh onRefresh={loadPackages}>
     <div className="p-4">
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Grocery Packages</h1>
-      <p className="text-sm text-gray-500 mb-3">Curated bundles for every lifestyle</p>
+      <h1 className="text-2xl font-bold text-foreground mb-1">Grocery Packages</h1>
+      <p className="text-sm text-muted-foreground mb-3">Curated bundles for every lifestyle</p>
 
-      <div className="flex gap-2 p-1 bg-gray-100 rounded-full mb-3 sticky top-16 z-30">
+      <div className="flex gap-2 p-1 bg-muted rounded-full mb-3 sticky top-16 z-30">
         <button
           onClick={() => setTab('essentials')}
           className={`flex-1 py-2 rounded-full text-sm font-semibold transition-colors ${
-            tab === 'essentials' ? 'bg-white text-[#2E7D32] shadow-sm' : 'text-gray-500'
+            tab === 'essentials' ? 'bg-card text-[#2E7D32] shadow-sm' : 'text-muted-foreground'
           }`}
         >
           Essentials
@@ -56,7 +56,7 @@ export default function Packages() {
         <button
           onClick={() => setTab('meal_kits')}
           className={`flex-1 py-2 rounded-full text-sm font-semibold transition-colors ${
-            tab === 'meal_kits' ? 'bg-white text-[#2E7D32] shadow-sm' : 'text-gray-500'
+            tab === 'meal_kits' ? 'bg-card text-[#2E7D32] shadow-sm' : 'text-muted-foreground'
           }`}
         >
           Meal Kits

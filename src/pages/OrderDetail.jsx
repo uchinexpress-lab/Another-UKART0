@@ -28,7 +28,7 @@ const STEP_ORDER = ['new', 'processing', 'ready', 'on_the_way', 'delivered'];
 
 function StatusBadge({ status }) {
   if (status === 'delivered')
-    return <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#E8F5E9] text-[#2E7D32]">Completed</span>;
+    return <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-primary/10 text-[#2E7D32]">Completed</span>;
   if (status === 'cancelled')
     return <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-red-50 text-red-600">Cancelled</span>;
   return <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#FFF3E0] text-[#E65100]">In Progress</span>;
@@ -57,7 +57,7 @@ export default function OrderDetail() {
   if (!order)
     return (
       <div className="text-center py-16">
-        <p className="text-sm text-gray-500">Order not found.</p>
+        <p className="text-sm text-muted-foreground">Order not found.</p>
         <Link to="/orders" className="text-[#2E7D32] text-sm font-medium mt-2 inline-block">
           Back to orders
         </Link>
@@ -70,9 +70,9 @@ export default function OrderDetail() {
 
   return (
     <div className="p-4 space-y-4">
-      <div className="bg-white rounded-2xl border border-gray-100 p-4">
+      <div className="bg-card rounded-2xl border border-border p-4">
         <div className="flex items-center justify-between mb-1">
-          <span className="font-bold text-gray-900">{order.order_number}</span>
+          <span className="font-bold text-foreground">{order.order_number}</span>
           <StatusBadge status={order.status} />
         </div>
         <p className="text-xs text-gray-400">
@@ -80,26 +80,26 @@ export default function OrderDetail() {
         </p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 p-4">
-        <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Items</h3>
+      <div className="bg-card rounded-2xl border border-border p-4">
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase mb-3">Items</h3>
         <div className="space-y-2">
           {order.items?.map((it, i) => (
             <div key={i} className="flex items-center justify-between text-sm">
               <span className="text-gray-700">
                 {it.quantity}× {it.name}
               </span>
-              <span className="font-medium text-gray-900">
+              <span className="font-medium text-foreground">
                 ₦{((it.price || 0) * (it.quantity || 1)).toLocaleString()}
               </span>
             </div>
           ))}
         </div>
         <div className="mt-3 pt-3 border-t border-gray-50 space-y-1.5 text-sm">
-          <div className="flex justify-between text-gray-500">
+          <div className="flex justify-between text-muted-foreground">
             <span>Subtotal</span>
             <span>₦{(order.subtotal || 0).toLocaleString()}</span>
           </div>
-          <div className="flex justify-between text-gray-500">
+          <div className="flex justify-between text-muted-foreground">
             <span>Delivery fee</span>
             <span>₦{(order.delivery_fee || 0).toLocaleString()}</span>
           </div>
@@ -111,17 +111,17 @@ export default function OrderDetail() {
               <span>−₦{discount.toLocaleString()}</span>
             </div>
           )}
-          <div className="flex justify-between font-bold text-gray-900 pt-1">
+          <div className="flex justify-between font-bold text-foreground pt-1">
             <span>Total</span>
             <span className="text-[#2E7D32]">₦{(order.total || 0).toLocaleString()}</span>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 p-4">
-        <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Delivery Details</h3>
+      <div className="bg-card rounded-2xl border border-border p-4">
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase mb-3">Delivery Details</h3>
         <div className="space-y-1.5 text-sm">
-          <p className="flex items-center gap-2 text-gray-900 font-medium">
+          <p className="flex items-center gap-2 text-foreground font-medium">
             <User className="w-4 h-4 text-gray-400" /> {order.customer_name}
           </p>
           <p className="flex items-center gap-2 text-gray-600">
@@ -131,15 +131,15 @@ export default function OrderDetail() {
           <p className="flex items-center gap-2 text-gray-600">
             <Phone className="w-4 h-4 text-gray-400" /> {order.customer_phone}
           </p>
-          <p className="flex items-center gap-2 text-gray-500 text-xs pt-1">
+          <p className="flex items-center gap-2 text-muted-foreground text-xs pt-1">
             <span className="font-medium">Payment:</span> {order.payment_method}
           </p>
         </div>
       </div>
 
       {!isCancelled ? (
-        <div className="bg-white rounded-2xl border border-gray-100 p-4">
-          <h3 className="text-xs font-semibold text-gray-500 uppercase mb-4">Delivery Progress</h3>
+        <div className="bg-card rounded-2xl border border-border p-4">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase mb-4">Delivery Progress</h3>
           <div className="space-y-0">
             {STEPS.map((step, i) => {
               const done = i < currentStepIndex;
@@ -150,7 +150,7 @@ export default function OrderDetail() {
                   <div className="flex flex-col items-center">
                     <div
                       className={`w-9 h-9 rounded-full flex items-center justify-center ${
-                        done || current ? 'bg-[#E8F5E9]' : 'bg-gray-100'
+                        done || current ? 'bg-primary/10' : 'bg-muted'
                       } ${current ? 'ring-2 ring-[#2E7D32] ring-offset-1' : ''}`}
                     >
                       <Icon
@@ -161,16 +161,16 @@ export default function OrderDetail() {
                     {i < STEPS.length - 1 && (
                       <div
                         className={`w-0.5 flex-1 min-h-[24px] my-1 rounded-full ${
-                          done ? 'bg-[#2E7D32]' : 'bg-gray-100'
+                          done ? 'bg-[#2E7D32]' : 'bg-muted'
                         }`}
                       />
                     )}
                   </div>
                   <div className="pb-5">
-                    <p className={`text-sm font-bold ${done || current ? 'text-gray-900' : 'text-gray-400'}`}>
+                    <p className={`text-sm font-bold ${done || current ? 'text-foreground' : 'text-gray-400'}`}>
                       {step.title}
                     </p>
-                    <p className={`text-xs ${done || current ? 'text-gray-500' : 'text-gray-400'}`}>
+                    <p className={`text-xs ${done || current ? 'text-muted-foreground' : 'text-gray-400'}`}>
                       {step.desc}
                     </p>
                   </div>
@@ -194,16 +194,16 @@ export default function OrderDetail() {
       )}
 
       {order.status === 'delivered' && (
-        <div className="bg-white rounded-2xl border border-gray-100 p-4">
-          <h3 className="text-sm font-bold text-gray-900 mb-1">Rate your delivery</h3>
-          <p className="text-xs text-gray-500 mb-3">Tell us about your experience</p>
+        <div className="bg-card rounded-2xl border border-border p-4">
+          <h3 className="text-sm font-bold text-foreground mb-1">Rate your delivery</h3>
+          <p className="text-xs text-muted-foreground mb-3">Tell us about your experience</p>
           <RateDeliveryCard order={order} />
         </div>
       )}
 
       <Link
         to="/orders"
-        className="block w-full text-center bg-white border border-gray-200 text-gray-700 text-sm font-bold py-3 rounded-2xl"
+        className="block w-full text-center bg-card border border-gray-200 text-gray-700 text-sm font-bold py-3 rounded-2xl"
       >
         Back to Orders
       </Link>

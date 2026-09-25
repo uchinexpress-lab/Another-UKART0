@@ -19,7 +19,7 @@ import {
 'lucide-react';
 
 const STATUSES = [
-{ value: 'new', label: 'Order Placed', color: 'bg-gray-100 text-gray-700' },
+{ value: 'new', label: 'Order Placed', color: 'bg-muted text-gray-700' },
 { value: 'processing', label: 'Being Prepared', color: 'bg-amber-100 text-amber-700' },
 { value: 'ready', label: 'Ready for Delivery', color: 'bg-blue-100 text-blue-700' },
 { value: 'on_the_way', label: 'Out for Delivery', color: 'bg-purple-100 text-purple-700' },
@@ -53,8 +53,8 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted, onViewCusto
 
   return (
     <div
-      className={`bg-white rounded-2xl border p-4 ${
-      highlighted ? 'border-[#2E7D32] ring-1 ring-[#2E7D32]/20' : 'border-gray-100'}`
+      className={`bg-card rounded-2xl border p-4 ${
+      highlighted ? 'border-[#2E7D32] ring-1 ring-[#2E7D32]/20' : 'border-border'}`
       }>
       
       <button
@@ -63,10 +63,10 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted, onViewCusto
         
         <div className="text-left">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm font-bold text-gray-900">{order.order_number}</span>
+            <span className="text-sm font-bold text-foreground">{order.order_number}</span>
             <StatusBadge status={order.status} />
           </div>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted-foreground">
             {order.customer_name} · {order.items?.length || 0} items · ₦
             {order.total.toLocaleString()}
           </p>
@@ -77,13 +77,13 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted, onViewCusto
       <div className="mt-3 pt-3 border-t border-gray-50 space-y-3">
           {/* Customer info */}
           <div className="space-y-1.5">
-            <p className="text-xs text-gray-500 flex items-center gap-1.5">
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
               <Mail className="w-3 h-3" /> {order.customer_email || 'No email'}
             </p>
-            <p className="text-xs text-gray-500 flex items-center gap-1.5">
+            <p className="text-xs text-muted-foreground flex items-center gap-1.5">
               <Phone className="w-3 h-3" /> {order.customer_phone}
             </p>
-            <p className="text-xs text-gray-500 flex items-start gap-1.5">
+            <p className="text-xs text-muted-foreground flex items-start gap-1.5">
               <MapPin className="w-3 h-3 flex-shrink-0 mt-0.5" />
               <span>
                 {order.customer_address}
@@ -101,13 +101,13 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted, onViewCusto
             </button>
           )}
           {/* Items */}
-          <div className="bg-gray-50 rounded-xl p-2 space-y-1">
+          <div className="bg-muted/50 rounded-xl p-2 space-y-1">
             {order.items?.map((item, i) =>
           <div key={i} className="flex justify-between text-xs">
                 <span className="text-gray-700">
                   {item.quantity}x {item.name}
                 </span>
-                <span className="text-gray-500 font-medium">
+                <span className="text-muted-foreground font-medium">
                   ₦{((item.price || 0) * (item.quantity || 1)).toLocaleString()}
                 </span>
               </div>
@@ -116,7 +116,7 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted, onViewCusto
 
           {/* Total */}
           <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Total</span>
+            <span className="text-muted-foreground">Total</span>
             <span className="font-bold text-[#2E7D32]">
               ₦{order.total.toLocaleString()}
             </span>
@@ -124,7 +124,7 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted, onViewCusto
 
           {/* Delivery rating */}
           {order.status === 'delivered' && (
-            <div className="bg-[#E8F5E9] rounded-xl p-2.5">
+            <div className="bg-primary/10 rounded-xl p-2.5">
               <p className="text-xs font-semibold text-gray-600 mb-1">Delivery Rating</p>
               {!reviewLoaded ? (
                 <p className="text-xs text-gray-400">Loading…</p>
@@ -163,7 +163,7 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted, onViewCusto
               className={`text-[11px] font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${
               order.status === s.value ?
               'bg-[#2E7D32] text-white border-[#2E7D32]' :
-              'bg-white text-gray-700 border-gray-200 hover:border-[#2E7D32]'} ${
+              'bg-card text-gray-700 border-gray-200 hover:border-[#2E7D32]'} ${
               updatingId === order.id ? 'opacity-50' : ''}`}>
               
                   {s.label}
@@ -244,8 +244,8 @@ export default function AdminOrders() {
     return (
       <div className="p-8 text-center min-h-[60vh] flex flex-col items-center justify-center">
         <Lock className="w-12 h-12 text-gray-300 mb-3" />
-        <h2 className="text-lg font-bold text-gray-900 mb-1">Admins Only</h2>
-        <p className="text-sm text-gray-500 mb-4">
+        <h2 className="text-lg font-bold text-foreground mb-1">Admins Only</h2>
+        <p className="text-sm text-muted-foreground mb-4">
           You need an admin account to manage orders.
         </p>
         <Link to="/" className="text-[#2E7D32] font-bold text-sm">
@@ -283,7 +283,7 @@ export default function AdminOrders() {
   return (
     <div className="p-4 pb-10">
       {customerFilter && (
-        <div className="flex items-center justify-between bg-[#E8F5E9] rounded-2xl px-4 py-3 mb-4">
+        <div className="flex items-center justify-between bg-primary/10 rounded-2xl px-4 py-3 mb-4">
           <div>
             <p className="text-sm font-bold text-[#2E7D32]">{customerFilter}</p>
             <p className="text-xs text-gray-600">
@@ -304,24 +304,24 @@ export default function AdminOrders() {
           <Link to="/profile" className="p-1.5 -ml-1.5 rounded-full hover:bg-black/5">
             
           </Link>
-          <h1 className="text-xl font-bold text-gray-900">Manage Orders</h1>
+          <h1 className="text-xl font-bold text-foreground">Manage Orders</h1>
         </div>
         <button
           onClick={loadOrders}
-          className="w-11 h-11 rounded-full hover:bg-gray-100 flex items-center justify-center"
+          className="w-11 h-11 rounded-full hover:bg-muted flex items-center justify-center"
           title="Refresh">
           
-          <RefreshCw className="w-4 h-4 text-gray-500" />
+          <RefreshCw className="w-4 h-4 text-muted-foreground" />
         </button>
       </div>
 
-      <p className="text-xs text-gray-500 mb-4">
+      <p className="text-xs text-muted-foreground mb-4">
         Tap an order to expand it and update its status. The customer is emailed
         automatically when the status changes.
       </p>
 
       {/* Search & filters */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-3 mb-3 space-y-3">
+      <div className="bg-card rounded-2xl border border-border p-3 mb-3 space-y-3">
         <div className="relative">
           <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
@@ -338,7 +338,7 @@ export default function AdminOrders() {
             options={[{ value: 'all', label: 'All statuses' }, ...STATUSES]}
             placeholder="All statuses"
             title="Filter by status"
-            triggerClassName="flex-1 h-10 flex items-center justify-between text-sm rounded-xl border border-gray-200 px-3 bg-white"
+            triggerClassName="flex-1 h-10 flex items-center justify-between text-sm rounded-xl border border-gray-200 px-3 bg-card"
           />
           <div className="relative flex-1">
             <Calendar className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />

@@ -12,7 +12,7 @@ export default function DealCard({ product }) {
     : 0;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col h-full">
+    <div className="bg-card rounded-2xl border border-border overflow-hidden flex flex-col h-full">
       <div className="relative aspect-[4/3] bg-gray-50">
         <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
         {discount > 0 && (
@@ -30,7 +30,7 @@ export default function DealCard({ product }) {
         </button>
       </div>
       <div className="p-2 flex flex-col flex-1">
-        <h3 className="text-xs font-semibold text-gray-900 leading-tight line-clamp-1 mb-1.5">
+        <h3 className="text-xs font-semibold text-card-foreground leading-tight line-clamp-1 mb-1.5">
           {product.name}
         </h3>
         <div className="flex items-center justify-between mt-auto">

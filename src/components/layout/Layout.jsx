@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react';
-import { useOutlet, useLocation } from 'react-router-dom';
+import { useOutlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import TopNav from './TopNav';
 import BrandedHeader from './BrandedHeader';
@@ -45,6 +45,7 @@ const Fallback = (
 
 export default function Layout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const pathname = location.pathname;
   const isHome = pathname === '/';
   const isTab = TAB_ROUTES.includes(pathname);
@@ -54,6 +55,12 @@ export default function Layout() {
   // scroll height, and inputs persist across tab switches.
   const cached = useRef({});
   const [cachedTabs, setCachedTabs] = useState(() => (isTab ? [pathname] : []));
+
+  // Tab stack preservation: remember the last non-tab route visited from each
+  // tab so switching back to that tab restores the route instead of the root.
+  const tabRoutes = useRef({});
+  const activeTabRef = useRef(isTab ? pathname : '/');
+  const skipStoreRef = useRef(false);
 
   if (isTab) {
     cached.current[pathname] = outlet;
@@ -65,11 +72,35 @@ export default function Layout() {
     }
   }, [pathname, isTab, cachedTabs]);
 
+  useEffect(() => {
+    if (isTab) {
+      const stored = tabRoutes.current[pathname];
+      if (stored && stored !== pathname) {
+        delete tabRoutes.current[pathname];
+        activeTabRef.current = pathname;
+        skipStoreRef.current = true;
+        navigate(stored);
+        return;
+      }
+      activeTabRef.current = pathname;
+      delete tabRoutes.current[pathname];
+    } else {
+      if (skipStoreRef.current) {
+        skipStoreRef.current = false;
+      } else {
+        const activeTab = activeTabRef.current;
+        if (activeTab && TAB_ROUTES.includes(activeTab)) {
+          tabRoutes.current[activeTab] = pathname;
+        }
+      }
+    }
+  }, [pathname, isTab, navigate]);
+
   const tabsToRender =
     isTab && !cachedTabs.includes(pathname) ? [...cachedTabs, pathname] : cachedTabs;
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex flex-col relative">
+    <div className="min-h-screen bg-background flex flex-col relative">
       {isHome ? <TopNav /> : <BrandedHeader title={getPageTitle(pathname)} />}
       <main className="flex-1 pb-20 max-w-md mx-auto w-full">
         <Suspense fallback={Fallback}>

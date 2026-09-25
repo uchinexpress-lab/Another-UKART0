@@ -18,7 +18,7 @@ export default function PackageCard({ pkg, className }) {
     <motion.div
       whileTap={{ scale: 0.97 }}
       transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-      className={`${widthClass} bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm`}>
+      className={`${widthClass} bg-card rounded-3xl border border-border overflow-hidden shadow-sm`}>
 
       <div className="relative h-40 bg-gradient-to-br from-[#E8F5E9] to-[#F1F8F1]">
         {pkg.image ? (
@@ -47,7 +47,7 @@ export default function PackageCard({ pkg, className }) {
         }
       </div>
       <div className="p-4">
-        <h3 className="font-bold text-gray-900 text-base leading-tight mb-1">{pkg.name}</h3>
+        <h3 className="font-bold text-card-foreground text-base leading-tight mb-1">{pkg.name}</h3>
         <p className="text-xs text-gray-500 mb-3 line-clamp-2">{pkg.description}</p>
         <div className="flex items-center gap-1.5 mb-3 text-xs text-gray-500">
           <Package className="w-3.5 h-3.5" />

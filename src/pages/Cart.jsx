@@ -11,11 +11,11 @@ export default function Cart() {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center min-h-[60vh]">
-        <div className="w-20 h-20 rounded-full bg-[#E8F5E9] flex items-center justify-center mb-4">
+        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
           <ShoppingBag className="w-10 h-10 text-[#2E7D32]" />
         </div>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">Your cart is empty</h2>
-        <p className="text-sm text-gray-500 mb-4">Start shopping and add items to your cart</p>
+        <h2 className="text-xl font-bold text-foreground mb-1">Your cart is empty</h2>
+        <p className="text-sm text-muted-foreground mb-4">Start shopping and add items to your cart</p>
         <Link to="/" className="bg-[#2E7D32] text-white text-sm font-bold px-6 py-3 rounded-full">
           Start Shopping
         </Link>
@@ -25,16 +25,16 @@ export default function Cart() {
 
   return (
     <div className="p-4 pb-40">
-      <h1 className="text-2xl font-bold text-gray-900 mb-4">Your Cart ({items.length})</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-4">Your Cart ({items.length})</h1>
       <div className="space-y-3">
         {items.map((item) => (
-          <div key={item.id} className="flex items-center gap-3 bg-white rounded-2xl border border-gray-100 p-3">
+          <div key={item.id} className="flex items-center gap-3 bg-card rounded-2xl border border-border p-3">
             <img src={item.image} alt={item.name} className="w-16 h-16 rounded-xl object-cover" />
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-semibold text-gray-900 truncate">{item.name}</h3>
+              <h3 className="text-sm font-semibold text-foreground truncate">{item.name}</h3>
               <span className="text-xs text-gray-400">{item.unit}</span>
               {item.details && (
-                <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-2">{item.details}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{item.details}</p>
               )}
               <div className="text-sm font-bold text-[#2E7D32]">
                 ₦{(item.price * item.quantity).toLocaleString()}
@@ -43,7 +43,7 @@ export default function Cart() {
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center active:scale-90 transition-transform"
+                className="w-11 h-11 rounded-full bg-muted flex items-center justify-center active:scale-90 transition-transform"
               >
                 <Minus className="w-4 h-4" />
               </button>
@@ -62,13 +62,13 @@ export default function Cart() {
         ))}
       </div>
 
-      <div className="mt-6 bg-white rounded-2xl border border-gray-100 p-4 space-y-2">
+      <div className="mt-6 bg-card rounded-2xl border border-border p-4 space-y-2">
         <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Subtotal</span>
+          <span className="text-muted-foreground">Subtotal</span>
           <span className="font-semibold">₦{total.toLocaleString()}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-gray-500">Delivery Fee</span>
+          <span className="text-muted-foreground">Delivery Fee</span>
           <span className="font-semibold">
             {deliveryFee === 0 ? 'FREE' : `₦${deliveryFee.toLocaleString()}`}
           </span>
@@ -76,7 +76,7 @@ export default function Cart() {
         {deliveryFee === 0 && (
           <p className="text-xs text-[#2E7D32] font-medium">🎉 You qualified for free delivery!</p>
         )}
-        <div className="flex justify-between pt-2 border-t border-gray-100">
+        <div className="flex justify-between pt-2 border-t border-border">
           <span className="font-bold">Total</span>
           <span className="font-bold text-[#2E7D32] text-lg">
             ₦{(total + deliveryFee).toLocaleString()}
@@ -84,7 +84,7 @@ export default function Cart() {
         </div>
       </div>
 
-      <div className="fixed bottom-16 left-0 right-0 max-w-md mx-auto px-4 py-3 bg-white border-t border-gray-100">
+      <div className="fixed bottom-16 left-0 right-0 max-w-md mx-auto px-4 py-3 bg-card border-t border-border">
         <button
           onClick={() => navigate('/checkout')}
           className="w-full h-12 rounded-2xl bg-[#2E7D32] text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#1B5E20]"

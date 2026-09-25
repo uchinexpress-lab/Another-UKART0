@@ -19,7 +19,7 @@ export default function ProductCard({ product }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-20px' }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
-      className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col h-full"
+      className="bg-card rounded-2xl border border-border overflow-hidden flex flex-col h-full"
     >
       <div className="relative aspect-square bg-gray-50">
         {product.image ? (
@@ -54,7 +54,7 @@ export default function ProductCard({ product }) {
           <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
           <span className="text-[11px] text-gray-500 font-medium">{product.rating || 4.5}</span>
         </div>
-        <h3 className="text-xs font-semibold text-gray-900 leading-tight mb-0.5 line-clamp-2">
+        <h3 className="text-xs font-semibold text-card-foreground leading-tight mb-0.5 line-clamp-2">
           {product.name}
         </h3>
         <span className="text-[11px] text-gray-400 mb-2">{product.unit || '1 pack'}</span>

@@ -36,7 +36,7 @@ function formatDate(d) {
 function StatusBadge({ status }) {
   if (status === 'delivered')
     return (
-      <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#E8F5E9] text-[#2E7D32] flex items-center gap-1">
+      <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-primary/10 text-[#2E7D32] flex items-center gap-1">
         <CheckCircle2 className="w-3 h-3" /> Completed
       </span>
     );
@@ -84,13 +84,13 @@ export default function Orders() {
   return (
     <PullToRefresh onRefresh={loadOrders}>
     <div className="p-4">
-      <div className="flex bg-gray-100 rounded-2xl p-1 mb-4">
+      <div className="flex bg-muted rounded-2xl p-1 mb-4">
         {TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
             className={`flex-1 text-sm font-semibold py-2 rounded-xl transition-colors ${
-              tab === t.key ? 'bg-white text-[#2E7D32] shadow-sm' : 'text-gray-500'
+              tab === t.key ? 'bg-card text-[#2E7D32] shadow-sm' : 'text-muted-foreground'
             }`}
           >
             {t.label}
@@ -105,7 +105,7 @@ export default function Orders() {
       ) : filtered.length === 0 ? (
         <div className="text-center py-16">
           <ShoppingBag className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-sm text-gray-500">No {tab} orders yet.</p>
+          <p className="text-sm text-muted-foreground">No {tab} orders yet.</p>
           <Link
             to="/"
             className="inline-block mt-4 bg-[#2E7D32] text-white text-sm font-bold px-5 py-2.5 rounded-full"
@@ -119,15 +119,15 @@ export default function Orders() {
             <Link
               key={o.id}
               to={`/orders/${o.id}`}
-              className="block bg-white rounded-2xl border border-gray-100 p-4 active:scale-[0.98] transition-transform"
+              className="block bg-card rounded-2xl border border-border p-4 active:scale-[0.98] transition-transform"
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-bold text-gray-900">{o.order_number}</span>
+                <span className="text-sm font-bold text-foreground">{o.order_number}</span>
                 <StatusBadge status={o.status} />
               </div>
               <p className="text-xs text-gray-400 mb-3">{formatDate(o.created_date)}</p>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-muted-foreground">
                   {o.items?.length || 0} item{(o.items?.length || 0) > 1 ? 's' : ''}
                 </span>
                 <span className="flex items-center gap-1 font-bold text-[#2E7D32] text-sm">

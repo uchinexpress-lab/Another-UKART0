@@ -8,7 +8,7 @@ export default function MealKitCard({ pkg }) {
   const { addItem } = useCart();
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col h-full">
+    <div className="bg-card rounded-2xl border border-border overflow-hidden flex flex-col h-full">
       <div className="relative h-32 bg-gray-50">
         <img src={pkg.image} alt={pkg.name} className="w-full h-full object-cover" />
         <span className="absolute top-2 left-2 bg-[#2E7D32] text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
@@ -16,7 +16,7 @@ export default function MealKitCard({ pkg }) {
         </span>
       </div>
       <div className="p-3 flex flex-col flex-1">
-        <h3 className="text-sm font-bold text-gray-900 leading-tight mb-0.5">{pkg.name}</h3>
+        <h3 className="text-sm font-bold text-card-foreground leading-tight mb-0.5">{pkg.name}</h3>
         <p className="text-[11px] text-gray-500 line-clamp-1 mb-1.5">{pkg.description}</p>
         <div className="flex items-center gap-1 text-[10px] text-gray-500 mb-2">
           <Users className="w-3 h-3" />

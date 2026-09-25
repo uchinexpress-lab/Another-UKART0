@@ -41,7 +41,7 @@ export default function Onboarding() {
   const slide = SLIDES[index];
 
   return (
-    <div className="fixed inset-0 bg-white overflow-hidden select-none">
+    <div className="fixed inset-0 bg-card overflow-hidden select-none">
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={index}

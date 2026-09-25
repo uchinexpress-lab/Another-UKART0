@@ -71,14 +71,14 @@ export default function Settings() {
 
   return (
     <div className="p-4 space-y-4">
-      <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50">
+      <div className="bg-card rounded-2xl border border-border divide-y divide-gray-50">
         <div className="flex items-center gap-3 p-4">
           <div className="w-10 h-10 rounded-xl bg-[#2E7D32]/10 flex items-center justify-center">
             {dark ? <Moon className="w-5 h-5 text-[#2E7D32]" /> : <Sun className="w-5 h-5 text-[#2E7D32]" />}
           </div>
           <div className="flex-1">
-            <p className="text-sm font-semibold text-gray-900">Dark Mode</p>
-            <p className="text-xs text-gray-500">Switch between light and dark themes</p>
+            <p className="text-sm font-semibold text-foreground">Dark Mode</p>
+            <p className="text-xs text-muted-foreground">Switch between light and dark themes</p>
           </div>
           <Switch checked={dark} onCheckedChange={() => setTheme(dark ? 'light' : 'dark')} />
         </div>
@@ -88,12 +88,12 @@ export default function Settings() {
             <Globe className="w-5 h-5 text-[#2E7D32]" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-semibold text-gray-900">Language</p>
-            <p className="text-xs text-gray-500">Choose your preferred language</p>
+            <p className="text-sm font-semibold text-foreground">Language</p>
+            <p className="text-xs text-muted-foreground">Choose your preferred language</p>
           </div>
           <Drawer open={langOpen} onOpenChange={setLangOpen}>
             <DrawerTrigger asChild>
-              <button className="flex items-center gap-1 text-sm font-medium text-gray-900 px-3 h-9 rounded-xl border border-gray-100 active:scale-95 transition-transform">
+              <button className="flex items-center gap-1 text-sm font-medium text-foreground px-3 h-9 rounded-xl border border-border active:scale-95 transition-transform">
                 {LANGUAGES.find((l) => l.value === lang)?.label || 'English'}
                 <ChevronDown className="w-4 h-4 text-gray-400" />
               </button>
@@ -107,7 +107,7 @@ export default function Settings() {
                   <button
                     key={l.value}
                     onClick={() => { changeLang(l.value); setLangOpen(false); }}
-                    className={`w-full text-left text-sm px-4 py-3 rounded-xl ${lang === l.value ? 'bg-[#2E9E44]/10 font-semibold text-[#1B7F3A]' : 'text-gray-700 active:bg-gray-50'}`}
+                    className={`w-full text-left text-sm px-4 py-3 rounded-xl ${lang === l.value ? 'bg-[#2E9E44]/10 font-semibold text-[#1B7F3A]' : 'text-gray-700 active:bg-muted/50'}`}
                   >
                     {l.label}
                   </button>
@@ -118,22 +118,22 @@ export default function Settings() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50">
+      <div className="bg-card rounded-2xl border border-border divide-y divide-gray-50">
         <button
           onClick={logout}
           disabled={busy}
-          className="w-full flex items-center gap-3 p-4 active:bg-gray-50 disabled:opacity-50"
+          className="w-full flex items-center gap-3 p-4 active:bg-muted/50 disabled:opacity-50"
         >
-          <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
             <LogOut className="w-5 h-5 text-gray-700" />
           </div>
-          <span className="text-sm font-semibold text-gray-900 flex-1 text-left">Log Out</span>
+          <span className="text-sm font-semibold text-foreground flex-1 text-left">Log Out</span>
           {busy && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
         </button>
 
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <button className="w-full flex items-center gap-3 p-4 active:bg-gray-50">
+            <button className="w-full flex items-center gap-3 p-4 active:bg-muted/50">
               <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
                 <Trash2 className="w-5 h-5 text-red-500" />
               </div>

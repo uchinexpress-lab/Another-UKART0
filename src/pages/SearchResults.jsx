@@ -46,13 +46,13 @@ export default function SearchResults() {
 
   return (
     <div className="p-4 pt-2">
-      <h1 className="text-lg font-bold text-gray-900 mb-1">Search: &ldquo;{query}&rdquo;</h1>
-      <p className="text-sm text-gray-500 mb-4">{products.length} results</p>
+      <h1 className="text-lg font-bold text-foreground mb-1">Search: &ldquo;{query}&rdquo;</h1>
+      <p className="text-sm text-muted-foreground mb-4">{products.length} results</p>
 
       {products.length === 0 ? (
         <div className="text-center py-12">
           <Search className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">No products found</p>
+          <p className="text-muted-foreground">No products found</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3">
@@ -64,7 +64,7 @@ export default function SearchResults() {
 
       {related.length > 0 && (
         <div className="mt-8">
-          <h2 className="text-base font-bold text-gray-900 mb-3">You might also like</h2>
+          <h2 className="text-base font-bold text-foreground mb-3">You might also like</h2>
           <div className="grid grid-cols-2 gap-3">
             {related.map((p) => (
               <ProductCard key={p.id} product={p} />

@@ -198,14 +198,14 @@ export default function Notifications() {
     <div className="p-4 space-y-6">
       {/* Feed */}
       <div>
-        <h2 className="text-sm font-bold text-gray-900 mb-3 px-1">Recent</h2>
+        <h2 className="text-sm font-bold text-foreground mb-3 px-1">Recent</h2>
         {feed.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
+          <div className="bg-card rounded-2xl border border-border p-8 text-center">
             <div className="w-14 h-14 rounded-full bg-[#2E7D32]/10 flex items-center justify-center mx-auto mb-3">
               <Bell className="w-7 h-7 text-[#2E7D32]" />
             </div>
-            <p className="text-sm font-semibold text-gray-900">No notifications yet</p>
-            <p className="text-xs text-gray-500 mt-1">Order updates and weekly deals will show here.</p>
+            <p className="text-sm font-semibold text-foreground">No notifications yet</p>
+            <p className="text-xs text-muted-foreground mt-1">Order updates and weekly deals will show here.</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -216,7 +216,7 @@ export default function Notifications() {
                   <Link
                     key={`deal-${p.id}-${i}`}
                     to={`/search?q=${encodeURIComponent(p.name)}`}
-                    className="block bg-white rounded-2xl border border-gray-100 p-4 active:scale-[0.98] transition-transform"
+                    className="block bg-card rounded-2xl border border-border p-4 active:scale-[0.98] transition-transform"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
@@ -224,8 +224,8 @@ export default function Notifications() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold text-amber-600">Weekly Deal</p>
-                        <p className="text-sm font-semibold text-gray-900 line-clamp-1">{p.name}</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-sm font-semibold text-foreground line-clamp-1">{p.name}</p>
+                        <p className="text-xs text-muted-foreground">
                           {naira(p.price)}
                           {p.original_price ? (
                             <span className="line-through ml-1 text-gray-400">{naira(p.original_price)}</span>
@@ -241,21 +241,21 @@ export default function Notifications() {
                 const o = item.order;
                 const showTrack = o.status !== 'delivered' && o.status !== 'cancelled';
                 return (
-                  <div key={`placed-${o.id}`} className="bg-white rounded-2xl border border-gray-100 p-4">
+                  <div key={`placed-${o.id}`} className="bg-card rounded-2xl border border-border p-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-[#2E7D32]/10 flex items-center justify-center shrink-0">
                         <Package className="w-5 h-5 text-[#2E7D32]" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-900">Order placed</p>
-                        <p className="text-xs text-gray-500">#{o.order_number} · {naira(o.total)}</p>
+                        <p className="text-sm font-semibold text-foreground">Order placed</p>
+                        <p className="text-xs text-muted-foreground">#{o.order_number} · {naira(o.total)}</p>
                       </div>
                       <span className="text-[11px] text-gray-400 shrink-0">{timeAgo(item.date)}</span>
                     </div>
                     {showTrack && (
                       <Link
                         to={`/track?order=${o.order_number}`}
-                        className="mt-3 inline-flex text-xs font-semibold text-[#2E7D32] bg-[#E8F5E9] px-3 py-1.5 rounded-full"
+                        className="mt-3 inline-flex text-xs font-semibold text-[#2E7D32] bg-primary/10 px-3 py-1.5 rounded-full"
                       >
                         Track order
                       </Link>
@@ -266,20 +266,20 @@ export default function Notifications() {
               if (item.kind === 'status') {
                 const o = item.order;
                 return (
-                  <div key={`status-${o.id}-${o.status}`} className="bg-white rounded-2xl border border-gray-100 p-4">
+                  <div key={`status-${o.id}-${o.status}`} className="bg-card rounded-2xl border border-border p-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-[#2E7D32]/10 flex items-center justify-center shrink-0">
                         <Truck className="w-5 h-5 text-[#2E7D32]" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-900">{STATUS_LABELS[o.status]}</p>
-                        <p className="text-xs text-gray-500">#{o.order_number} · {naira(o.total)}</p>
+                        <p className="text-sm font-semibold text-foreground">{STATUS_LABELS[o.status]}</p>
+                        <p className="text-xs text-muted-foreground">#{o.order_number} · {naira(o.total)}</p>
                       </div>
                       <span className="text-[11px] text-gray-400 shrink-0">{timeAgo(item.date)}</span>
                     </div>
                     <Link
                       to={`/track?order=${o.order_number}`}
-                      className="mt-3 inline-flex text-xs font-semibold text-[#2E7D32] bg-[#E8F5E9] px-3 py-1.5 rounded-full"
+                      className="mt-3 inline-flex text-xs font-semibold text-[#2E7D32] bg-primary/10 px-3 py-1.5 rounded-full"
                     >
                       Track order
                     </Link>
@@ -288,14 +288,14 @@ export default function Notifications() {
               }
               const o = item.order;
               return (
-                <div key={`delivered-${o.id}`} className="bg-white rounded-2xl border border-gray-100 p-4">
+                <div key={`delivered-${o.id}`} className="bg-card rounded-2xl border border-border p-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-[#2E7D32]/10 flex items-center justify-center shrink-0">
                       <CheckCircle2 className="w-5 h-5 text-[#2E7D32]" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900">Order delivered</p>
-                      <p className="text-xs text-gray-500">#{o.order_number} · {naira(o.total)}</p>
+                      <p className="text-sm font-semibold text-foreground">Order delivered</p>
+                      <p className="text-xs text-muted-foreground">#{o.order_number} · {naira(o.total)}</p>
                     </div>
                     <span className="text-[11px] text-gray-400 shrink-0">{timeAgo(item.date)}</span>
                   </div>
@@ -309,8 +309,8 @@ export default function Notifications() {
 
       {/* Preferences */}
       <div>
-        <h2 className="text-sm font-bold text-gray-900 mb-3 px-1">Preferences</h2>
-        <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50">
+        <h2 className="text-sm font-bold text-foreground mb-3 px-1">Preferences</h2>
+        <div className="bg-card rounded-2xl border border-border divide-y divide-gray-50">
           {ITEMS.map((item) => {
             const Icon = item.icon;
             return (
@@ -319,21 +319,21 @@ export default function Notifications() {
                   <Icon className="w-5 h-5 text-[#2E7D32]" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900">{item.label}</p>
-                  <p className="text-xs text-gray-500">{item.desc}</p>
+                  <p className="text-sm font-semibold text-foreground">{item.label}</p>
+                  <p className="text-xs text-muted-foreground">{item.desc}</p>
                 </div>
                 <Switch checked={!!prefs[item.key]} onCheckedChange={() => toggle(item.key)} />
               </div>
             );
           })}
         </div>
-        <div className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3 mt-3">
+        <div className="bg-card rounded-2xl border border-border p-4 flex items-center gap-3 mt-3">
           <div className="w-10 h-10 rounded-xl bg-[#2E7D32]/10 flex items-center justify-center">
             <Truck className="w-5 h-5 text-[#2E7D32]" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-gray-900">Push Notifications</p>
-            <p className="text-xs text-gray-500">Receive push alerts on this device</p>
+            <p className="text-sm font-semibold text-foreground">Push Notifications</p>
+            <p className="text-xs text-muted-foreground">Receive push alerts on this device</p>
           </div>
           <Switch checked={!!prefs.push_enabled} onCheckedChange={() => toggle('push_enabled')} />
         </div>

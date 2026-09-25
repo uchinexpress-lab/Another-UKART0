@@ -97,8 +97,8 @@ export default function AdminSettings() {
     return (
       <div className="p-8 text-center min-h-[60vh] flex flex-col items-center justify-center">
         <Lock className="w-12 h-12 text-gray-300 mb-3" />
-        <h2 className="text-lg font-bold text-gray-900 mb-1">Admins Only</h2>
-        <p className="text-sm text-gray-500 mb-4">
+        <h2 className="text-lg font-bold text-foreground mb-1">Admins Only</h2>
+        <p className="text-sm text-muted-foreground mb-4">
           You need an admin account to access this page.
         </p>
         <Link to="/" className="text-[#2E7D32] font-bold text-sm">
@@ -110,17 +110,17 @@ export default function AdminSettings() {
 
   return (
     <div className="p-4 pb-10">
-      <h1 className="text-xl font-bold text-gray-900 mb-6">Notification Settings</h1>
+      <h1 className="text-xl font-bold text-foreground mb-6">Notification Settings</h1>
 
       {/* Business email */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
+      <div className="bg-card rounded-2xl border border-border p-4 mb-4">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-8 h-8 rounded-lg bg-[#E8F5E9] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
             <Mail className="w-4 h-4 text-[#2E7D32]" />
           </div>
-          <h2 className="text-sm font-bold text-gray-900">Business Email</h2>
+          <h2 className="text-sm font-bold text-foreground">Business Email</h2>
         </div>
-        <p className="text-xs text-gray-500 mb-3">
+        <p className="text-xs text-muted-foreground mb-3">
           New order notifications are sent here. This must be a registered Ukart
           user for delivery to work.
         </p>
@@ -134,12 +134,12 @@ export default function AdminSettings() {
       </div>
 
       {/* Notification toggles */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
+      <div className="bg-card rounded-2xl border border-border p-4 mb-4">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-8 h-8 rounded-lg bg-[#E8F5E9] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
             <Settings className="w-4 h-4 text-[#2E7D32]" />
           </div>
-          <h2 className="text-sm font-bold text-gray-900">Email Notifications</h2>
+          <h2 className="text-sm font-bold text-foreground">Email Notifications</h2>
         </div>
         <div className="space-y-1">
           {toggleFields.map((field) => (
@@ -148,8 +148,8 @@ export default function AdminSettings() {
               className="flex items-start justify-between py-3 border-b border-gray-50 last:border-0"
             >
               <div className="flex-1 pr-3">
-                <p className="text-sm font-semibold text-gray-900">{field.label}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{field.description}</p>
+                <p className="text-sm font-semibold text-foreground">{field.label}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{field.description}</p>
               </div>
               <button
                 onClick={() => handleToggle(field.key)}
@@ -158,7 +158,7 @@ export default function AdminSettings() {
                 }`}
               >
                 <span
-                  className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
+                  className={`absolute top-0.5 w-5 h-5 rounded-full bg-card shadow-sm transition-transform ${
                     settings[field.key] ? 'translate-x-5' : 'translate-x-0.5'
                   }`}
                 />

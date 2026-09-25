@@ -24,17 +24,17 @@ import { toast } from '@/components/ui/use-toast';
 
 function MenuSection({ items, showAddresses, setShowAddresses, navigate }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50">
+    <div className="bg-card rounded-2xl border border-border divide-y divide-gray-50">
       {items.map((item, i) => (
         <div key={i}>
           {item.toggle ? (
             <motion.button
               whileTap={{ scale: 0.98 }}
-              className="w-full flex items-center gap-3 p-4 active:bg-gray-50"
+              className="w-full flex items-center gap-3 p-4 active:bg-muted/50"
               onClick={() => setShowAddresses((v) => !v)}
             >
               <item.icon className="w-5 h-5 text-[#2E7D32]" />
-              <span className="text-sm font-medium text-gray-900 flex-1 text-left">
+              <span className="text-sm font-medium text-foreground flex-1 text-left">
                 {item.label}
               </span>
               <ChevronDown
@@ -44,11 +44,11 @@ function MenuSection({ items, showAddresses, setShowAddresses, navigate }) {
           ) : (
             <motion.button
               whileTap={{ scale: 0.98 }}
-              className="w-full flex items-center gap-3 p-4 active:bg-gray-50"
+              className="w-full flex items-center gap-3 p-4 active:bg-muted/50"
               onClick={() => navigate(item.to)}
             >
               <item.icon className="w-5 h-5 text-[#2E7D32]" />
-              <span className="text-sm font-medium text-gray-900 flex-1 text-left">
+              <span className="text-sm font-medium text-foreground flex-1 text-left">
                 {item.label}
               </span>
               <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -115,7 +115,7 @@ export default function Profile() {
       <motion.button
         whileTap={{ scale: 0.98 }}
         onClick={() => navigate('/account')}
-        className="w-full bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3.5 active:bg-gray-50"
+        className="w-full bg-card rounded-2xl border border-border p-4 flex items-center gap-3.5 active:bg-muted/50"
       >
         {user?.avatar_url ? (
           <Image
@@ -132,7 +132,7 @@ export default function Profile() {
           <h2 className="font-bold text-[#1a2238] truncate">
             {user?.full_name || 'Welcome to Ukart'}
           </h2>
-          <p className="text-xs text-gray-500 truncate">
+          <p className="text-xs text-muted-foreground truncate">
             {user?.email || 'No Market Wahala'}
           </p>
           <span className="text-[11px] text-[#2E7D32] font-semibold">
@@ -173,36 +173,36 @@ export default function Profile() {
           <h2 className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-2 px-1">
             Admin
           </h2>
-          <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50">
+          <div className="bg-card rounded-2xl border border-border divide-y divide-gray-50">
             <motion.button
               whileTap={{ scale: 0.98 }}
-              className="w-full flex items-center gap-3 p-4 active:bg-gray-50"
+              className="w-full flex items-center gap-3 p-4 active:bg-muted/50"
               onClick={() => navigate('/admin/orders')}
             >
               <ClipboardList className="w-5 h-5 text-[#2E7D32]" />
-              <span className="text-sm font-medium text-gray-900 flex-1 text-left">
+              <span className="text-sm font-medium text-foreground flex-1 text-left">
                 Manage Orders
               </span>
               <ChevronRight className="w-4 h-4 text-gray-400" />
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.98 }}
-              className="w-full flex items-center gap-3 p-4 active:bg-gray-50"
+              className="w-full flex items-center gap-3 p-4 active:bg-muted/50"
               onClick={() => navigate('/admin/tickets')}
             >
               <HelpCircle className="w-5 h-5 text-[#2E7D32]" />
-              <span className="text-sm font-medium text-gray-900 flex-1 text-left">
+              <span className="text-sm font-medium text-foreground flex-1 text-left">
                 Support Tickets
               </span>
               <ChevronRight className="w-4 h-4 text-gray-400" />
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.98 }}
-              className="w-full flex items-center gap-3 p-4 active:bg-gray-50"
+              className="w-full flex items-center gap-3 p-4 active:bg-muted/50"
               onClick={() => navigate('/admin/settings')}
             >
               <Settings className="w-5 h-5 text-[#2E7D32]" />
-              <span className="text-sm font-medium text-gray-900 flex-1 text-left">
+              <span className="text-sm font-medium text-foreground flex-1 text-left">
                 Notification Settings
               </span>
               <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -213,7 +213,7 @@ export default function Profile() {
 
       <button
         onClick={handleLogout}
-        className="w-full bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3 active:bg-red-50 transition-colors"
+        className="w-full bg-card rounded-2xl border border-border p-4 flex items-center gap-3 active:bg-red-50 transition-colors"
       >
         <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
           <LogOut className="w-5 h-5 text-red-500" />

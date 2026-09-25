@@ -41,16 +41,16 @@ export default function BudgetShop() {
     );
   }
 
-  if (!budget) return <div className="p-8 text-center text-gray-500">Invalid budget range</div>;
+  if (!budget) return <div className="p-8 text-center text-muted-foreground">Invalid budget range</div>;
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold text-gray-900 mb-1 mt-2">💚 {budget.label}</h1>
-      <p className="text-sm text-gray-500 mb-4">Everything within your budget</p>
+      <h1 className="text-2xl font-bold text-foreground mb-1 mt-2">💚 {budget.label}</h1>
+      <p className="text-sm text-muted-foreground mb-4">Everything within your budget</p>
 
       {packages.length > 0 && (
         <div className="mb-6">
-          <h2 className="font-bold text-gray-900 mb-3">Packages</h2>
+          <h2 className="font-bold text-foreground mb-3">Packages</h2>
           <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
             {packages.map((pkg) => (
               <div key={pkg.id} className="w-72 flex-shrink-0">
@@ -61,9 +61,9 @@ export default function BudgetShop() {
         </div>
       )}
 
-      <h2 className="font-bold text-gray-900 mb-3">Products</h2>
+      <h2 className="font-bold text-foreground mb-3">Products</h2>
       {products.length === 0 ? (
-        <p className="text-gray-500 text-center py-8">No products in this range</p>
+        <p className="text-muted-foreground text-center py-8">No products in this range</p>
       ) : (
         <div className="grid grid-cols-2 gap-3">
           {products.map((p) => (

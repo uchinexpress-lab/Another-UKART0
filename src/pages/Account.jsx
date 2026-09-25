@@ -97,7 +97,7 @@ export default function Account() {
   return (
     <div className="p-4 space-y-5">
       {/* Profile photo */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col items-center">
+      <div className="bg-card rounded-2xl border border-border p-5 flex flex-col items-center">
         <div className="relative">
           {user.avatar_url ? (
             <Image
@@ -127,7 +127,7 @@ export default function Account() {
         <p className="text-sm font-bold text-[#1a2238] mt-3">
           {user.full_name || 'Ukart User'}
         </p>
-        <p className="text-xs text-gray-500">{user.email}</p>
+        <p className="text-xs text-muted-foreground">{user.email}</p>
         <p className="text-[11px] text-gray-400 mt-1">JPG, PNG (Max 5MB)</p>
       </div>
 
@@ -136,7 +136,7 @@ export default function Account() {
         <h2 className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-2 px-1">
           Personal Information
         </h2>
-        <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-4">
+        <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
           <div>
             <Label className="mb-1.5 block">Full Name</Label>
             <div className="relative">
@@ -156,7 +156,7 @@ export default function Account() {
               <Input
                 value={email}
                 disabled
-                className="pl-10 h-12 rounded-xl bg-gray-50 text-gray-500"
+                className="pl-10 h-12 rounded-xl bg-muted/50 text-muted-foreground"
               />
             </div>
             <p className="text-[11px] text-gray-400 mt-1">
@@ -182,14 +182,14 @@ export default function Account() {
       {/* Change password */}
       <button
         onClick={changePassword}
-        className="w-full bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3 active:bg-gray-50"
+        className="w-full bg-card rounded-2xl border border-border p-4 flex items-center gap-3 active:bg-muted/50"
       >
-        <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
           <KeyRound className="w-5 h-5 text-gray-700" />
         </div>
         <div className="flex-1 text-left">
-          <p className="text-sm font-semibold text-gray-900">Change Password</p>
-          <p className="text-xs text-gray-500">We'll email you a reset link</p>
+          <p className="text-sm font-semibold text-foreground">Change Password</p>
+          <p className="text-xs text-muted-foreground">We'll email you a reset link</p>
         </div>
         <ChevronRight className="w-4 h-4 text-gray-400" />
       </button>

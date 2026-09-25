@@ -99,7 +99,7 @@ export default function OrderTracking() {
 
   return (
     <div className="p-4 pb-10">
-      <h1 className="text-xl font-bold text-gray-900 mb-4">Track Your Order</h1>
+      <h1 className="text-xl font-bold text-foreground mb-4">Track Your Order</h1>
 
       <form onSubmit={handleSearch} className="mb-6">
         <div className="relative">
@@ -123,29 +123,29 @@ export default function OrderTracking() {
       {error && (
         <div className="text-center py-10">
           <Search className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">{error}</p>
+          <p className="text-muted-foreground">{error}</p>
         </div>
       )}
 
       {!order && !error && !loading && (
         <div className="text-center py-10">
           <Truck className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">Enter your order number to see live delivery status.</p>
+          <p className="text-muted-foreground">Enter your order number to see live delivery status.</p>
         </div>
       )}
 
       {order && (
         <div className="space-y-4">
           {/* Order summary header */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-4">
+          <div className="bg-card rounded-2xl border border-border p-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-bold text-gray-900">{order.order_number}</span>
+              <span className="text-sm font-bold text-foreground">{order.order_number}</span>
               {isCancelled ? (
                 <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-red-50 text-red-600 flex items-center gap-1">
                   <XCircle className="w-3 h-3" /> Cancelled
                 </span>
               ) : order.status === 'delivered' ? (
-                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#E8F5E9] text-[#2E7D32] flex items-center gap-1">
+                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-primary/10 text-[#2E7D32] flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3" /> Completed
                 </span>
               ) : (
@@ -158,14 +158,14 @@ export default function OrderTracking() {
               {order.items?.map((item, i) => (
                 <div
                   key={i}
-                  className="flex-shrink-0 bg-gray-50 rounded-lg px-2 py-1.5 text-[10px] text-gray-600 font-medium"
+                  className="flex-shrink-0 bg-muted/50 rounded-lg px-2 py-1.5 text-[10px] text-gray-600 font-medium"
                 >
                   {item.quantity}x {item.name}
                 </div>
               ))}
             </div>
             <div className="flex items-center justify-between text-sm pt-2 border-t border-gray-50">
-              <span className="text-gray-500">{order.items?.length || 0} items</span>
+              <span className="text-muted-foreground">{order.items?.length || 0} items</span>
               <span className="font-bold text-[#2E7D32]">
                 ₦{order.total.toLocaleString()}
               </span>
@@ -173,12 +173,12 @@ export default function OrderTracking() {
           </div>
 
           {/* Delivery address */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-4">
-            <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">Delivery Address</h3>
+          <div className="bg-card rounded-2xl border border-border p-4">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase mb-2">Delivery Address</h3>
             <div className="flex items-start gap-2">
               <MapPin className="w-4 h-4 text-[#2E7D32] flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm text-gray-900 font-medium">{order.customer_name}</p>
+                <p className="text-sm text-foreground font-medium">{order.customer_name}</p>
                 <p className="text-sm text-gray-600">{order.customer_address}</p>
                 {order.landmark && (
                   <p className="text-xs text-gray-400 mt-0.5">Near {order.landmark}</p>
@@ -192,8 +192,8 @@ export default function OrderTracking() {
 
           {/* Tracking timeline */}
           {!isCancelled ? (
-            <div className="bg-white rounded-2xl border border-gray-100 p-4">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase mb-4">
+            <div className="bg-card rounded-2xl border border-border p-4">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase mb-4">
                 Delivery Progress
               </h3>
               <div className="space-y-0">
@@ -210,8 +210,8 @@ export default function OrderTracking() {
                         <div
                           className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
                             isCompleted || isCurrent
-                              ? 'bg-[#E8F5E9]'
-                              : 'bg-gray-100'
+                              ? 'bg-primary/10'
+                              : 'bg-muted'
                           } ${isCurrent ? 'ring-2 ring-[#2E7D32] ring-offset-1' : ''}`}
                         >
                           <Icon
@@ -228,7 +228,7 @@ export default function OrderTracking() {
                         {i < STEPS.length - 1 && (
                           <div
                             className={`w-0.5 flex-1 min-h-[28px] my-1 rounded-full ${
-                              isCompleted ? 'bg-[#2E7D32]' : 'bg-gray-100'
+                              isCompleted ? 'bg-[#2E7D32]' : 'bg-muted'
                             }`}
                           />
                         )}
@@ -238,20 +238,20 @@ export default function OrderTracking() {
                       <div className={`pb-6 ${i === STEPS.length - 1 ? 'pb-0' : ''}`}>
                         <p
                           className={`text-sm font-bold ${
-                            isCompleted || isCurrent ? 'text-gray-900' : 'text-gray-400'
+                            isCompleted || isCurrent ? 'text-foreground' : 'text-gray-400'
                           }`}
                         >
                           {step.title}
                         </p>
                         <p
                           className={`text-xs mt-0.5 ${
-                            isCompleted || isCurrent ? 'text-gray-500' : 'text-gray-400'
+                            isCompleted || isCurrent ? 'text-muted-foreground' : 'text-gray-400'
                           }`}
                         >
                           {step.description}
                         </p>
                         {isCurrent && (
-                          <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-bold text-[#2E7D32] bg-[#E8F5E9] px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-bold text-[#2E7D32] bg-primary/10 px-2 py-0.5 rounded-full">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#2E7D32] animate-pulse" />
                             Current step
                           </span>
@@ -263,7 +263,7 @@ export default function OrderTracking() {
               </div>
 
               {order.status === 'on_the_way' && (
-                <div className="mt-2 p-3 rounded-xl bg-[#E8F5E9] text-center">
+                <div className="mt-2 p-3 rounded-xl bg-primary/10 text-center">
                   <p className="text-sm font-bold text-[#2E7D32]">Your rider is on the way! 🛵</p>
                   <p className="text-xs text-[#2E7D32]/70 mt-0.5">
                     Estimated arrival: 30–60 minutes within Lagos
@@ -283,7 +283,7 @@ export default function OrderTracking() {
 
           <Link
             to="/"
-            className="block w-full text-center bg-white border border-gray-200 text-gray-700 text-sm font-bold px-6 py-3 rounded-2xl"
+            className="block w-full text-center bg-card border border-gray-200 text-gray-700 text-sm font-bold px-6 py-3 rounded-2xl"
           >
             Continue Shopping
           </Link>

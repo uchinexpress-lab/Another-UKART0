@@ -196,11 +196,11 @@ export default function Checkout() {
   if (done) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center min-h-[70vh]">
-        <div className="w-20 h-20 rounded-full bg-[#E8F5E9] flex items-center justify-center mb-4">
+        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
           <CheckCircle2 className="w-12 h-12 text-[#2E7D32]" />
         </div>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">Order Placed!</h2>
-        <p className="text-sm text-gray-500 mb-1">
+        <h2 className="text-xl font-bold text-foreground mb-1">Order Placed!</h2>
+        <p className="text-sm text-muted-foreground mb-1">
           Your order <span className="font-bold text-[#2E7D32]">{done}</span> has been received.
         </p>
         <p className="text-xs text-gray-400 mb-6">We'll call {phone} to confirm your delivery.</p>
@@ -217,11 +217,11 @@ export default function Checkout() {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center min-h-[60vh]">
-        <div className="w-20 h-20 rounded-full bg-[#E8F5E9] flex items-center justify-center mb-4">
+        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
           <ShoppingBag className="w-10 h-10 text-[#2E7D32]" />
         </div>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">Your cart is empty</h2>
-        <p className="text-sm text-gray-500 mb-4">Add items before checking out</p>
+        <h2 className="text-xl font-bold text-foreground mb-1">Your cart is empty</h2>
+        <p className="text-sm text-muted-foreground mb-4">Add items before checking out</p>
         <Link to="/" className="bg-[#2E7D32] text-white text-sm font-bold px-6 py-3 rounded-full">
           Start Shopping
         </Link>
@@ -239,12 +239,12 @@ export default function Checkout() {
         <button onClick={() => navigate(-1)} className="p-1.5 -ml-1.5 rounded-full hover:bg-black/5">
           <ArrowLeft className="w-5 h-5 text-gray-700" />
         </button>
-        <h1 className="text-xl font-bold text-gray-900">Delivery Details</h1>
+        <h1 className="text-xl font-bold text-foreground">Delivery Details</h1>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 p-3 mb-4">
+      <div className="bg-card rounded-2xl border border-border p-3 mb-4">
         <div className="flex items-center justify-between text-sm mb-2">
-          <span className="text-gray-500">
+          <span className="text-muted-foreground">
             {items.reduce((s, i) => s + i.quantity, 0)} items
           </span>
           <span className="font-bold text-[#2E7D32]">
@@ -274,12 +274,12 @@ export default function Checkout() {
       </div>
 
       {/* Voucher / Promo code */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-4 mb-4">
+      <div className="bg-card rounded-2xl border border-border p-4 mb-4">
         <label className={labelClass}>
           <Tag className="w-3.5 h-3.5" /> Voucher / Promo Code
         </label>
         {voucher ? (
-          <div className="flex items-center justify-between bg-[#E8F5E9] rounded-xl px-3 py-2.5">
+          <div className="flex items-center justify-between bg-primary/10 rounded-xl px-3 py-2.5">
             <span className="text-sm font-semibold text-[#2E7D32]">
               {voucher.code} ({voucher.discount_percent}% off)
             </span>
@@ -315,7 +315,7 @@ export default function Checkout() {
       {/* Saved addresses from previous orders */}
       {savedAddresses.length > 0 && (
         <div className="mb-4">
-          <p className="text-xs font-semibold text-gray-500 flex items-center gap-1.5 mb-2">
+          <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 mb-2">
             <History className="w-3.5 h-3.5" /> Use a saved address
           </p>
           <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
@@ -323,17 +323,17 @@ export default function Checkout() {
               <button
                 key={i}
                 onClick={() => applySaved(a)}
-                className="flex-shrink-0 text-left text-xs bg-white border border-gray-100 rounded-xl px-3 py-2 w-44 active:scale-95 transition-transform"
+                className="flex-shrink-0 text-left text-xs bg-card border border-border rounded-xl px-3 py-2 w-44 active:scale-95 transition-transform"
               >
-                <span className="font-semibold text-gray-900 block line-clamp-1">{a.name}</span>
-                <span className="text-gray-500 line-clamp-2">{a.address}</span>
+                <span className="font-semibold text-foreground block line-clamp-1">{a.name}</span>
+                <span className="text-muted-foreground line-clamp-2">{a.address}</span>
               </button>
             ))}
           </div>
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-4">
+      <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
         <div>
           <label className={labelClass}>
             <User className="w-3.5 h-3.5" /> Full Name
@@ -383,12 +383,12 @@ export default function Checkout() {
       </div>
 
       <div
-        className="fixed left-0 right-0 max-w-md mx-auto px-4 py-3 bg-white border-t border-gray-100"
+        className="fixed left-0 right-0 max-w-md mx-auto px-4 py-3 bg-card border-t border-border"
         style={{ bottom: 'calc(env(safe-area-inset-bottom) + 76px)' }}
       >
         {appliedDiscount > 0 && (
           <div className="flex items-center justify-between text-xs mb-2">
-            <span className="text-gray-500">
+            <span className="text-muted-foreground">
               Discount {voucher ? `(${voucher.code})` : ''}
             </span>
             <span className="text-[#2E7D32] font-semibold">−₦{appliedDiscount.toLocaleString()}</span>
