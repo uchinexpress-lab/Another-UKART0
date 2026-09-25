@@ -14,6 +14,10 @@ const SLIDES = [
     image:
       'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/23b9435b7_ChatGPTImageSep25202610_26_55PM.png',
   },
+  {
+    image:
+      'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/9a3f88528_ChatGPTImageSep25202610_35_44PM.png',
+  },
 ];
 
 const ONBOARDING_KEY = 'ukart_onboarding_complete';
