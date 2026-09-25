@@ -9,10 +9,12 @@ import {
   Loader2,
   ChevronRight,
   ShoppingBag,
+  Truck,
 } from 'lucide-react';
 import PullToRefresh from '@/components/home/PullToRefresh';
 
 const ACTIVE = ['new', 'processing', 'ready', 'on_the_way'];
+const ACTIVE_STEP_INDEX = { new: 0, processing: 1, ready: 2, on_the_way: 3 };
 
 const TABS = [
   { key: 'active', label: 'Active' },
@@ -115,28 +117,50 @@ export default function Orders() {
         </div>
       ) : (
         <div className="space-y-3">
-          {filtered.map((o) => (
-            <Link
-              key={o.id}
-              to={`/orders/${o.id}`}
-              className="block bg-card rounded-2xl border border-border p-4 active:scale-[0.98] transition-transform"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-bold text-foreground">{o.order_number}</span>
-                <StatusBadge status={o.status} />
-              </div>
-              <p className="text-xs text-gray-400 mb-3">{formatDate(o.created_date)}</p>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">
-                  {o.items?.length || 0} item{(o.items?.length || 0) > 1 ? 's' : ''}
-                </span>
-                <span className="flex items-center gap-1 font-bold text-[#2E7D32] text-sm">
-                  ₦{(o.total || 0).toLocaleString()}
-                  <ChevronRight className="w-4 h-4" />
-                </span>
-              </div>
-            </Link>
-          ))}
+          {filtered.map((o) => {
+            const isActive = ACTIVE.includes(o.status);
+            const stepIdx = ACTIVE_STEP_INDEX[o.status] ?? -1;
+            const progressPct = stepIdx >= 0 ? ((stepIdx + 1) / 5) * 100 : 100;
+            return (
+              <Link
+                key={o.id}
+                to={isActive ? `/track?id=${o.id}` : `/orders/${o.id}`}
+                className="block bg-card rounded-2xl border border-border p-4 active:scale-[0.98] transition-transform"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-bold text-foreground">{o.order_number}</span>
+                  <StatusBadge status={o.status} />
+                </div>
+                <p className="text-xs text-muted-foreground mb-3">{formatDate(o.created_date)}</p>
+
+                {/* Mini progress bar for active orders */}
+                {isActive && (
+                  <div className="mb-3">
+                    <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-[#2E7D32] transition-all duration-500"
+                        style={{ width: `${progressPct}%` }}
+                      />
+                    </div>
+                    <div className="flex items-center gap-1 mt-1.5 text-[10px] font-bold text-[#2E7D32]">
+                      <Truck className="w-3 h-3" />
+                      <span>Track shipment · {Math.round(progressPct)}% complete</span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">
+                    {o.items?.length || 0} item{(o.items?.length || 0) > 1 ? 's' : ''}
+                  </span>
+                  <span className="flex items-center gap-1 font-bold text-[#2E7D32] text-sm">
+                    ₦{(o.total || 0).toLocaleString()}
+                    <ChevronRight className="w-4 h-4" />
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>
