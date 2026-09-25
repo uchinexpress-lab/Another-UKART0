@@ -72,17 +72,11 @@ export default function Layout() {
       {isHome ? <TopNav /> : <BrandedHeader title={getPageTitle(pathname)} />}
       <main className="flex-1 pb-20 max-w-md mx-auto w-full">
         <Suspense fallback={Fallback}>
-          {/* Tab panels — cached outlets, kept alive, fade on switch */}
+          {/* Tab panels — cached outlets, kept alive (hidden when inactive) */}
           {tabsToRender.map((p) => (
-            <motion.div
-              key={p}
-              className={p === pathname ? 'block' : 'hidden'}
-              initial={false}
-              animate={{ opacity: p === pathname ? 1 : 0 }}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
-            >
+            <div key={p} className={p === pathname ? 'block' : 'hidden'}>
               {cached.current[p]}
-            </motion.div>
+            </div>
           ))}
           {/* Non-tab child screens — push navigation with slide-in-from-right */}
           <AnimatePresence mode="wait">

@@ -4,6 +4,7 @@ import { useSearchParams } from 'react-router-dom';
 import SheetSelect from '@/components/SheetSelect';
 import {
   ArrowLeft,
+  ArrowRight,
   Plus,
   Send,
   MessageCircle,
@@ -414,7 +415,7 @@ export default function SupportTickets() {
               tab === t ? 'bg-white text-[#2E7D32] shadow-sm' : 'text-gray-500'
             }`}
           >
-            {t === 'open' ? 'Open' : 'Closed'}
+            {t === 'open' ? 'Open' : 'Resolved'}
           </button>
         ))}
       </div>
@@ -429,19 +430,19 @@ export default function SupportTickets() {
             <Headset className="w-8 h-8 text-[#2E7D32]" />
           </div>
           <p className="text-sm font-semibold text-gray-900 mb-1">
-            No {tab} tickets
+            {tab === 'open' ? 'No open requests' : 'No resolved tickets'}
           </p>
-          <p className="text-xs text-gray-500 mb-4">
+          <p className="text-xs text-gray-500 mb-4 max-w-xs">
             {tab === 'open'
-              ? 'Need help? Start a chat with our support team.'
-              : 'Closed tickets will appear here.'}
+              ? "You don't have any open support requests at the moment."
+              : 'Resolved tickets will appear here.'}
           </p>
           {tab === 'open' && (
             <button
               onClick={() => setSearchParams({ view: 'new' })}
               className="bg-[#2E7D32] text-white text-sm font-bold px-5 py-2.5 rounded-full flex items-center gap-1.5"
             >
-              <Plus className="w-4 h-4" /> Start a Ticket
+              Contact Support <ArrowRight className="w-4 h-4" />
             </button>
           )}
         </div>

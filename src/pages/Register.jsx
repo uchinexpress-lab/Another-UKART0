@@ -6,21 +6,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  UserPlus,
   Mail,
   Lock,
   User,
   Phone,
   Gift,
   Loader2,
-  ShoppingBag,
+  ArrowRight,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import GoogleIcon from "@/components/GoogleIcon";
+import AuthShell from "@/components/auth/AuthShell";
 import { toast } from "@/components/ui/use-toast";
 
 export default function Register() {
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -29,14 +32,21 @@ export default function Register() {
   const [agree, setAgree] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
   const [otpCode, setOtpCode] = useState("");
 
-  const returnTo = new URLSearchParams(window.location.search).get("returnTo") || "/";
+  const returnTo =
+    new URLSearchParams(window.location.search).get("returnTo") || "/";
+  const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    if (!firstName.trim()) {
+      setError("Enter your first name");
+      return;
+    }
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
@@ -76,20 +86,22 @@ export default function Register() {
         });
       } catch {}
       try {
-        const ref = localStorage.getItem('ukart_ref');
+        const ref = localStorage.getItem("ukart_ref");
         if (ref) {
           const me = await base44.auth.me();
-          const existing = await base44.entities.Referral.filter({ referred_user_id: me.id });
+          const existing = await base44.entities.Referral.filter({
+            referred_user_id: me.id,
+          });
           if (existing.length === 0) {
             await base44.entities.Referral.create({
               referrer_id: ref,
               referred_user_id: me.id,
               referred_email: me.email,
-              status: 'pending',
+              status: "pending",
               reward_amount: 1000,
             });
           }
-          localStorage.removeItem('ukart_ref');
+          localStorage.removeItem("ukart_ref");
         }
       } catch {}
       window.location.href = returnTo;
@@ -104,7 +116,10 @@ export default function Register() {
     setError("");
     try {
       await base44.auth.resendOtp(email);
-      toast({ title: "Code sent", description: "Check your email for the new code." });
+      toast({
+        title: "Code sent",
+        description: "Check your email for the new code.",
+      });
     } catch (err) {
       setError(err.message || "Failed to resend code");
     }
@@ -117,230 +132,241 @@ export default function Register() {
 
   if (showOtp) {
     return (
-      <div className="min-h-screen flex flex-col bg-white max-w-md mx-auto">
-        <div className="bg-gradient-to-br from-[#1B7F3A] via-[#2E9E44] to-[#5FCF65] px-6 pt-14 pb-12 rounded-b-[2.5rem] shadow-lg">
-          <div className="flex flex-col items-center text-center text-white">
-            <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center shadow-lg mb-4">
-              <Mail className="w-8 h-8 text-[#1B5E20]" strokeWidth={2.5} />
-            </div>
-            <h1 className="text-2xl font-bold">Verify your email</h1>
-            <p className="text-sm text-white/90 mt-1.5">We sent a code to {email}</p>
+      <AuthShell
+        icon={Mail}
+        title="Verify your email"
+        subtitle={`We sent a code to ${email}`}
+      >
+        {error && (
+          <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-sm">
+            {error}
           </div>
+        )}
+        <div className="flex justify-center mb-6">
+          <InputOTP
+            maxLength={6}
+            value={otpCode}
+            onChange={setOtpCode}
+            autoFocus
+            autoComplete="one-time-code"
+          >
+            <InputOTPGroup>
+              <InputOTPSlot index={0} />
+              <InputOTPSlot index={1} />
+              <InputOTPSlot index={2} />
+              <InputOTPSlot index={3} />
+              <InputOTPSlot index={4} />
+              <InputOTPSlot index={5} />
+            </InputOTPGroup>
+          </InputOTP>
         </div>
-        <div className="flex-1 px-6 -mt-6">
-          <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6">
-            {error && (
-              <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-600 text-sm">{error}</div>
-            )}
-            <div className="flex justify-center mb-6">
-              <InputOTP
-                maxLength={6}
-                value={otpCode}
-                onChange={setOtpCode}
-                autoFocus
-                autoComplete="one-time-code"
-              >
-                <InputOTPGroup>
-                  <InputOTPSlot index={0} />
-                  <InputOTPSlot index={1} />
-                  <InputOTPSlot index={2} />
-                  <InputOTPSlot index={3} />
-                  <InputOTPSlot index={4} />
-                  <InputOTPSlot index={5} />
-                </InputOTPGroup>
-              </InputOTP>
-            </div>
-            <Button
-              className="w-full h-12 font-semibold rounded-xl"
-              onClick={handleVerify}
-              disabled={loading || otpCode.length < 6}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Verifying...
-                </>
-              ) : (
-                "Verify"
-              )}
-            </Button>
-            <p className="text-center text-sm text-gray-500 mt-4">
-              Didn't receive the code?{" "}
-              <button
-                onClick={handleResend}
-                className="text-[#2E7D32] font-medium hover:underline"
-              >
-                Resend
-              </button>
-            </p>
-          </div>
-        </div>
-      </div>
+        <Button
+          className="w-full h-12 font-semibold rounded-xl"
+          onClick={handleVerify}
+          disabled={loading || otpCode.length < 6}
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Verifying...
+            </>
+          ) : (
+            "Verify"
+          )}
+        </Button>
+        <p className="text-center text-sm text-gray-500 mt-4">
+          Didn't receive the code?{" "}
+          <button
+            onClick={handleResend}
+            className="text-[#2E7D32] font-medium hover:underline"
+          >
+            Resend
+          </button>
+        </p>
+      </AuthShell>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white max-w-md mx-auto">
-      <div className="bg-gradient-to-br from-[#1B7F3A] via-[#2E9E44] to-[#5FCF65] px-6 pt-14 pb-12 rounded-b-[2.5rem] shadow-lg">
-        <div className="flex flex-col items-center text-center text-white">
-          <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center shadow-lg mb-4">
-            <ShoppingBag className="w-8 h-8 text-[#1B5E20]" strokeWidth={2.5} />
-          </div>
-          <h1 className="text-2xl font-bold">Create Account</h1>
-          <p className="text-sm text-white/90 mt-1.5">Join Ukart. No Market Wahala.</p>
+    <AuthShell
+      showBack
+      title="Create your Ukart account"
+      subtitle="Let's get you shopping."
+    >
+      {error && (
+        <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-sm">
+          {error}
+        </div>
+      )}
+
+      <Button
+        variant="outline"
+        className="w-full h-12 text-sm font-medium rounded-xl mb-4"
+        onClick={handleGoogle}
+      >
+        <GoogleIcon className="w-5 h-5 mr-2" />
+        Continue with Google
+      </Button>
+
+      <div className="relative mb-4">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-200" />
+        </div>
+        <div className="relative flex justify-center text-xs">
+          <span className="bg-white px-3 text-gray-400 uppercase tracking-wide">
+            or
+          </span>
         </div>
       </div>
 
-      <div className="flex-1 px-6 -mt-6">
-        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 space-y-3">
-          <Button
-            variant="outline"
-            className="w-full h-12 text-sm font-medium rounded-xl"
-            onClick={handleGoogle}
-          >
-            <GoogleIcon className="w-5 h-5 mr-2" />
-            Continue with Google
-          </Button>
-
-          <div className="relative my-2">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="bg-white px-3 text-gray-400 uppercase">or</span>
-            </div>
-          </div>
-
-          {error && (
-            <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">{error}</div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="fullname">Full Name</Label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  id="fullname"
-                  placeholder="e.g. Adaeze Okafor"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="pl-10 h-12 rounded-xl"
-                  required
-                />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="email">Email Address</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 h-12 rounded-xl"
-                  required
-                />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="phone">Phone Number</Label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="e.g. 0803 123 4567"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="pl-10 h-12 rounded-xl"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="password">Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 h-12 rounded-xl"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="confirm">Confirm</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    id="confirm"
-                    type="password"
-                    placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="pl-10 h-12 rounded-xl"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="referral">Referral Code (optional)</Label>
-              <div className="relative">
-                <Gift className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  id="referral"
-                  placeholder="Enter code if you have one"
-                  value={referralCode}
-                  onChange={(e) => setReferralCode(e.target.value)}
-                  className="pl-10 h-12 rounded-xl"
-                />
-              </div>
-            </div>
-            <div className="flex items-start gap-2 pt-1">
-              <Checkbox
-                id="terms"
-                checked={agree}
-                onCheckedChange={setAgree}
-                className="mt-0.5 data-[state=checked]:bg-[#2E7D32] data-[state=checked]:border-[#2E7D32]"
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label className="mb-1.5 block">First Name</Label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                placeholder="Adaeze"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className="pl-9 h-12 rounded-xl"
+                required
               />
-              <Label htmlFor="terms" className="text-xs text-gray-500 leading-relaxed">
-                I agree to the{" "}
-                <span className="text-[#2E7D32] font-medium">Terms & Conditions</span> and{" "}
-                <span className="text-[#2E7D32] font-medium">Privacy Policy</span>.
-              </Label>
             </div>
-            <Button
-              type="submit"
-              className="w-full h-12 font-semibold rounded-xl"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Creating account...
-                </>
-              ) : (
-                "Create Account"
-              )}
-            </Button>
-          </form>
+          </div>
+          <div>
+            <Label className="mb-1.5 block">Last Name</Label>
+            <Input
+              placeholder="Okafor"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              className="h-12 rounded-xl"
+              required
+            />
+          </div>
         </div>
+        <div>
+          <Label className="mb-1.5 block">Email Address</Label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="pl-10 h-12 rounded-xl"
+              required
+            />
+          </div>
+        </div>
+        <div>
+          <Label className="mb-1.5 block">Phone Number</Label>
+          <div className="relative">
+            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              type="tel"
+              placeholder="e.g. 0803 123 4567"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="pl-10 h-12 rounded-xl"
+            />
+          </div>
+        </div>
+        <div>
+          <Label className="mb-1.5 block">Password</Label>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              type={showPwd ? "text" : "password"}
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="pl-10 pr-10 h-12 rounded-xl"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPwd((v) => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+              aria-label="Toggle password"
+            >
+              {showPwd ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+            </button>
+          </div>
+        </div>
+        <div>
+          <Label className="mb-1.5 block">Confirm Password</Label>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              type="password"
+              placeholder="••••••••"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="pl-10 h-12 rounded-xl"
+              required
+            />
+          </div>
+        </div>
+        <div>
+          <Label className="mb-1.5 block">Referral Code (optional)</Label>
+          <div className="relative">
+            <Gift className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              placeholder="Enter code if you have one"
+              value={referralCode}
+              onChange={(e) => setReferralCode(e.target.value)}
+              className="pl-10 h-12 rounded-xl"
+            />
+          </div>
+        </div>
+        <div className="flex items-start gap-2 pt-1">
+          <Checkbox
+            id="terms"
+            checked={agree}
+            onCheckedChange={setAgree}
+            className="mt-0.5 data-[state=checked]:bg-[#2E7D32] data-[state=checked]:border-[#2E7D32]"
+          />
+          <Label
+            htmlFor="terms"
+            className="text-xs text-gray-500 leading-relaxed"
+          >
+            I agree to the{" "}
+            <span className="text-[#2E7D32] font-medium">
+              Terms & Conditions
+            </span>{" "}
+            and{" "}
+            <span className="text-[#2E7D32] font-medium">Privacy Policy</span>.
+          </Label>
+        </div>
+        <Button
+          type="submit"
+          className="w-full h-12 font-semibold rounded-xl text-base"
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Creating account...
+            </>
+          ) : (
+            <>
+              Create Account <ArrowRight className="w-4 h-4 ml-1.5" />
+            </>
+          )}
+        </Button>
+      </form>
 
-        <p className="text-center text-sm text-gray-600 mt-6">
-          Already have an account?{" "}
-          <Link to="/login" className="text-[#2E7D32] font-semibold hover:underline">
-            Log in
-          </Link>
-        </p>
-      </div>
-    </div>
+      <p className="text-center text-sm text-gray-600 mt-6">
+        Already have an account?{" "}
+        <Link to="/login" className="text-[#2E7D32] font-semibold hover:underline">
+          Log in
+        </Link>
+      </p>
+    </AuthShell>
   );
 }

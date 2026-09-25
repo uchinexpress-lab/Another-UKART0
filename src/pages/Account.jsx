@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { User, Phone, Mail, Camera, Loader2, KeyRound, Save } from 'lucide-react';
+import {
+  User,
+  Phone,
+  Mail,
+  Camera,
+  Loader2,
+  KeyRound,
+  Save,
+  ChevronRight,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -78,8 +87,6 @@ export default function Account() {
     }
   };
 
-  const fieldClass = 'w-full text-sm border border-gray-200 rounded-xl pl-10 h-12 outline-none focus:border-[#2E7D32]';
-
   if (!user)
     return (
       <div className="flex justify-center py-16">
@@ -88,76 +95,91 @@ export default function Account() {
     );
 
   return (
-    <div className="p-4 space-y-4">
-      <div className="bg-white rounded-2xl border border-gray-100 p-6 flex flex-col items-center">
+    <div className="p-4 space-y-5">
+      {/* Profile photo */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-5 flex flex-col items-center">
         <div className="relative">
           {user.avatar_url ? (
             <Image
               src={user.avatar_url}
               fittingType="fill"
-              className="w-24 h-24 rounded-full object-cover"
+              className="w-20 h-20 rounded-full object-cover"
             />
           ) : (
-            <div
-              className="w-24 h-24 rounded-full flex items-center justify-center text-white"
-              style={{ background: 'linear-gradient(135deg, #76C237, #2E7D32)' }}
-            >
-              <User className="w-12 h-12" />
+            <div className="w-20 h-20 rounded-full bg-[#2E7D32] flex items-center justify-center text-white">
+              <User className="w-10 h-10" />
             </div>
           )}
-          <label className="absolute bottom-0 right-0 w-11 h-11 rounded-full bg-[#2E7D32] flex items-center justify-center shadow-lg cursor-pointer active:scale-90 transition-transform">
+          <label className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[#2E7D32] flex items-center justify-center shadow-md cursor-pointer active:scale-90 transition-transform ring-2 ring-white">
             {uploading ? (
-              <Loader2 className="w-4 h-4 text-white animate-spin" />
+              <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
             ) : (
-              <Camera className="w-4 h-4 text-white" />
+              <Camera className="w-3.5 h-3.5 text-white" />
             )}
-            <input type="file" accept="image/*" onChange={onPickPhoto} className="hidden" />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={onPickPhoto}
+              className="hidden"
+            />
           </label>
         </div>
-        <p className="text-sm font-bold text-gray-900 mt-3">{user.full_name || 'Ukart User'}</p>
+        <p className="text-sm font-bold text-[#1a2238] mt-3">
+          {user.full_name || 'Ukart User'}
+        </p>
         <p className="text-xs text-gray-500">{user.email}</p>
+        <p className="text-[11px] text-gray-400 mt-1">JPG, PNG (Max 5MB)</p>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-4">
-        <div>
-          <Label className="mb-1.5">Full Name</Label>
-          <div className="relative">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              className="pl-10 h-12 rounded-xl"
-              placeholder="Your full name"
-            />
+      {/* Personal information */}
+      <div>
+        <h2 className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-2 px-1">
+          Personal Information
+        </h2>
+        <div className="bg-white rounded-2xl border border-gray-100 p-4 space-y-4">
+          <div>
+            <Label className="mb-1.5 block">Full Name</Label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="pl-10 h-12 rounded-xl"
+                placeholder="Your full name"
+              />
+            </div>
           </div>
-        </div>
-        <div>
-          <Label className="mb-1.5">Email Address</Label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              value={email}
-              disabled
-              className="pl-10 h-12 rounded-xl bg-gray-50 text-gray-500"
-            />
+          <div>
+            <Label className="mb-1.5 block">Email Address</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                value={email}
+                disabled
+                className="pl-10 h-12 rounded-xl bg-gray-50 text-gray-500"
+              />
+            </div>
+            <p className="text-[11px] text-gray-400 mt-1">
+              Email cannot be changed. Contact support to update.
+            </p>
           </div>
-          <p className="text-[11px] text-gray-400 mt-1">Email cannot be changed. Contact support to update.</p>
-        </div>
-        <div>
-          <Label className="mb-1.5">Phone Number</Label>
-          <div className="relative">
-            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <Input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              inputMode="tel"
-              className="pl-10 h-12 rounded-xl"
-              placeholder="e.g. 0803 123 4567"
-            />
+          <div>
+            <Label className="mb-1.5 block">Phone Number</Label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                inputMode="tel"
+                className="pl-10 h-12 rounded-xl"
+                placeholder="e.g. 0803 123 4567"
+              />
+            </div>
           </div>
         </div>
       </div>
 
+      {/* Change password */}
       <button
         onClick={changePassword}
         className="w-full bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3 active:bg-gray-50"
@@ -169,10 +191,11 @@ export default function Account() {
           <p className="text-sm font-semibold text-gray-900">Change Password</p>
           <p className="text-xs text-gray-500">We'll email you a reset link</p>
         </div>
+        <ChevronRight className="w-4 h-4 text-gray-400" />
       </button>
 
       <Button
-        className="w-full h-12 rounded-xl"
+        className="w-full h-12 rounded-xl font-semibold"
         onClick={save}
         disabled={saving}
       >
