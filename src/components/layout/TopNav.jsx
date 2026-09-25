@@ -64,7 +64,7 @@ export default function TopNav() {
   };
 
   return (
-    <div className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm shadow-[0_1px_8px_rgba(0,0,0,0.05)] overflow-hidden">
+    <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm shadow-[0_1px_8px_rgba(0,0,0,0.05)] overflow-hidden">
       {/* subtle brand-green decoration */}
       <div className="absolute -top-10 -right-12 w-40 h-40 rounded-full bg-primary/10 opacity-60 blur-2xl pointer-events-none" />
       <div className="absolute top-1 right-14 w-20 h-20 rounded-full bg-primary/5 opacity-40 blur-xl pointer-events-none" />
@@ -76,18 +76,18 @@ export default function TopNav() {
         <div className="flex items-center gap-2 mt-2">
           <Drawer open={areaOpen} onOpenChange={setAreaOpen}>
             <DrawerTrigger asChild>
-              <button className="flex-1 min-w-0 flex items-center justify-between bg-primary rounded-full pl-3.5 pr-4 py-2.5 active:scale-[0.98] transition-transform">
+              <button className="flex-1 min-w-0 flex items-center justify-between bg-brand rounded-full pl-3.5 pr-4 py-2.5 active:scale-[0.98] transition-transform">
                 <span className="flex items-center gap-1.5 min-w-0">
-                  <MapPin className="w-4 h-4 text-primary-foreground shrink-0" />
-                  <span className="text-xs font-semibold text-primary-foreground truncate flex items-center gap-0.5">
+                  <MapPin className="w-4 h-4 text-brand-foreground shrink-0" />
+                  <span className="text-xs font-semibold text-brand-foreground truncate flex items-center gap-0.5">
                     {areaDisplay}, Lagos
-                    <ChevronDown className="w-3.5 h-3.5 text-primary-foreground shrink-0" />
+                    <ChevronDown className="w-3.5 h-3.5 text-brand-foreground shrink-0" />
                   </span>
                 </span>
-                <span className="w-px h-4 bg-primary-foreground/30 mx-1 shrink-0" />
+                <span className="w-px h-4 bg-brand-foreground/30 mx-1 shrink-0" />
                 <span className="flex items-center gap-1.5 shrink-0">
-                  <Bike className="w-4 h-4 text-primary-foreground" />
-                  <span className="text-xs font-semibold text-primary-foreground">
+                  <Bike className="w-4 h-4 text-brand-foreground" />
+                  <span className="text-xs font-semibold text-brand-foreground">
                     {deliveryShort}
                   </span>
                 </span>
