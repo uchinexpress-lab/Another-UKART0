@@ -5,6 +5,7 @@ import TopNav from './TopNav';
 import BrandedHeader from './BrandedHeader';
 import FloatingCart from './FloatingCart';
 import BottomNav from './BottomNav';
+import LocationPrompt from '@/components/LocationPrompt';
 
 const TAB_ROUTES = ['/', '/packages', '/order', '/wishlist', '/profile'];
 
@@ -96,6 +97,7 @@ export default function Layout() {
       </main>
       <FloatingCart />
       <BottomNav />
+      <LocationPrompt />
     </div>
   );
 }

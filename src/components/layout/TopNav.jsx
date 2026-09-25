@@ -8,7 +8,7 @@ import {
   Search,
   Bike,
 } from 'lucide-react';
-import { useDeliveryLocation } from '@/hooks/useDeliveryLocation';
+import { useLocation } from '@/context/LocationContext';
 import {
   Drawer,
   DrawerContent,
@@ -50,7 +50,7 @@ const LAGOS_AREAS = {
 };
 
 export default function TopNav() {
-  const { location, setManual } = useDeliveryLocation();
+  const { location, setManual } = useLocation();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [areaOpen, setAreaOpen] = useState(false);

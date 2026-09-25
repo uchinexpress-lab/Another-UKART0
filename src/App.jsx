@@ -9,6 +9,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 import { CartProvider } from '@/context/CartContext';
 import { WishlistProvider } from '@/context/WishlistContext';
+import { LocationProvider } from '@/context/LocationContext';
 import Layout from '@/components/layout/Layout';
 import Splash from '@/components/Splash';
 import BrowseGuard from '@/components/BrowseGuard';
@@ -66,6 +67,7 @@ const AuthenticatedApp = () => {
   return (
     <CartProvider>
     <WishlistProvider>
+    <LocationProvider>
       <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-[#2E7D32] rounded-full animate-spin" /></div>}>
       <Routes>
           <Route path="/onboarding" element={<Onboarding />} />
@@ -107,6 +109,7 @@ const AuthenticatedApp = () => {
           <Route path="*" element={<PageNotFound />} />
         </Routes>
         </Suspense>
+      </LocationProvider>
       </WishlistProvider>
     </CartProvider>
   );
