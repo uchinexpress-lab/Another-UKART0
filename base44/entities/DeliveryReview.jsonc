@@ -18,6 +18,12 @@
     },
     "customer_name": {
       "type": "string"
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   },
   "required": [
