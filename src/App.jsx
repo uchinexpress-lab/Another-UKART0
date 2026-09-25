@@ -46,6 +46,7 @@ const AdminTickets = lazy(() => import('@/pages/AdminTickets'));
 const About = lazy(() => import('@/pages/About'));
 const SettingsPage = lazy(() => import('@/pages/Settings'));
 const Account = lazy(() => import('@/pages/Account'));
+const Onboarding = lazy(() => import('@/pages/Onboarding'));
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
@@ -67,6 +68,7 @@ const AuthenticatedApp = () => {
     <WishlistProvider>
       <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-[#2E7D32] rounded-full animate-spin" /></div>}>
       <Routes>
+          <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

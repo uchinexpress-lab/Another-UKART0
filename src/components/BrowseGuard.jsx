@@ -4,7 +4,10 @@ import { useAuth } from "@/lib/AuthContext";
 export default function BrowseGuard() {
   const { isAuthenticated, isGuest } = useAuth();
   if (!(isAuthenticated || isGuest)) {
-    return <Navigate to="/login" replace />;
+    const onboardingDone =
+      typeof window !== 'undefined' &&
+      localStorage.getItem('ukart_onboarding_complete') === 'true';
+    return <Navigate to={onboardingDone ? '/login' : '/onboarding'} replace />;
   }
   return <Outlet />;
 }
