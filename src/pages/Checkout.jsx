@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
 import { base44 } from '@/api/base44Client';
 import { notifyOrderCreated } from '@/lib/notifications';
-import { ArrowLeft, MapPin, Navigation, Phone, User, Loader2, CheckCircle2, ShoppingBag, Tag, History, X } from 'lucide-react';
+import { ArrowLeft, MapPin, Navigation, Phone, User, Loader2, CheckCircle2, ShoppingBag, Tag, History, X, Banknote, Building2, ChevronRight } from 'lucide-react';
 
 const REWARD_AMOUNT = 1000;
 
@@ -23,6 +23,8 @@ export default function Checkout() {
   const [voucherCode, setVoucherCode] = useState('');
   const [voucher, setVoucher] = useState(null);
   const [voucherError, setVoucherError] = useState('');
+  const [step, setStep] = useState(1);
+  const [paymentMethod, setPaymentMethod] = useState('Cash on Delivery');
 
   useEffect(() => {
     (async () => {
@@ -151,7 +153,7 @@ export default function Checkout() {
         customer_address: address,
         landmark,
         status: 'new',
-        payment_method: 'Cash on Delivery',
+        payment_method: paymentMethod,
         payment_status: 'Pending',
       });
       try {
@@ -235,13 +237,28 @@ export default function Checkout() {
 
   return (
     <div className="p-4 pb-44">
+      {/* Header */}
       <div className="flex items-center gap-2 mb-4">
-        <button onClick={() => navigate(-1)} className="p-1.5 -ml-1.5 rounded-full hover:bg-black/5">
+        <button onClick={() => (step === 2 ? setStep(1) : navigate(-1))} className="p-1.5 -ml-1.5 rounded-full hover:bg-black/5">
           <ArrowLeft className="w-5 h-5 text-gray-700" />
         </button>
-        <h1 className="text-xl font-bold text-foreground">Delivery Details</h1>
+        <h1 className="text-xl font-bold text-foreground">Checkout</h1>
       </div>
 
+      {/* Step indicator */}
+      <div className="flex items-center mb-5">
+        <div className="flex items-center gap-2">
+          <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step >= 1 ? 'bg-[#2E7D32] text-white' : 'bg-muted text-muted-foreground'}`}>1</div>
+          <span className={`text-sm font-semibold ${step >= 1 ? 'text-foreground' : 'text-muted-foreground'}`}>Delivery</span>
+        </div>
+        <div className={`flex-1 h-0.5 mx-2 rounded ${step >= 2 ? 'bg-[#2E7D32]' : 'bg-border'}`} />
+        <div className="flex items-center gap-2">
+          <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step >= 2 ? 'bg-[#2E7D32] text-white' : 'bg-muted text-muted-foreground'}`}>2</div>
+          <span className={`text-sm font-semibold ${step >= 2 ? 'text-foreground' : 'text-muted-foreground'}`}>Payment</span>
+        </div>
+      </div>
+
+      {/* Cart summary */}
       <div className="bg-card rounded-2xl border border-border p-3 mb-4">
         <div className="flex items-center justify-between text-sm mb-2">
           <span className="text-muted-foreground">
@@ -273,140 +290,220 @@ export default function Checkout() {
         </div>
       </div>
 
-      {/* Voucher / Promo code */}
-      <div className="bg-card rounded-2xl border border-border p-4 mb-4">
-        <label className={labelClass}>
-          <Tag className="w-3.5 h-3.5" /> Voucher / Promo Code
-        </label>
-        {voucher ? (
-          <div className="flex items-center justify-between bg-primary/10 rounded-xl px-3 py-2.5">
-            <span className="text-sm font-semibold text-[#2E7D32]">
-              {voucher.code} ({voucher.discount_percent}% off)
-            </span>
-            <button
-              onClick={() => {
-                setVoucher(null);
-                setVoucherCode('');
-              }}
-              className="text-[#2E7D32]"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        ) : (
-          <div className="flex gap-2">
-            <input
-              value={voucherCode}
-              onChange={(e) => setVoucherCode(e.target.value)}
-              placeholder="Enter code"
-              className="flex-1 text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none focus:border-[#2E7D32]"
-            />
-            <button
-              onClick={applyVoucher}
-              className="px-4 rounded-xl bg-[#2E7D32] text-white text-sm font-semibold"
-            >
-              Apply
-            </button>
-          </div>
-        )}
-        {voucherError && <p className="text-xs text-red-500 mt-1.5">{voucherError}</p>}
-      </div>
+      {/* Step 1: Delivery address */}
+      {step === 1 && (
+        <>
+          {savedAddresses.length > 0 && (
+            <div className="mb-4">
+              <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 mb-2">
+                <History className="w-3.5 h-3.5" /> Use a saved address
+              </p>
+              <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+                {savedAddresses.map((a, i) => (
+                  <button
+                    key={i}
+                    onClick={() => applySaved(a)}
+                    className="flex-shrink-0 text-left text-xs bg-card border border-border rounded-xl px-3 py-2 w-44 active:scale-95 transition-transform"
+                  >
+                    <span className="font-semibold text-foreground block line-clamp-1">{a.name}</span>
+                    <span className="text-muted-foreground line-clamp-2">{a.address}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
-      {/* Saved addresses from previous orders */}
-      {savedAddresses.length > 0 && (
-        <div className="mb-4">
-          <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 mb-2">
-            <History className="w-3.5 h-3.5" /> Use a saved address
-          </p>
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-            {savedAddresses.map((a, i) => (
-              <button
-                key={i}
-                onClick={() => applySaved(a)}
-                className="flex-shrink-0 text-left text-xs bg-card border border-border rounded-xl px-3 py-2 w-44 active:scale-95 transition-transform"
-              >
-                <span className="font-semibold text-foreground block line-clamp-1">{a.name}</span>
-                <span className="text-muted-foreground line-clamp-2">{a.address}</span>
-              </button>
-            ))}
+          <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
+            <div>
+              <label className={labelClass}>
+                <User className="w-3.5 h-3.5" /> Full Name
+              </label>
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Adaeze Okafor"
+                className={fieldClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>
+                <MapPin className="w-3.5 h-3.5" /> House Address
+              </label>
+              <textarea
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="House/flat number, street name, area"
+                rows={2}
+                className={`${fieldClass} resize-none`}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>
+                <Navigation className="w-3.5 h-3.5" /> Landmark
+              </label>
+              <input
+                value={landmark}
+                onChange={(e) => setLandmark(e.target.value)}
+                placeholder="e.g. opposite Total filling station"
+                className={fieldClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>
+                <Phone className="w-3.5 h-3.5" /> Phone Number
+              </label>
+              <input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="e.g. 0803 123 4567"
+                inputMode="tel"
+                className={fieldClass}
+              />
+            </div>
           </div>
-        </div>
+        </>
       )}
 
-      <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
-        <div>
-          <label className={labelClass}>
-            <User className="w-3.5 h-3.5" /> Full Name
-          </label>
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Adaeze Okafor"
-            className={fieldClass}
-          />
-        </div>
-        <div>
-          <label className={labelClass}>
-            <MapPin className="w-3.5 h-3.5" /> House Address
-          </label>
-          <textarea
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-            placeholder="House/flat number, street name, area"
-            rows={2}
-            className={`${fieldClass} resize-none`}
-          />
-        </div>
-        <div>
-          <label className={labelClass}>
-            <Navigation className="w-3.5 h-3.5" /> Landmark
-          </label>
-          <input
-            value={landmark}
-            onChange={(e) => setLandmark(e.target.value)}
-            placeholder="e.g. opposite Total filling station"
-            className={fieldClass}
-          />
-        </div>
-        <div>
-          <label className={labelClass}>
-            <Phone className="w-3.5 h-3.5" /> Phone Number
-          </label>
-          <input
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="e.g. 0803 123 4567"
-            inputMode="tel"
-            className={fieldClass}
-          />
-        </div>
-      </div>
+      {/* Step 2: Payment method */}
+      {step === 2 && (
+        <>
+          <div className="bg-card rounded-2xl border border-border p-4 mb-4">
+            <p className="text-sm font-bold text-foreground mb-3">Payment Method</p>
+            <div className="space-y-2.5">
+              <button
+                onClick={() => setPaymentMethod('Cash on Delivery')}
+                className={`w-full flex items-center gap-3 p-3.5 rounded-xl border-2 transition-all active:scale-[0.98] ${
+                  paymentMethod === 'Cash on Delivery'
+                    ? 'border-[#2E7D32] bg-[#2E7D32]/5'
+                    : 'border-border bg-card'
+                }`}
+              >
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${paymentMethod === 'Cash on Delivery' ? 'bg-[#2E7D32]' : 'bg-muted'}`}>
+                  <Banknote className={`w-5 h-5 ${paymentMethod === 'Cash on Delivery' ? 'text-white' : 'text-muted-foreground'}`} />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="text-sm font-semibold text-foreground">Cash on Delivery</p>
+                  <p className="text-xs text-muted-foreground">Pay with cash when your order arrives</p>
+                </div>
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'Cash on Delivery' ? 'border-[#2E7D32]' : 'border-border'}`}>
+                  {paymentMethod === 'Cash on Delivery' && <div className="w-2.5 h-2.5 rounded-full bg-[#2E7D32]" />}
+                </div>
+              </button>
 
+              <button
+                onClick={() => setPaymentMethod('Bank Transfer')}
+                className={`w-full flex items-center gap-3 p-3.5 rounded-xl border-2 transition-all active:scale-[0.98] ${
+                  paymentMethod === 'Bank Transfer'
+                    ? 'border-[#2E7D32] bg-[#2E7D32]/5'
+                    : 'border-border bg-card'
+                }`}
+              >
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${paymentMethod === 'Bank Transfer' ? 'bg-[#2E7D32]' : 'bg-muted'}`}>
+                  <Building2 className={`w-5 h-5 ${paymentMethod === 'Bank Transfer' ? 'text-white' : 'text-muted-foreground'}`} />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className="text-sm font-semibold text-foreground">Bank Transfer</p>
+                  <p className="text-xs text-muted-foreground">Transfer to our account before delivery</p>
+                </div>
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'Bank Transfer' ? 'border-[#2E7D32]' : 'border-border'}`}>
+                  {paymentMethod === 'Bank Transfer' && <div className="w-2.5 h-2.5 rounded-full bg-[#2E7D32]" />}
+                </div>
+              </button>
+            </div>
+          </div>
+
+          {/* Voucher / Promo code */}
+          <div className="bg-card rounded-2xl border border-border p-4 mb-4">
+            <label className={labelClass}>
+              <Tag className="w-3.5 h-3.5" /> Voucher / Promo Code
+            </label>
+            {voucher ? (
+              <div className="flex items-center justify-between bg-primary/10 rounded-xl px-3 py-2.5">
+                <span className="text-sm font-semibold text-[#2E7D32]">
+                  {voucher.code} ({voucher.discount_percent}% off)
+                </span>
+                <button
+                  onClick={() => {
+                    setVoucher(null);
+                    setVoucherCode('');
+                  }}
+                  className="text-[#2E7D32]"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input
+                  value={voucherCode}
+                  onChange={(e) => setVoucherCode(e.target.value)}
+                  placeholder="Enter code"
+                  className="flex-1 text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none focus:border-[#2E7D32]"
+                />
+                <button
+                  onClick={applyVoucher}
+                  className="px-4 rounded-xl bg-[#2E7D32] text-white text-sm font-semibold"
+                >
+                  Apply
+                </button>
+              </div>
+            )}
+            {voucherError && <p className="text-xs text-red-500 mt-1.5">{voucherError}</p>}
+          </div>
+
+          {/* Order summary */}
+          <div className="bg-card rounded-2xl border border-border p-4 space-y-2">
+            <p className="text-sm font-bold text-foreground mb-1">Order Summary</p>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Subtotal</span>
+              <span className="text-foreground font-medium">₦{total.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Delivery fee</span>
+              <span className="text-foreground font-medium">{deliveryFee === 0 ? 'Free' : `₦${deliveryFee.toLocaleString()}`}</span>
+            </div>
+            {appliedDiscount > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Discount {voucher ? `(${voucher.code})` : ''}</span>
+                <span className="text-[#2E7D32] font-semibold">−₦{appliedDiscount.toLocaleString()}</span>
+              </div>
+            )}
+            <div className="border-t border-border pt-2 flex justify-between">
+              <span className="text-sm font-bold text-foreground">Total</span>
+              <span className="text-lg font-bold text-[#2E7D32]">₦{grandTotal.toLocaleString()}</span>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Bottom action bar */}
       <div
         className="fixed left-0 right-0 max-w-md mx-auto px-4 py-3 bg-card border-t border-border"
         style={{ bottom: 'calc(env(safe-area-inset-bottom) + 76px)' }}
       >
-        {appliedDiscount > 0 && (
-          <div className="flex items-center justify-between text-xs mb-2">
-            <span className="text-muted-foreground">
-              Discount {voucher ? `(${voucher.code})` : ''}
-            </span>
-            <span className="text-[#2E7D32] font-semibold">−₦{appliedDiscount.toLocaleString()}</span>
-          </div>
+        {step === 1 ? (
+          <button
+            onClick={() => setStep(2)}
+            disabled={!canPlace}
+            className="w-full h-12 rounded-2xl bg-[#2E7D32] text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#1B5E20] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Continue to Payment <ChevronRight className="w-4 h-4" />
+          </button>
+        ) : (
+          <button
+            onClick={placeOrder}
+            disabled={!canPlace}
+            className="w-full h-12 rounded-2xl bg-[#2E7D32] text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#1B5E20] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {placing ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Placing order...
+              </>
+            ) : (
+              <>Place Order — ₦{grandTotal.toLocaleString()}</>
+            )}
+          </button>
         )}
-        <button
-          onClick={placeOrder}
-          disabled={!canPlace}
-          className="w-full h-12 rounded-2xl bg-[#2E7D32] text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#1B5E20] disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {placing ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" /> Placing order...
-            </>
-          ) : (
-            <>Place Order — ₦{grandTotal.toLocaleString()}</>
-          )}
-        </button>
       </div>
     </div>
   );
