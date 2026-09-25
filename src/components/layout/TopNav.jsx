@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Bell,
@@ -8,7 +8,6 @@ import {
   Search,
   Bike,
 } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
 import { useDeliveryLocation } from '@/hooks/useDeliveryLocation';
 import {
   Drawer,
@@ -54,15 +53,7 @@ export default function TopNav() {
   const { location, setManual } = useDeliveryLocation();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
-  const [firstName, setFirstName] = useState('');
   const [areaOpen, setAreaOpen] = useState(false);
-
-  useEffect(() => {
-    base44.auth
-      .me()
-      .then((u) => setFirstName((u?.full_name || 'there').split(' ')[0]))
-      .catch(() => setFirstName('there'));
-  }, []);
 
   const areaDisplay = location?.area ?? 'your area';
   const deliveryShort = location?.zone === 'island' ? '35–90 mins' : 'Today';
@@ -72,61 +63,20 @@ export default function TopNav() {
     if (query.trim()) navigate(`/search?q=${encodeURIComponent(query.trim())}`);
   };
 
-  const IconButtons = (
-    <div className="flex items-center gap-2 shrink-0">
-      <Link
-        to="/notifications"
-        className="relative w-10 h-10 rounded-full bg-[#EEF8EE] flex items-center justify-center active:scale-90 transition-transform"
-        aria-label="Notifications"
-      >
-        <Bell className="w-5 h-5 text-[#2E7D32]" strokeWidth={2} />
-        <span className="absolute top-2 right-2.5 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white" />
-      </Link>
-      <Link
-        to="/tickets"
-        className="w-10 h-10 rounded-full bg-[#EEF8EE] flex items-center justify-center active:scale-90 transition-transform"
-        aria-label="Customer care"
-      >
-        <Headset className="w-5 h-5 text-[#2E7D32]" strokeWidth={2} />
-      </Link>
-    </div>
-  );
-
   return (
-    <>
-      {/* Greeting — scrolls away */}
-      <div className="relative bg-white overflow-hidden">
-        {/* subtle pale-green decoration */}
-        <div className="absolute -top-10 -right-12 w-44 h-44 rounded-full bg-[#E8F5E9] opacity-70 blur-2xl pointer-events-none" />
-        <div className="absolute top-1 right-12 w-24 h-24 rounded-full bg-[#D6F0DD] opacity-50 blur-xl pointer-events-none" />
-        <div
-          className="relative max-w-md mx-auto w-full px-4 pb-2"
-          style={{ paddingTop: 'calc(env(safe-area-inset-top) + 14px)' }}
-        >
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <p className="text-lg font-bold leading-tight text-[#1a2238] truncate">
-                Hello, {firstName} 👋
-              </p>
-              <p className="text-xs text-gray-500 leading-tight mt-0.5">
-                What would you like today?
-              </p>
-            </div>
-            {IconButtons}
-          </div>
-        </div>
-      </div>
-
-      {/* Location + search — sticky */}
-      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-[0_1px_8px_rgba(0,0,0,0.05)]">
-        <div
-          className="max-w-md mx-auto w-full px-4 pb-3"
-          style={{ paddingTop: 'calc(env(safe-area-inset-top) + 6px)' }}
-        >
-          {/* Location + delivery pill */}
+    <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-[0_1px_8px_rgba(0,0,0,0.05)] overflow-hidden">
+      {/* subtle pale-green decoration */}
+      <div className="absolute -top-10 -right-12 w-40 h-40 rounded-full bg-[#E8F5E9] opacity-60 blur-2xl pointer-events-none" />
+      <div className="absolute top-1 right-14 w-20 h-20 rounded-full bg-[#D6F0DD] opacity-40 blur-xl pointer-events-none" />
+      <div
+        className="relative max-w-md mx-auto w-full px-4 pb-3"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 10px)' }}
+      >
+        {/* Compact top bar: location + delivery + icons */}
+        <div className="flex items-center gap-2 mt-2">
           <Drawer open={areaOpen} onOpenChange={setAreaOpen}>
             <DrawerTrigger asChild>
-              <button className="mt-2 w-full flex items-center justify-between bg-[#EEF8EE] rounded-full pl-3.5 pr-4 py-2.5 active:scale-[0.98] transition-transform">
+              <button className="flex-1 min-w-0 flex items-center justify-between bg-[#EEF8EE] rounded-full pl-3.5 pr-4 py-2.5 active:scale-[0.98] transition-transform">
                 <span className="flex items-center gap-1.5 min-w-0">
                   <MapPin className="w-4 h-4 text-[#2E7D32] shrink-0" />
                   <span className="text-xs font-semibold text-[#1a2238] truncate flex items-center gap-0.5">
@@ -198,26 +148,44 @@ export default function TopNav() {
             </DrawerContent>
           </Drawer>
 
-          {/* Search bar */}
-          <form onSubmit={handleSearch} className="relative mt-3">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search for groceries, packages, meal kits…"
-              className="w-full pl-11 pr-14 h-12 rounded-full bg-white border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 shadow-sm focus:ring-2 focus:ring-[#2E7D32]/30 focus:border-[#2E7D32] outline-none transition-all"
-            />
-            <button
-              type="submit"
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#2E7D32] flex items-center justify-center active:scale-90 transition-transform"
-              aria-label="Search"
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              to="/notifications"
+              className="relative w-10 h-10 rounded-full bg-[#EEF8EE] flex items-center justify-center active:scale-90 transition-transform"
+              aria-label="Notifications"
             >
-              <Search className="w-4 h-4 text-white" strokeWidth={2.5} />
-            </button>
-          </form>
+              <Bell className="w-5 h-5 text-[#2E7D32]" strokeWidth={2} />
+              <span className="absolute top-2 right-2.5 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white" />
+            </Link>
+            <Link
+              to="/tickets"
+              className="w-10 h-10 rounded-full bg-[#EEF8EE] flex items-center justify-center active:scale-90 transition-transform"
+              aria-label="Customer care"
+            >
+              <Headset className="w-5 h-5 text-[#2E7D32]" strokeWidth={2} />
+            </Link>
+          </div>
         </div>
+
+        {/* Search bar */}
+        <form onSubmit={handleSearch} className="relative mt-3">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search for groceries, packages, meal kits…"
+            className="w-full pl-11 pr-14 h-12 rounded-full bg-white border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 shadow-sm focus:ring-2 focus:ring-[#2E7D32]/30 focus:border-[#2E7D32] outline-none transition-all"
+          />
+          <button
+            type="submit"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#2E7D32] flex items-center justify-center active:scale-90 transition-transform"
+            aria-label="Search"
+          >
+            <Search className="w-4 h-4 text-white" strokeWidth={2.5} />
+          </button>
+        </form>
       </div>
-    </>
+    </div>
   );
 }
