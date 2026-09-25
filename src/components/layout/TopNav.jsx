@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Bell,
@@ -6,6 +6,7 @@ import {
   MapPin,
   ChevronDown,
   Search,
+  Bike,
 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useDeliveryLocation } from '@/hooks/useDeliveryLocation';
@@ -50,13 +51,11 @@ const LAGOS_AREAS = {
 };
 
 export default function TopNav() {
-  const { location, status, setManual } = useDeliveryLocation();
+  const { location, setManual } = useDeliveryLocation();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [firstName, setFirstName] = useState('');
   const [areaOpen, setAreaOpen] = useState(false);
-  const greetingRef = useRef(null);
-  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     base44.auth
@@ -65,148 +64,159 @@ export default function TopNav() {
       .catch(() => setFirstName('there'));
   }, []);
 
-  useEffect(() => {
-    const el = greetingRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setScrolled(!entry.isIntersecting),
-      { threshold: 0 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
   const areaDisplay = location?.area ?? 'your area';
+  const deliveryShort = location?.zone === 'island' ? '35–90 mins' : 'Today';
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (query.trim()) navigate(`/search?q=${encodeURIComponent(query.trim())}`);
   };
 
+  const IconButtons = (
+    <div className="flex items-center gap-2 shrink-0">
+      <Link
+        to="/notifications"
+        className="relative w-10 h-10 rounded-full bg-[#EEF8EE] flex items-center justify-center active:scale-90 transition-transform"
+        aria-label="Notifications"
+      >
+        <Bell className="w-5 h-5 text-[#2E7D32]" strokeWidth={2} />
+        <span className="absolute top-2 right-2.5 w-2 h-2 rounded-full bg-red-500 ring-2 ring-white" />
+      </Link>
+      <Link
+        to="/tickets"
+        className="w-10 h-10 rounded-full bg-[#EEF8EE] flex items-center justify-center active:scale-90 transition-transform"
+        aria-label="Customer care"
+      >
+        <Headset className="w-5 h-5 text-[#2E7D32]" strokeWidth={2} />
+      </Link>
+    </div>
+  );
+
   return (
     <>
       {/* Greeting — scrolls away */}
-      <div ref={greetingRef} className="bg-gradient-to-br from-[#1B7F3A] via-[#2E9E44] to-[#5FCF65]">
-        <div className="max-w-md mx-auto w-full px-4 pb-2" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}>
-          <div className="flex items-start justify-between">
-          <div className="text-white">
-            <p className="text-lg font-bold leading-tight">
-              Hello, {firstName} 👋
-            </p>
-            <p className="text-xs text-white/85 leading-tight mt-0.5">
-              What would you like today?
-            </p>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Link
-              to="/notifications"
-              className="relative p-2 rounded-full hover:bg-white/15 active:scale-90 transition-transform"
-              aria-label="Notifications"
-            >
-              <Bell className="w-5 h-5 text-white" strokeWidth={2} />
-            </Link>
-            <Link
-              to="/tickets"
-              className="relative p-2 rounded-full hover:bg-white/15 active:scale-90 transition-transform"
-              aria-label="Customer care"
-            >
-              <Headset className="w-5 h-5 text-white" strokeWidth={2} />
-            </Link>
-          </div>
-          </div>
-        </div>
-      </div>
-      {/* Location + search — sticky */}
-      <div className="sticky top-0 z-50 bg-gradient-to-br from-[#1B7F3A] via-[#2E9E44] to-[#5FCF65] shadow-[0_2px_16px_rgba(0,0,0,0.12)]">
-      <div className="max-w-md mx-auto w-full px-4 pb-3" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 4px)' }}>
-        <div className="flex items-center justify-between mt-3">
-        {/* Location selector */}
-        <Drawer open={areaOpen} onOpenChange={setAreaOpen}>
-          <DrawerTrigger asChild>
-            <button className="flex items-center gap-1 text-white text-sm font-medium -ml-1 px-1 py-0.5 rounded-lg active:scale-95 transition-transform no-tap-highlight">
-              <MapPin className="w-4 h-4 shrink-0" />
-              <span className="flex flex-col items-start leading-tight">
-                <span className="truncate max-w-[180px]">{areaDisplay}, Lagos</span>
-                {location?.line2 && (
-                  <span className="text-[11px] text-white/80 font-normal">{location.line2}</span>
-                )}
-              </span>
-              <ChevronDown className="w-4 h-4 text-white/80 shrink-0" />
-            </button>
-          </DrawerTrigger>
-          <DrawerContent className="max-h-[80vh]">
-            <DrawerHeader className="text-left">
-              <DrawerTitle>Choose delivery area</DrawerTitle>
-            </DrawerHeader>
-            <div className="overflow-y-auto px-4 pb-8 space-y-4">
-              <div>
-                <p className="text-xs font-bold text-[#2E9E44] uppercase mb-2">Lagos Island · 35–90 mins</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {LAGOS_AREAS.island.map((area) => (
-                    <button
-                      key={area}
-                      onClick={() => { setManual(area); setAreaOpen(false); }}
-                      className={`text-left text-sm px-3 py-2.5 rounded-xl border ${location?.area === area ? 'bg-[#2E9E44]/10 border-[#2E9E44] font-semibold text-[#1B7F3A]' : 'border-gray-100 text-gray-700 active:bg-gray-50'}`}
-                    >
-                      {area}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <p className="text-xs font-bold text-[#2E9E44] uppercase mb-2">Lagos Mainland · Same Day</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {LAGOS_AREAS.mainland.map((area) => (
-                    <button
-                      key={area}
-                      onClick={() => { setManual(area); setAreaOpen(false); }}
-                      className={`text-left text-sm px-3 py-2.5 rounded-xl border ${location?.area === area ? 'bg-[#2E9E44]/10 border-[#2E9E44] font-semibold text-[#1B7F3A]' : 'border-gray-100 text-gray-700 active:bg-gray-50'}`}
-                    >
-                      {area}
-                    </button>
-                  ))}
-                </div>
-              </div>
+      <div className="relative bg-white overflow-hidden">
+        {/* subtle pale-green decoration */}
+        <div className="absolute -top-10 -right-12 w-44 h-44 rounded-full bg-[#E8F5E9] opacity-70 blur-2xl pointer-events-none" />
+        <div className="absolute top-1 right-12 w-24 h-24 rounded-full bg-[#D6F0DD] opacity-50 blur-xl pointer-events-none" />
+        <div
+          className="relative max-w-md mx-auto w-full px-4 pb-2"
+          style={{ paddingTop: 'calc(env(safe-area-inset-top) + 14px)' }}
+        >
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-lg font-bold leading-tight text-[#1a2238] truncate">
+                Hello, {firstName} 👋
+              </p>
+              <p className="text-xs text-gray-500 leading-tight mt-0.5">
+                What would you like today?
+              </p>
             </div>
-          </DrawerContent>
-        </Drawer>
-        {scrolled && (
-          <div className="flex items-center gap-1.5">
-            <Link
-              to="/notifications"
-              className="relative p-2 rounded-full hover:bg-white/15 active:scale-90 transition-transform"
-              aria-label="Notifications"
-            >
-              <Bell className="w-5 h-5 text-white" strokeWidth={2} />
-            </Link>
-            <Link
-              to="/tickets"
-              className="relative p-2 rounded-full hover:bg-white/15 active:scale-90 transition-transform"
-              aria-label="Customer care"
-            >
-              <Headset className="w-5 h-5 text-white" strokeWidth={2} />
-            </Link>
+            {IconButtons}
           </div>
-        )}
         </div>
-
-        {/* Search bar */}
-        <form onSubmit={handleSearch} className="relative mt-3">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search for groceries, packages, meal kits…"
-            className="w-full pl-4 pr-12 h-12 rounded-full bg-white text-sm font-medium text-gray-900 placeholder:text-[#6e8f5c] shadow-sm focus:ring-2 focus:ring-white/60 focus:scale-[1.01] outline-none transition-all"
-          />
-          <button
-            type="submit"
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#2E9E44] flex items-center justify-center active:scale-90 transition-transform"
-          >
-            <Search className="w-4 h-4 text-white" strokeWidth={2.5} />
-          </button>
-        </form>
       </div>
+
+      {/* Location + search — sticky */}
+      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm shadow-[0_1px_8px_rgba(0,0,0,0.05)]">
+        <div
+          className="max-w-md mx-auto w-full px-4 pb-3"
+          style={{ paddingTop: 'calc(env(safe-area-inset-top) + 6px)' }}
+        >
+          {/* Location + delivery pill */}
+          <Drawer open={areaOpen} onOpenChange={setAreaOpen}>
+            <DrawerTrigger asChild>
+              <button className="mt-2 w-full flex items-center justify-between bg-[#EEF8EE] rounded-full pl-3.5 pr-4 py-2.5 active:scale-[0.98] transition-transform">
+                <span className="flex items-center gap-1.5 min-w-0">
+                  <MapPin className="w-4 h-4 text-[#2E7D32] shrink-0" />
+                  <span className="text-xs font-semibold text-[#1a2238] truncate flex items-center gap-0.5">
+                    {areaDisplay}, Lagos
+                    <ChevronDown className="w-3.5 h-3.5 text-[#2E7D32] shrink-0" />
+                  </span>
+                </span>
+                <span className="w-px h-4 bg-gray-200 mx-1 shrink-0" />
+                <span className="flex items-center gap-1.5 shrink-0">
+                  <Bike className="w-4 h-4 text-[#2E7D32]" />
+                  <span className="text-xs font-semibold text-[#1a2238]">
+                    {deliveryShort}
+                  </span>
+                </span>
+              </button>
+            </DrawerTrigger>
+            <DrawerContent className="max-h-[80vh]">
+              <DrawerHeader className="text-left">
+                <DrawerTitle>Choose delivery area</DrawerTitle>
+              </DrawerHeader>
+              <div className="overflow-y-auto px-4 pb-8 space-y-4">
+                <div>
+                  <p className="text-xs font-bold text-[#2E9E44] uppercase mb-2">
+                    Lagos Island · 35–90 mins
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {LAGOS_AREAS.island.map((area) => (
+                      <button
+                        key={area}
+                        onClick={() => {
+                          setManual(area);
+                          setAreaOpen(false);
+                        }}
+                        className={`text-left text-sm px-3 py-2.5 rounded-xl border ${
+                          location?.area === area
+                            ? 'bg-[#2E9E44]/10 border-[#2E9E44] font-semibold text-[#1B7F3A]'
+                            : 'border-gray-100 text-gray-700 active:bg-gray-50'
+                        }`}
+                      >
+                        {area}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-[#2E9E44] uppercase mb-2">
+                    Lagos Mainland · Same Day
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {LAGOS_AREAS.mainland.map((area) => (
+                      <button
+                        key={area}
+                        onClick={() => {
+                          setManual(area);
+                          setAreaOpen(false);
+                        }}
+                        className={`text-left text-sm px-3 py-2.5 rounded-xl border ${
+                          location?.area === area
+                            ? 'bg-[#2E9E44]/10 border-[#2E9E44] font-semibold text-[#1B7F3A]'
+                            : 'border-gray-100 text-gray-700 active:bg-gray-50'
+                        }`}
+                      >
+                        {area}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </DrawerContent>
+          </Drawer>
+
+          {/* Search bar */}
+          <form onSubmit={handleSearch} className="relative mt-3">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search for groceries, packages, meal kits…"
+              className="w-full pl-11 pr-14 h-12 rounded-full bg-white border border-gray-200 text-sm font-medium text-gray-900 placeholder:text-gray-400 shadow-sm focus:ring-2 focus:ring-[#2E7D32]/30 focus:border-[#2E7D32] outline-none transition-all"
+            />
+            <button
+              type="submit"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-[#2E7D32] flex items-center justify-center active:scale-90 transition-transform"
+              aria-label="Search"
+            >
+              <Search className="w-4 h-4 text-white" strokeWidth={2.5} />
+            </button>
+          </form>
+        </div>
       </div>
     </>
   );
