@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Bell,
@@ -8,6 +8,8 @@ import {
   Search,
   Bike,
 } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useAuth } from '@/lib/AuthContext';
 import { useLocation } from '@/context/LocationContext';
 import {
   Drawer,
@@ -51,9 +53,52 @@ const LAGOS_AREAS = {
 
 export default function TopNav() {
   const { location, setManual } = useLocation();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [areaOpen, setAreaOpen] = useState(false);
+  const [greeting, setGreeting] = useState(null);
+
+  const firstName =
+    user?.full_name?.trim().split(/\s+/)[0] ||
+    user?.email?.split('@')[0]?.split(/[._]/)[0];
+
+  // One-time welcome greeting in the search bar, once per browser session.
+  // Waits for the splash screen to finish before starting.
+  useEffect(() => {
+    if (!firstName) return;
+    if (sessionStorage.getItem('ukart_greeting_shown') === '1') return;
+    sessionStorage.setItem('ukart_greeting_shown', '1');
+
+    let t1, t2, poll;
+    let started = false;
+
+    const beginGreeting = () => {
+      if (started) return;
+      started = true;
+      setGreeting(`Welcome back, ${firstName} 👋`);
+      t1 = setTimeout(() => setGreeting('What would you like today?'), 1500);
+      t2 = setTimeout(() => setGreeting(null), 3000);
+    };
+
+    const splash = document.querySelector('[class*="z-[200]"]');
+    if (splash) {
+      poll = setInterval(() => {
+        if (!document.body.contains(splash)) {
+          clearInterval(poll);
+          beginGreeting();
+        }
+      }, 200);
+    } else {
+      beginGreeting();
+    }
+
+    return () => {
+      clearInterval(poll);
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [firstName]);
 
   const areaDisplay = location?.area ?? 'your area';
   const deliveryShort = location?.zone === 'island' ? '35–90 mins' : 'Today';
@@ -169,14 +214,32 @@ export default function TopNav() {
 
         {/* Search bar */}
         <form onSubmit={handleSearch} className="relative mt-3">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-primary z-10" />
           <input
             type="text"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search for groceries, packages, meal kits…"
+            onChange={(e) => {
+              setQuery(e.target.value);
+              if (greeting) setGreeting(null);
+            }}
+            onFocus={() => { if (greeting) setGreeting(null); }}
+            placeholder={greeting ? '' : 'Search for groceries, packages, meal kits…'}
             className="w-full pl-11 pr-14 h-12 rounded-full bg-card border border-border text-sm font-medium text-foreground placeholder:text-muted-foreground shadow-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition-all"
           />
+          <AnimatePresence mode="wait">
+            {greeting && !query && (
+              <motion.div
+                key={greeting}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
+                className="absolute left-11 right-14 top-1/2 -translate-y-1/2 pointer-events-none text-sm font-medium text-foreground truncate"
+              >
+                {greeting}
+              </motion.div>
+            )}
+          </AnimatePresence>
           <button
             type="submit"
             className="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-primary flex items-center justify-center active:scale-90 transition-transform"
