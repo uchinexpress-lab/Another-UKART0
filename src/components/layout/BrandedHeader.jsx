@@ -1,6 +1,7 @@
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { ArrowLeft, ShoppingCart } from 'lucide-react';
+import { useCart } from '@/context/CartContext';
 
 const TAB_ROOTS = ['/packages', '/order', '/wishlist', '/profile'];
 
@@ -8,6 +9,8 @@ export default function BrandedHeader({ title }) {
   const navigate = useNavigate();
   const location = useLocation();
   const isTabRoot = TAB_ROOTS.includes(location.pathname);
+  const { itemCount } = useCart();
+  const showCart = location.pathname.startsWith('/package/');
 
   const goBack = () => {
     if (window.history.length > 1) {
@@ -37,9 +40,27 @@ export default function BrandedHeader({ title }) {
             <ArrowLeft className="w-5 h-5 text-[#2E7D32]" />
           </button>
         )}
-        <h1 className="text-xl font-bold text-foreground tracking-tight truncate">
+        <h1
+          className={`text-xl font-bold text-foreground tracking-tight truncate ${
+            showCart ? 'flex-1' : ''
+          }`}
+        >
           {title}
         </h1>
+        {showCart && (
+          <Link
+            to="/cart"
+            aria-label="Cart"
+            className="relative w-11 h-11 rounded-full bg-[#EEF8EE] flex items-center justify-center active:scale-90 transition-transform shrink-0"
+          >
+            <ShoppingCart className="w-5 h-5 text-[#2E7D32]" />
+            {itemCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#2E7D32] text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-card">
+                {itemCount}
+              </span>
+            )}
+          </Link>
+        )}
       </div>
     </header>
   );
