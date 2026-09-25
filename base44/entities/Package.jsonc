@@ -50,9 +50,31 @@
           },
           "quantity": {
             "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
           }
         }
       }
+    },
+    "cooking_instructions": {
+      "type": "string"
+    },
+    "optional_categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    },
+    "display_order": {
+      "type": "number"
     },
     "addons": {
       "type": "array",

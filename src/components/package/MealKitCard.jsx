@@ -1,51 +1,44 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, Plus, Eye } from 'lucide-react';
-import { useCart } from '@/context/CartContext';
+import { Users, ShoppingBag, ChevronRight } from 'lucide-react';
 
 export default function MealKitCard({ pkg }) {
   const navigate = useNavigate();
-  const { addItem } = useCart();
 
   return (
-    <div className="bg-card rounded-2xl border border-border overflow-hidden flex flex-col h-full">
+    <div
+      onClick={() => navigate(`/package/${pkg.id}`)}
+      className="bg-card rounded-2xl border border-border overflow-hidden flex flex-col h-full active:scale-[0.98] transition-transform cursor-pointer"
+    >
       <div className="relative h-32 bg-gray-50">
-        <img src={pkg.image} alt={pkg.name} className="w-full h-full object-cover" />
+        {pkg.image ? (
+          <img
+            src={pkg.image}
+            alt={pkg.name}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-[#E8F5E9]">
+            <ShoppingBag className="w-8 h-8 text-[#2E7D32]/40" />
+          </div>
+        )}
         <span className="absolute top-2 left-2 bg-[#2E7D32] text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
           Meal Kit
         </span>
       </div>
       <div className="p-3 flex flex-col flex-1">
-        <h3 className="text-sm font-bold text-card-foreground leading-tight mb-0.5">{pkg.name}</h3>
-        <p className="text-[11px] text-gray-500 line-clamp-1 mb-1.5">{pkg.description}</p>
-        <div className="flex items-center gap-1 text-[10px] text-gray-500 mb-2">
+        <h3 className="text-sm font-bold text-card-foreground leading-tight line-clamp-1">
+          {pkg.name}
+        </h3>
+        <div className="flex items-center gap-1 text-[10px] text-gray-500 mt-0.5">
           <Users className="w-3 h-3" />
-          <span>{pkg.serves || 'Serves 2-4'}</span>
+          <span>{pkg.serves || 'Serves 4-6'}</span>
         </div>
-        <span className="text-base font-bold text-[#2E7D32] mb-2">
-          ₦{pkg.starting_price.toLocaleString()}
+        <span className="text-base font-bold text-[#2E7D32] mt-1">
+          ₦{(pkg.total_price || pkg.starting_price || 0).toLocaleString()}
         </span>
-        <div className="flex gap-1.5 mt-auto">
-          <button
-            onClick={() => navigate(`/package/${pkg.id}`)}
-            className="flex-1 flex items-center justify-center gap-1 border border-[#2E7D32] text-[#2E7D32] text-[11px] font-semibold py-1.5 rounded-full hover:bg-[#E8F5E9] transition-colors"
-          >
-            <Eye className="w-3.5 h-3.5" /> Details
-          </button>
-          <button
-            onClick={() =>
-              addItem({
-                id: `package-${pkg.id}`,
-                name: pkg.name,
-                price: pkg.total_price,
-                image: pkg.image,
-                unit: pkg.serves || 'Meal Kit',
-              })
-            }
-            className="flex-1 flex items-center justify-center gap-1 bg-[#2E7D32] text-white text-[11px] font-semibold py-1.5 rounded-full hover:bg-[#1B5E20] transition-colors"
-          >
-            <Plus className="w-3.5 h-3.5" /> Add
-          </button>
+        <div className="flex items-center justify-center gap-1 mt-2 w-full h-8 rounded-full border border-[#2E7D32] text-[#2E7D32] text-xs font-semibold">
+          View Kit <ChevronRight className="w-3.5 h-3.5" />
         </div>
       </div>
     </div>

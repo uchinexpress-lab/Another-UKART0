@@ -1,12 +1,12 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronRight, Users, Plus } from 'lucide-react';
-import { useCart } from '@/context/CartContext';
+import { ChevronRight, Users, ShoppingBag } from 'lucide-react';
 
 export default function PopularMealKits({ packages }) {
   const navigate = useNavigate();
-  const { addItem } = useCart();
-  const mealKits = (packages || []).filter((p) => p.group === 'meal_kits').slice(0, 4);
+  const mealKits = (packages || [])
+    .filter((p) => p.group === 'meal_kits')
+    .slice(0, 6);
 
   if (!mealKits.length) return null;
 
@@ -21,46 +21,39 @@ export default function PopularMealKits({ packages }) {
           See All <ChevronRight className="w-3.5 h-3.5" />
         </Link>
       </div>
-      <div className="space-y-2.5">
+      <div className="flex gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-1">
         {mealKits.map((kit) => (
           <div
             key={kit.id}
             onClick={() => navigate(`/package/${kit.id}`)}
-            className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex h-24 active:scale-[0.98] transition-transform cursor-pointer"
+            className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col w-40 shrink-0 active:scale-[0.98] transition-transform cursor-pointer"
           >
-            <div className="w-24 flex-shrink-0 bg-gray-50">
-              <img src={kit.image} alt={kit.name} className="w-full h-full object-cover" />
+            <div className="relative h-28 bg-gray-50">
+              {kit.image ? (
+                <img
+                  src={kit.image}
+                  alt={kit.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-[#E8F5E9]">
+                  <ShoppingBag className="w-7 h-7 text-[#2E7D32]/40" />
+                </div>
+              )}
+              <span className="absolute top-1.5 left-1.5 bg-[#2E7D32] text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">
+                Meal Kit
+              </span>
             </div>
             <div className="p-2.5 flex flex-col flex-1">
               <h3 className="text-xs font-bold text-gray-900 leading-tight line-clamp-1">
                 {kit.name}
               </h3>
               <div className="flex items-center gap-1 text-[10px] text-gray-500 mt-0.5">
-                <Users className="w-3 h-3" /> {kit.serves}
+                <Users className="w-3 h-3" /> {kit.serves || 'Serves 4-6'}
               </div>
-              <div className="flex items-center justify-between mt-auto">
-                <div>
-                  <span className="text-[9px] text-gray-400 block leading-none">from</span>
-                  <span className="text-sm font-bold text-[#2E7D32]">
-                    ₦{kit.starting_price.toLocaleString()}
-                  </span>
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    addItem({
-                      id: `package-${kit.id}`,
-                      name: kit.name,
-                      price: kit.total_price,
-                      image: kit.image,
-                      unit: kit.serves || 'Meal Kit',
-                    });
-                  }}
-                  className="w-7 h-7 rounded-full bg-[#2E7D32] flex items-center justify-center hover:bg-[#1B5E20] transition-colors flex-shrink-0"
-                >
-                  <Plus className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
-                </button>
-              </div>
+              <span className="text-sm font-bold text-[#2E7D32] mt-1">
+                ₦{(kit.total_price || kit.starting_price || 0).toLocaleString()}
+              </span>
             </div>
           </div>
         ))}
