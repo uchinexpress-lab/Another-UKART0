@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, ShoppingBag, ChevronRight } from 'lucide-react';
+import MealKitImage from './MealKitImage';
 
 export default function MealKitCard({ pkg }) {
   const navigate = useNavigate();
@@ -12,11 +13,7 @@ export default function MealKitCard({ pkg }) {
     >
       <div className="relative h-32 bg-gray-50">
         {pkg.image ? (
-          <img
-            src={pkg.image}
-            alt={pkg.name}
-            className="w-full h-full object-cover"
-          />
+          <MealKitImage src={pkg.image} alt={pkg.name} className="w-full h-full" />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-[#E8F5E9]">
             <ShoppingBag className="w-8 h-8 text-[#2E7D32]/40" />

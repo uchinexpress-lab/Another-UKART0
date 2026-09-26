@@ -16,7 +16,7 @@ import { base44 } from '@/api/base44Client';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useMealKit } from '@/context/MealKitContext';
-import { Image } from '@/components/ui/image';
+import MealKitImage from './MealKitImage';
 import CookingInstructionsSheet from './CookingInstructionsSheet';
 
 export default function MealKitDetail({ pkg }) {
@@ -71,7 +71,7 @@ export default function MealKitDetail({ pkg }) {
       {/* Hero product image */}
       <div className="relative w-full h-80 overflow-hidden rounded-b-3xl bg-[#E8F5E9]">
         {pkg.image ? (
-          <Image
+          <MealKitImage
             src={pkg.image}
             alt={pkg.name}
             fittingType="fill"

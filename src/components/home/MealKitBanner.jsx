@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Image } from '@/components/ui/image';
+import MealKitImage from '@/components/package/MealKitImage';
 
 const BANNER_URL =
   'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/3f02716ea_80948D94-EADE-4581-AA25-CA71CF4BA066.png';
@@ -15,7 +15,7 @@ export default function MealKitBanner() {
         className="relative w-full rounded-3xl overflow-hidden h-44 block active:scale-[0.98] transition-transform"
         aria-label="Explore Ukart Meal Kits"
       >
-        <Image
+        <MealKitImage
           src={BANNER_URL}
           alt="Ukart Meal Kits — Cook Something Delicious"
           className="absolute inset-0 w-full h-full"

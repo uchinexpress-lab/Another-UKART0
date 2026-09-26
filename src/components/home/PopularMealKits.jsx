@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, Users, ShoppingBag } from 'lucide-react';
+import MealKitImage from '@/components/package/MealKitImage';
 
 export default function PopularMealKits({ packages }) {
   const navigate = useNavigate();
@@ -30,11 +31,7 @@ export default function PopularMealKits({ packages }) {
           >
             <div className="relative h-28 bg-gray-50">
               {kit.image ? (
-                <img
-                  src={kit.image}
-                  alt={kit.name}
-                  className="w-full h-full object-cover"
-                />
+                <MealKitImage src={kit.image} alt={kit.name} className="w-full h-full" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-[#E8F5E9]">
                   <ShoppingBag className="w-7 h-7 text-[#2E7D32]/40" />
