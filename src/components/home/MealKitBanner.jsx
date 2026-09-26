@@ -12,7 +12,7 @@ export default function MealKitBanner() {
     <section className="px-4">
       <button
         onClick={() => navigate('/packages#meal-kits')}
-        className="relative w-full rounded-3xl overflow-hidden h-56 block active:scale-[0.98] transition-transform bg-[#A8D86A]"
+        className="relative w-full rounded-3xl overflow-hidden h-56 block active:scale-[0.98] transition-transform"
         aria-label="Explore Ukart Meal Kits"
       >
         <Image
