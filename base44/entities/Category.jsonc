@@ -16,6 +16,10 @@
     },
     "display_order": {
       "type": "number"
+    },
+    "is_hidden": {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [

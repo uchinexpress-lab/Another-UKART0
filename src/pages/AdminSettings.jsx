@@ -19,6 +19,7 @@ import {
   Percent,
 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import AdminNav from '@/components/admin/AdminNav';
 
 const toggleFields = [
   {
@@ -175,6 +176,7 @@ export default function AdminSettings() {
 
   return (
     <div className="p-4 pb-10">
+      <AdminNav />
       <h1 className="text-xl font-bold text-foreground mb-6">Notification Settings</h1>
 
       {/* Business email */}

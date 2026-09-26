@@ -14,6 +14,12 @@
     "image": {
       "type": "string"
     },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "category_id": {
       "type": "string"
     },
@@ -26,14 +32,117 @@
         "type": "string"
       }
     },
+    "subcategory": {
+      "type": "string"
+    },
+    "product_type": {
+      "type": "string",
+      "enum": [
+        "grocery",
+        "meal_kit",
+        "package"
+      ],
+      "default": "grocery"
+    },
     "rating": {
       "type": "number"
     },
     "description": {
       "type": "string"
     },
+    "description_long": {
+      "type": "string"
+    },
     "unit": {
       "type": "string"
+    },
+    "variants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "price": {
+            "type": "number"
+          },
+          "original_price": {
+            "type": "number"
+          },
+          "stock_status": {
+            "type": "string",
+            "enum": [
+              "in_stock",
+              "low_stock",
+              "out_of_stock"
+            ],
+            "default": "in_stock"
+          },
+          "stock_quantity": {
+            "type": "number"
+          },
+          "low_stock_threshold": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "stock_status": {
+      "type": "string",
+      "enum": [
+        "in_stock",
+        "low_stock",
+        "out_of_stock"
+      ],
+      "default": "in_stock"
+    },
+    "stock_quantity": {
+      "type": "number"
+    },
+    "low_stock_threshold": {
+      "type": "number",
+      "default": 5
+    },
+    "is_hidden": {
+      "type": "boolean",
+      "default": false
+    },
+    "serves": {
+      "type": "string"
+    },
+    "prep_time": {
+      "type": "string"
+    },
+    "cooking_instructions": {
+      "type": "string"
+    },
+    "optional_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "available": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      }
     },
     "is_best_seller": {
       "type": "boolean"
