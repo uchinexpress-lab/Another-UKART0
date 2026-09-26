@@ -2,14 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useTheme } from 'next-themes';
-import { Moon, Sun, Monitor, Globe, LogOut, Trash2, Loader2, ChevronDown } from 'lucide-react';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from '@/components/ui/drawer';
+import { Moon, Sun, Monitor, LogOut, Trash2, Loader2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,28 +16,10 @@ import {
 } from '@/components/ui/alert-dialog';
 import { toast } from '@/components/ui/use-toast';
 
-const LANGUAGES = [
-  { value: 'en', label: 'English' },
-  { value: 'yo', label: 'Yoruba' },
-  { value: 'pid', label: 'Pidgin' },
-  { value: 'ha', label: 'Hausa' },
-  { value: 'ig', label: 'Igbo' },
-];
-
 export default function Settings() {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
-  const [lang, setLang] = useState(() => localStorage.getItem('ukart_lang') || 'en');
   const [busy, setBusy] = useState(false);
-  const [langOpen, setLangOpen] = useState(false);
-
-  const changeLang = async (value) => {
-    setLang(value);
-    localStorage.setItem('ukart_lang', value);
-    try {
-      await base44.auth.updateMe({ language: value });
-    } catch {}
-  };
 
   const logout = async () => {
     setBusy(true);
@@ -106,39 +81,6 @@ export default function Settings() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 p-4">
-          <div className="w-10 h-10 rounded-xl bg-[#2E7D32]/10 flex items-center justify-center">
-            <Globe className="w-5 h-5 text-[#2E7D32]" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-foreground">Language</p>
-            <p className="text-xs text-muted-foreground">Choose your preferred language</p>
-          </div>
-          <Drawer open={langOpen} onOpenChange={setLangOpen}>
-            <DrawerTrigger asChild>
-              <button className="flex items-center gap-1 text-sm font-medium text-foreground px-3 h-9 rounded-xl border border-border active:scale-95 transition-transform">
-                {LANGUAGES.find((l) => l.value === lang)?.label || 'English'}
-                <ChevronDown className="w-4 h-4 text-gray-400" />
-              </button>
-            </DrawerTrigger>
-            <DrawerContent>
-              <DrawerHeader className="text-left">
-                <DrawerTitle>Choose language</DrawerTitle>
-              </DrawerHeader>
-              <div className="px-4 pb-8 space-y-1">
-                {LANGUAGES.map((l) => (
-                  <button
-                    key={l.value}
-                    onClick={() => { changeLang(l.value); setLangOpen(false); }}
-                    className={`w-full text-left text-sm px-4 py-3 rounded-xl ${lang === l.value ? 'bg-[#2E9E44]/10 font-semibold text-[#1B7F3A]' : 'text-gray-700 active:bg-muted/50'}`}
-                  >
-                    {l.label}
-                  </button>
-                ))}
-              </div>
-            </DrawerContent>
-          </Drawer>
-        </div>
       </div>
 
       <div className="bg-card rounded-2xl border border-border divide-y divide-gray-50">
@@ -187,10 +129,6 @@ export default function Settings() {
         </AlertDialog>
       </div>
 
-      <p className="text-center text-xs text-gray-400 px-6">
-        Language translation is being rolled out gradually. Your preference is saved for when it
-        becomes available.
-      </p>
     </div>
   );
 }
