@@ -54,7 +54,7 @@ export default function CategoryProducts() {
           No products in this category yet
         </p>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           {products.map((p) =>
             kitId ? (
               <KitProductCard

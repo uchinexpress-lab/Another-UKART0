@@ -76,7 +76,7 @@ export default function InfiniteProductGrid({ products }) {
   return (
     <div className="px-4 pt-2">
       <h2 className="text-lg font-bold text-gray-900 mb-3">More to Explore</h2>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-2">
         {visible.map((p, idx) => (
           <div
             key={`${p.id}-${idx}`}
@@ -92,22 +92,19 @@ export default function InfiniteProductGrid({ products }) {
                 <span className="text-3xl">🛒</span>
               )}
             </button>
-            <div className="p-2.5 flex flex-col flex-1">
-              <p className="text-xs font-semibold text-gray-900 leading-tight line-clamp-2 mb-1">
+            <div className="p-2 flex flex-col flex-1">
+              <p className="text-[11px] font-semibold text-gray-900 leading-tight line-clamp-2 mb-1">
                 {p.name}
               </p>
-              {p.unit && (
-                <p className="text-[11px] text-gray-400 mb-1">{p.unit}</p>
-              )}
-              <div className="flex items-center justify-between mt-auto">
-                <span className={`font-bold text-[#2E7D32] leading-tight ${(getDisplayPrice(p)).isRange ? 'text-[11px]' : 'text-sm'}`}>
+              <div className="flex items-center justify-between mt-auto gap-1">
+                <span className={`font-bold text-[#2E7D32] leading-tight ${(getDisplayPrice(p)).isRange ? 'text-[10px]' : 'text-[11px]'}`}>
                   {(getDisplayPrice(p)).text}
                 </span>
                 <button
                   onClick={() => handleAdd(p)}
-                  className="w-11 h-11 rounded-full bg-[#2E7D32] text-white flex items-center justify-center active:scale-90 transition-transform"
+                  className="w-9 h-9 rounded-full bg-[#2E7D32] text-white flex items-center justify-center active:scale-90 transition-transform flex-shrink-0"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>

@@ -21,7 +21,7 @@ export default function WeeklyDeals({ products }) {
           See All <ChevronRight className="w-3.5 h-3.5" />
         </Link>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         {deals.map((p) =>
         <DealCard key={p.id} product={p} />
         )}

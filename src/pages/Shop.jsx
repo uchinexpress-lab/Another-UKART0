@@ -58,7 +58,7 @@ export default function Shop() {
       {products.length === 0 ? (
         <p className="text-muted-foreground text-center py-12">No products in this category yet</p>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           {products.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}

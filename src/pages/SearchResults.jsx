@@ -55,7 +55,7 @@ export default function SearchResults() {
           <p className="text-muted-foreground">No products found</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           {products.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
@@ -65,7 +65,7 @@ export default function SearchResults() {
       {related.length > 0 && (
         <div className="mt-8">
           <h2 className="text-base font-bold text-foreground mb-3">You might also like</h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             {related.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}

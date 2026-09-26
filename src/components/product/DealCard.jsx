@@ -40,33 +40,33 @@ export default function DealCard({ product }) {
         )}
         <button
           onClick={() => toggleItem(product)}
-          className="absolute top-1.5 right-1.5 w-11 h-11 rounded-full bg-white/90 flex items-center justify-center shadow-sm active:scale-90 transition-transform"
+          className="absolute top-1.5 right-1.5 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center shadow-sm active:scale-90 transition-transform"
         >
           <Heart
-            className={`w-4 h-4 ${wished ? 'fill-[#2E7D32] text-[#2E7D32]' : 'text-gray-400'}`}
+            className={`w-3.5 h-3.5 ${wished ? 'fill-[#2E7D32] text-[#2E7D32]' : 'text-gray-400'}`}
           />
         </button>
       </div>
       <div className="p-2 flex flex-col flex-1">
-        <h3 className="text-xs font-semibold text-card-foreground leading-tight line-clamp-1 mb-1.5">
+        <h3 className="text-[11px] font-semibold text-card-foreground leading-tight line-clamp-2 mb-1">
           {product.name}
         </h3>
-        <div className="flex items-center justify-between mt-auto">
-          <div className="flex flex-col">
-            <span className={`font-bold text-[#2E7D32] ${priceInfo.isRange ? 'text-[11px]' : 'text-sm'}`}>
+        <div className="flex items-center justify-between mt-auto gap-1">
+          <div className="min-w-0">
+            <span className={`font-bold text-[#2E7D32] ${priceInfo.isRange ? 'text-[10px]' : 'text-[11px]'} block leading-tight`}>
               {priceInfo.text}
             </span>
             {!priceInfo.isRange && effectiveOriginal && (
-              <span className="text-[11px] text-gray-400 line-through">
+              <span className="text-[9px] text-gray-400 line-through block leading-tight">
                 ₦{effectiveOriginal.toLocaleString()}
               </span>
             )}
           </div>
           <button
             onClick={handleAdd}
-            className="w-11 h-11 rounded-full bg-[#2E7D32] flex items-center justify-center hover:bg-[#1B5E20] transition-colors flex-shrink-0 active:scale-90"
+            className="w-9 h-9 rounded-full bg-[#2E7D32] flex items-center justify-center hover:bg-[#1B5E20] transition-colors flex-shrink-0 active:scale-90"
           >
-            <Plus className="w-4 h-4 text-white" strokeWidth={2.5} />
+            <Plus className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
           </button>
         </div>
       </div>
