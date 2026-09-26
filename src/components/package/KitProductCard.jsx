@@ -2,19 +2,35 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Minus, Plus, Check, ShoppingBag } from 'lucide-react';
 import { useMealKit } from '@/context/MealKitContext';
+import VariantPickerSheet from '@/components/product/VariantPickerSheet';
+import { getDisplayPrice, getActiveVariants, getSingleVariant, buildCartItem } from '@/lib/variantPricing';
 
 export default function KitProductCard({ product, kitId, categoryName }) {
   const navigate = useNavigate();
   const { addSelection } = useMealKit();
   const [qty, setQty] = useState(1);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const priceInfo = getDisplayPrice(product);
+  const activeVariants = getActiveVariants(product);
+  const singleVariant = getSingleVariant(product);
 
-  const handleAdd = () => {
+  const submitToKit = (variantProduct) => {
     addSelection(
       kitId,
-      { ...product, category_id: product.category_id, category_name: categoryName },
+      { ...variantProduct, category_id: product.category_id, category_name: categoryName },
       qty
     );
     navigate(`/package/${kitId}`);
+  };
+
+  const handleAdd = () => {
+    if (activeVariants.length > 1) {
+      setSheetOpen(true);
+    } else if (singleVariant) {
+      submitToKit(buildCartItem(product, singleVariant));
+    } else {
+      submitToKit(product);
+    }
   };
 
   return (
@@ -37,8 +53,8 @@ export default function KitProductCard({ product, kitId, categoryName }) {
           {product.name}
         </h3>
         <span className="text-[11px] text-gray-400 mb-1">{product.unit || '1 pack'}</span>
-        <span className="text-sm font-bold text-[#2E7D32] mb-2">
-          ₦{product.price.toLocaleString()}
+        <span className={`font-bold text-[#2E7D32] mb-2 ${priceInfo.isRange ? 'text-[11px]' : 'text-sm'}`}>
+          {priceInfo.text}
         </span>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5">
@@ -64,6 +80,12 @@ export default function KitProductCard({ product, kitId, categoryName }) {
           <Check className="w-3.5 h-3.5" strokeWidth={2.5} /> Add to Kit
         </button>
       </div>
+      <VariantPickerSheet
+        product={product}
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        onAdd={(variant) => submitToKit(buildCartItem(product, variant))}
+      />
     </div>
   );
 }

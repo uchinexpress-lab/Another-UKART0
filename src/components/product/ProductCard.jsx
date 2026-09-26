@@ -1,17 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Star, Plus, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
+import VariantPickerSheet from '@/components/product/VariantPickerSheet';
+import { getDisplayPrice, getActiveVariants, getSingleVariant, buildCartItem } from '@/lib/variantPricing';
 
 export default function ProductCard({ product }) {
   const { addItem } = useCart();
   const { toggleItem, isWishlisted } = useWishlist();
+  const [sheetOpen, setSheetOpen] = useState(false);
   const wished = isWishlisted(product.id);
   const comingSoon = product.status === 'coming_soon';
-  const discount = product.original_price && !comingSoon
-    ? Math.round((1 - product.price / product.original_price) * 100)
+  const priceInfo = getDisplayPrice(product);
+  const activeVariants = getActiveVariants(product);
+  const singleVariant = getSingleVariant(product);
+  const effectivePrice = singleVariant ? singleVariant.price : product.price;
+  const effectiveOriginal = singleVariant ? singleVariant.original_price : product.original_price;
+  const discount = effectiveOriginal && !comingSoon
+    ? Math.round((1 - effectivePrice / effectiveOriginal) * 100)
     : 0;
+
+  const handleAdd = () => {
+    if (comingSoon) return;
+    if (activeVariants.length > 1) {
+      setSheetOpen(true);
+    } else if (singleVariant) {
+      addItem(buildCartItem(product, singleVariant));
+    } else {
+      addItem(product);
+    }
+  };
 
   return (
     <motion.div
@@ -63,18 +82,18 @@ export default function ProductCard({ product }) {
             <span className="text-xs font-bold text-gray-500">Coming Soon</span>
           ) : (
             <div>
-              <span className="text-sm font-bold text-[#2E7D32]">
-                ₦{product.price.toLocaleString()}
+              <span className={`font-bold text-[#2E7D32] ${priceInfo.isRange ? 'text-[11px]' : 'text-sm'}`}>
+                {priceInfo.text}
               </span>
-              {product.original_price && (
+              {!priceInfo.isRange && effectiveOriginal && (
                 <span className="text-[11px] text-gray-400 line-through block">
-                  ₦{product.original_price.toLocaleString()}
+                  ₦{effectiveOriginal.toLocaleString()}
                 </span>
               )}
             </div>
           )}
           <button
-            onClick={() => !comingSoon && addItem(product)}
+            onClick={handleAdd}
             disabled={comingSoon}
             className={`w-11 h-11 rounded-full flex items-center justify-center transition-all active:scale-90 flex-shrink-0 ${
               comingSoon ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#2E7D32] hover:bg-[#1B5E20]'
@@ -87,6 +106,12 @@ export default function ProductCard({ product }) {
           </button>
         </div>
       </div>
+      <VariantPickerSheet
+        product={product}
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        onAdd={(variant) => addItem(buildCartItem(product, variant))}
+      />
     </motion.div>
   );
 }

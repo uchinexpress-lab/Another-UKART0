@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import ProductCard from '@/components/product/ProductCard';
 import PackageCard from '@/components/package/PackageCard';
+import { getEffectivePrice } from '@/lib/variantPricing';
 
 const budgetRanges = {
   'under-10000': { min: 0, max: 10000, label: 'Under ₦10,000' },
@@ -24,7 +25,7 @@ export default function BudgetShop() {
     }
     Promise.all([base44.entities.Product.list(), base44.entities.Package.list()]).then(
       ([prods, pkgs]) => {
-        setProducts(prods.filter((p) => p.status !== 'coming_soon' && p.price >= budget.min && p.price < budget.max));
+        setProducts(prods.filter((p) => p.status !== 'coming_soon' && getEffectivePrice(p) >= budget.min && getEffectivePrice(p) < budget.max));
         setPackages(
           pkgs.filter((p) => p.starting_price >= budget.min && p.starting_price < budget.max)
         );

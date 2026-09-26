@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Image } from '@/components/ui/image';
 import { useCart } from '@/context/CartContext';
 import { Plus } from 'lucide-react';
+import VariantPickerSheet from '@/components/product/VariantPickerSheet';
+import { getDisplayPrice, getActiveVariants, getSingleVariant, buildCartItem } from '@/lib/variantPricing';
 
 const BATCH_SIZE = 10;
 
@@ -11,8 +13,20 @@ export default function InfiniteProductGrid({ products }) {
   const { addItem } = useCart();
   const [visible, setVisible] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [sheetProduct, setSheetProduct] = useState(null);
   const sentinelRef = useRef(null);
   const indexRef = useRef(0);
+
+  const handleAdd = (p) => {
+    const active = getActiveVariants(p);
+    if (active.length > 1) {
+      setSheetProduct(p);
+    } else if (active.length === 1) {
+      addItem(buildCartItem(p, active[0]));
+    } else {
+      addItem(p);
+    }
+  };
 
   const loadMore = useCallback(() => {
     if (!products.length) return;
@@ -86,11 +100,11 @@ export default function InfiniteProductGrid({ products }) {
                 <p className="text-[11px] text-gray-400 mb-1">{p.unit}</p>
               )}
               <div className="flex items-center justify-between mt-auto">
-                <span className="text-sm font-bold text-[#2E7D32]">
-                  ₦{(p.price || 0).toLocaleString()}
+                <span className={`font-bold text-[#2E7D32] leading-tight ${(getDisplayPrice(p)).isRange ? 'text-[11px]' : 'text-sm'}`}>
+                  {(getDisplayPrice(p)).text}
                 </span>
                 <button
-                  onClick={() => addItem(p)}
+                  onClick={() => handleAdd(p)}
                   className="w-11 h-11 rounded-full bg-[#2E7D32] text-white flex items-center justify-center active:scale-90 transition-transform"
                 >
                   <Plus className="w-4 h-4" />
@@ -105,6 +119,12 @@ export default function InfiniteProductGrid({ products }) {
           <div className="w-6 h-6 border-3 border-gray-200 border-t-[#2E7D32] rounded-full animate-spin" />
         )}
       </div>
+      <VariantPickerSheet
+        product={sheetProduct}
+        open={!!sheetProduct}
+        onOpenChange={(open) => !open && setSheetProduct(null)}
+        onAdd={(variant) => sheetProduct && addItem(buildCartItem(sheetProduct, variant))}
+      />
     </div>
   );
 }
