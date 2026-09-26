@@ -18,9 +18,27 @@ import ProteinOptionCard from './ProteinOptionCard';
 import CookingInstructionsSheet from './CookingInstructionsSheet';
 
 const STOCK_CONFIG = {
-  in_stock: { label: 'In Stock', dot: 'bg-emerald-500', text: 'text-emerald-600' },
-  low_stock: { label: 'Low Stock', dot: 'bg-amber-500', text: 'text-amber-600' },
-  out_of_stock: { label: 'Out of Stock', dot: 'bg-red-500', text: 'text-red-500' },
+  in_stock: {
+    label: 'IN STOCK',
+    sublabel: 'Ready to order',
+    dot: 'bg-emerald-300',
+    banner: 'bg-[#2E7D32]/85',
+    blur: 'blur-[2px]',
+  },
+  low_stock: {
+    label: 'LOW STOCK',
+    sublabel: 'Limited availability',
+    dot: 'bg-amber-200',
+    banner: 'bg-amber-500/85',
+    blur: 'blur-[3px]',
+  },
+  out_of_stock: {
+    label: 'OUT OF STOCK',
+    sublabel: 'Currently unavailable',
+    dot: 'bg-red-200',
+    banner: 'bg-red-600/80',
+    blur: 'blur-[4px]',
+  },
 };
 
 export default function MealKitDetail({ pkg }) {
@@ -97,19 +115,19 @@ export default function MealKitDetail({ pkg }) {
 
   return (
     <div className="pb-40 bg-[#FAFAFA] min-h-screen">
-      {/* Hero — blurred background, visually secondary */}
+      {/* Hero — blurred background with availability ribbon across the middle */}
       <div className="relative w-full h-56 overflow-hidden">
         {pkg.image ? (
           <Image
             src={pkg.image}
             alt={pkg.name}
             fittingType="fill"
-            className="absolute inset-0 w-full h-full scale-110 blur-[8px]"
+            className={`absolute inset-0 w-full h-full scale-105 ${stockCfg.blur}`}
           />
         ) : (
           <div className="w-full h-full bg-[#E8F5E9]" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-b from-white/75 via-[#E8F5E9]/55 to-white/85 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/70 via-[#E8F5E9]/40 to-white/75 pointer-events-none" />
         <div className="absolute inset-0 bg-[#2E7D32]/[0.08] pointer-events-none" />
 
         <button
@@ -122,7 +140,7 @@ export default function MealKitDetail({ pkg }) {
               unit: pkg.serves || 'Meal Kit',
             })
           }
-          className="absolute top-3 left-3 w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-sm active:scale-90 transition-transform"
+          className="absolute top-3 left-3 w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-sm active:scale-90 transition-transform z-10"
           aria-label="Favourite"
         >
           <Heart
@@ -131,6 +149,25 @@ export default function MealKitDetail({ pkg }) {
             }`}
           />
         </button>
+
+        {/* Availability ribbon — centered across the middle of the hero */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[88%] z-10">
+          <div
+            className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl ${stockCfg.banner} backdrop-blur-md shadow-lg`}
+          >
+            <span
+              className={`w-2.5 h-2.5 rounded-full ${stockCfg.dot} shrink-0`}
+            />
+            <div>
+              <div className="text-white font-bold text-sm tracking-wide leading-tight">
+                {stockCfg.label}
+              </div>
+              <div className="text-white/85 text-xs leading-tight mt-0.5">
+                {stockCfg.sublabel}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Info card — overlaps hero, is the focus */}
@@ -142,15 +179,8 @@ export default function MealKitDetail({ pkg }) {
           </p>
         )}
 
-        {/* Availability status row */}
+        {/* Serves & prep time */}
         <div className="flex items-center gap-3 mt-4 flex-wrap">
-          <span className="flex items-center gap-1.5">
-            <span className={`w-2 h-2 rounded-full ${stockCfg.dot}`} />
-            <span className={`text-xs font-semibold ${stockCfg.text}`}>
-              {stockCfg.label}
-            </span>
-          </span>
-          <span className="w-px h-3 bg-gray-200" />
           <span className="flex items-center gap-1.5 text-xs font-medium text-gray-600">
             <Users className="w-3.5 h-3.5 text-gray-400" />
             {pkg.serves || 'Serves 4–6'}
