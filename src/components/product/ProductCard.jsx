@@ -67,39 +67,37 @@ export default function ProductCard({ product }) {
             className={`w-3.5 h-3.5 ${wished ? 'fill-[#2E7D32] text-[#2E7D32]' : 'text-gray-400'}`}
           />
         </button>
+        <button
+          onClick={handleAdd}
+          disabled={comingSoon}
+          className={`absolute bottom-1 right-1 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all active:scale-90 ${
+            comingSoon ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#2E7D32] hover:bg-[#1B5E20]'
+          }`}
+        >
+          <Plus
+            className={`w-3.5 h-3.5 ${comingSoon ? 'text-gray-400' : 'text-white'}`}
+            strokeWidth={2.5}
+          />
+        </button>
       </div>
       <div className="p-2 flex flex-col flex-1">
-        <h3 className="text-[11px] font-semibold text-card-foreground leading-tight line-clamp-2 mb-1">
+        <h3 className="text-[11px] font-semibold text-card-foreground leading-tight line-clamp-2 mb-0.5">
           {product.name}
         </h3>
-        <div className="flex items-center justify-between mt-auto gap-1">
-          {comingSoon ? (
-            <span className="text-[10px] font-bold text-gray-500">Coming Soon</span>
-          ) : (
-            <div className="min-w-0">
-              <span className={`font-bold text-[#2E7D32] ${priceInfo.isRange ? 'text-[10px]' : 'text-[11px]'} block leading-tight`}>
-                {priceInfo.text}
+        {comingSoon ? (
+          <span className="text-[10px] font-bold text-gray-500 mt-auto">Coming Soon</span>
+        ) : (
+          <div className="mt-auto">
+            <span className={`font-bold text-[#2E7D32] ${priceInfo.isRange ? 'text-[10px]' : 'text-[11px]'} block leading-tight whitespace-nowrap`}>
+              {priceInfo.text}
+            </span>
+            {!priceInfo.isRange && effectiveOriginal && (
+              <span className="text-[9px] text-gray-400 line-through block leading-tight">
+                ₦{effectiveOriginal.toLocaleString()}
               </span>
-              {!priceInfo.isRange && effectiveOriginal && (
-                <span className="text-[9px] text-gray-400 line-through block leading-tight">
-                  ₦{effectiveOriginal.toLocaleString()}
-                </span>
-              )}
-            </div>
-          )}
-          <button
-            onClick={handleAdd}
-            disabled={comingSoon}
-            className={`w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90 flex-shrink-0 ${
-              comingSoon ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#2E7D32] hover:bg-[#1B5E20]'
-            }`}
-          >
-            <Plus
-              className={`w-3.5 h-3.5 ${comingSoon ? 'text-gray-400' : 'text-white'}`}
-              strokeWidth={2.5}
-            />
-          </button>
-        </div>
+            )}
+          </div>
+        )}
       </div>
       <VariantPickerSheet
         product={product}

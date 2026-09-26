@@ -82,31 +82,31 @@ export default function InfiniteProductGrid({ products }) {
             key={`${p.id}-${idx}`}
             className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col"
           >
-            <button
-              onClick={() => navigate(`/category/${p.category_ids?.[0] || ''}`)}
-              className="w-full aspect-square bg-[#F5F5F5] flex items-center justify-center overflow-hidden"
-            >
-              {p.image ? (
-                <Image src={p.image} alt={p.name} className="w-full h-full" fittingType="fill" />
-              ) : (
-                <span className="text-3xl">🛒</span>
-              )}
-            </button>
+            <div className="relative w-full aspect-square bg-[#F5F5F5] overflow-hidden">
+              <button
+                onClick={() => navigate(`/category/${p.category_ids?.[0] || ''}`)}
+                className="w-full h-full flex items-center justify-center"
+              >
+                {p.image ? (
+                  <Image src={p.image} alt={p.name} className="w-full h-full" fittingType="fill" />
+                ) : (
+                  <span className="text-3xl">🛒</span>
+                )}
+              </button>
+              <button
+                onClick={() => handleAdd(p)}
+                className="absolute bottom-1 right-1 w-8 h-8 rounded-full bg-[#2E7D32] text-white flex items-center justify-center shadow-md active:scale-90 transition-transform"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
             <div className="p-2 flex flex-col flex-1">
-              <p className="text-[11px] font-semibold text-gray-900 leading-tight line-clamp-2 mb-1">
+              <p className="text-[11px] font-semibold text-gray-900 leading-tight line-clamp-2 mb-0.5">
                 {p.name}
               </p>
-              <div className="flex items-center justify-between mt-auto gap-1">
-                <span className={`font-bold text-[#2E7D32] leading-tight ${(getDisplayPrice(p)).isRange ? 'text-[10px]' : 'text-[11px]'}`}>
-                  {(getDisplayPrice(p)).text}
-                </span>
-                <button
-                  onClick={() => handleAdd(p)}
-                  className="w-9 h-9 rounded-full bg-[#2E7D32] text-white flex items-center justify-center active:scale-90 transition-transform flex-shrink-0"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
-              </div>
+              <span className={`font-bold text-[#2E7D32] leading-tight mt-auto ${(getDisplayPrice(p)).isRange ? 'text-[10px]' : 'text-[11px]'} whitespace-nowrap`}>
+                {(getDisplayPrice(p)).text}
+              </span>
             </div>
           </div>
         ))}
