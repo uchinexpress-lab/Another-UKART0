@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { useCart } from '@/context/CartContext';
+import { toast } from '@/components/ui/use-toast';
 import {
   Loader2,
   MapPin,
@@ -14,6 +16,7 @@ import {
   XCircle,
   Package,
   PackageCheck,
+  RotateCw,
 } from 'lucide-react';
 import RateDeliveryCard from '@/components/notifications/RateDeliveryCard';
 
@@ -38,6 +41,25 @@ export default function OrderDetail() {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { addItems } = useCart();
+  const navigate = useNavigate();
+
+  const reorder = () => {
+    const cartItems = (order.items || []).map((it) => ({
+      id: it.name,
+      name: it.name,
+      price: it.price || 0,
+      quantity: it.quantity || 1,
+      unit: it.unit || '',
+    }));
+    if (cartItems.length === 0) {
+      toast({ title: 'No items to reorder' });
+      return;
+    }
+    addItems(cartItems);
+    toast({ title: `Added ${cartItems.length} item${cartItems.length > 1 ? 's' : ''} to cart` });
+    navigate('/cart');
+  };
 
   useEffect(() => {
     base44.entities.Order
@@ -199,6 +221,15 @@ export default function OrderDetail() {
           <p className="text-xs text-muted-foreground mb-3">Tell us about your experience</p>
           <RateDeliveryCard order={order} />
         </div>
+      )}
+
+      {order.status !== 'cancelled' && (order.items?.length || 0) > 0 && (
+        <button
+          onClick={reorder}
+          className="w-full flex items-center justify-center gap-2 bg-[#2E7D32] text-white text-sm font-bold py-3 rounded-2xl active:scale-[0.98] transition-transform"
+        >
+          <RotateCw className="w-4 h-4" /> Reorder these items
+        </button>
       )}
 
       <Link

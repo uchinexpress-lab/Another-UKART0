@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { useCart } from '@/context/CartContext';
+import { toast } from '@/components/ui/use-toast';
 import {
   Package,
   Clock,
@@ -10,6 +12,7 @@ import {
   ChevronRight,
   ShoppingBag,
   Truck,
+  RotateCw,
 } from 'lucide-react';
 import PullToRefresh from '@/components/home/PullToRefresh';
 
@@ -59,6 +62,27 @@ export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('active');
+  const { addItems } = useCart();
+  const navigate = useNavigate();
+
+  const reorder = (e, order) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const cartItems = (order.items || []).map((it) => ({
+      id: it.name,
+      name: it.name,
+      price: it.price || 0,
+      quantity: it.quantity || 1,
+      unit: it.unit || '',
+    }));
+    if (cartItems.length === 0) {
+      toast({ title: 'No items to reorder' });
+      return;
+    }
+    addItems(cartItems);
+    toast({ title: `Added ${cartItems.length} item${cartItems.length > 1 ? 's' : ''} to cart` });
+    navigate('/cart');
+  };
 
   const loadOrders = async () => {
     try {
@@ -158,6 +182,15 @@ export default function Orders() {
                     <ChevronRight className="w-4 h-4" />
                   </span>
                 </div>
+
+                {!isActive && (o.items?.length || 0) > 0 && (
+                  <button
+                    onClick={(e) => reorder(e, o)}
+                    className="mt-3 w-full flex items-center justify-center gap-1.5 bg-[#2E7D32]/10 text-[#2E7D32] text-sm font-bold py-2.5 rounded-xl active:scale-[0.98] transition-transform"
+                  >
+                    <RotateCw className="w-4 h-4" /> Reorder
+                  </button>
+                )}
               </Link>
             );
           })}
