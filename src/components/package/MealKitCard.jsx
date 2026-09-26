@@ -39,7 +39,7 @@ export default function MealKitCard({ pkg }) {
             src={pkg.image}
             alt={pkg.name}
             fittingType="fill"
-            className="absolute inset-0 w-full h-full scale-105 blur-[9px]"
+            className="absolute inset-0 w-full h-full scale-105 blur-[2px]"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-[#E8F5E9]">
