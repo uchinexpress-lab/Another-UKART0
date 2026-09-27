@@ -37,6 +37,7 @@ const AdminProducts = lazy(() => import('@/pages/AdminProducts'));
 const AdminProductEdit = lazy(() => import('@/pages/AdminProductEdit'));
 const AdminCategories = lazy(() => import('@/pages/AdminCategories'));
 const AdminBulkImages = lazy(() => import('@/pages/AdminBulkImages'));
+const AdminBanners = lazy(() => import('@/pages/AdminBanners'));
 const Login = lazy(() => import('@/pages/Login'));
 const Register = lazy(() => import('@/pages/Register'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
@@ -105,6 +106,7 @@ const AuthenticatedApp = () => {
               <Route path="/admin/products/:id" element={<GuestGate><AdminProductEdit /></GuestGate>} />
               <Route path="/admin/categories" element={<GuestGate><AdminCategories /></GuestGate>} />
               <Route path="/admin/bulk-images" element={<GuestGate><AdminBulkImages /></GuestGate>} />
+              <Route path="/admin/banners" element={<GuestGate><AdminBanners /></GuestGate>} />
               <Route path="/orders" element={<GuestGate><Orders /></GuestGate>} />
               <Route path="/orders/:id" element={<GuestGate><OrderDetail /></GuestGate>} />
               <Route path="/payment-methods" element={<GuestGate><PaymentMethods /></GuestGate>} />

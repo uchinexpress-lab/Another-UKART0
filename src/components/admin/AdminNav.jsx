@@ -1,10 +1,11 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Package, Boxes, ImagePlus, ClipboardList, Settings } from 'lucide-react';
+import { Package, Boxes, ImagePlus, ClipboardList, Settings, LayoutDashboard } from 'lucide-react';
 
 const TABS = [
   { to: '/admin/products', label: 'Products', icon: Package },
   { to: '/admin/categories', label: 'Categories', icon: Boxes },
+  { to: '/admin/banners', label: 'Banners', icon: LayoutDashboard },
   { to: '/admin/bulk-images', label: 'Photos', icon: ImagePlus },
   { to: '/admin/orders', label: 'Orders', icon: ClipboardList },
   { to: '/admin/settings', label: 'Settings', icon: Settings },

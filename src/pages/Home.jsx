@@ -12,6 +12,7 @@ import MealKitBanner from '@/components/home/MealKitBanner';
 import CustomerReviews from '@/components/home/CustomerReviews';
 import InfiniteProductGrid from '@/components/home/InfiniteProductGrid';
 import PullToRefresh from '@/components/home/PullToRefresh';
+import BannerSlider from '@/components/banners/BannerSlider';
 
 export default function Home() {
   const [packages, setPackages] = useState([]);
