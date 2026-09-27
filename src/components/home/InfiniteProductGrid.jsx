@@ -75,7 +75,7 @@ export default function InfiniteProductGrid({ products }) {
 
   return (
     <div className="px-4 pt-2">
-      <h2 className="text-lg font-bold text-gray-900 mb-3">More to Explore</h2>
+      <h2 className="text-lg font-bold text-gray-900 mb-2">More to Explore</h2>
       <div className="grid grid-cols-3 gap-2">
         {visible.map((p, idx) => (
           <div
@@ -102,8 +102,8 @@ export default function InfiniteProductGrid({ products }) {
                 <Plus className="w-4 h-4" />
               </button>
             </div>
-            <div className="p-2 pt-3 flex flex-col flex-1">
-              <p className="text-[11px] font-semibold text-gray-900 leading-tight line-clamp-2 min-h-[28px] mb-1">
+            <div className="p-2 pt-2.5 flex flex-col flex-1">
+              <p className="text-[11px] font-semibold text-gray-900 leading-tight line-clamp-2 min-h-[26px] mb-0.5">
                 {p.name}
               </p>
               <span className={`font-bold text-[#2E7D32] leading-tight mt-auto ${(getDisplayPrice(p)).isRange ? 'text-[10px]' : 'text-[11px]'} whitespace-nowrap`}>
@@ -113,7 +113,7 @@ export default function InfiniteProductGrid({ products }) {
           </div>
         ))}
       </div>
-      <div ref={sentinelRef} className="h-12 flex items-center justify-center py-4">
+      <div ref={sentinelRef} className="h-8 flex items-center justify-center py-2">
         {loading && (
           <div className="w-6 h-6 border-3 border-gray-200 border-t-[#2E7D32] rounded-full animate-spin" />
         )}

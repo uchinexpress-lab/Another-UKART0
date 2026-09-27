@@ -49,11 +49,11 @@ export default function Home() {
 
   return (
     <PullToRefresh onRefresh={loadData}>
-    <div className="space-y-8 pb-4">
-      <div className="px-4 pt-3">
+    <div className="space-y-5 pb-4">
+      <div className="px-4 pt-1">
         <QuickCategories />
       </div>
-      <div className="px-4 opacity-100">
+      <div className="px-4">
         <PromoBanner />
       </div>
       <WeeklyDeals products={weeklyDeals} />

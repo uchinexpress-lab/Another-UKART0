@@ -13,7 +13,7 @@ export default function PopularMealKits({ packages }) {
 
   return (
     <section className="px-4">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2">
         <h2 className="text-lg font-bold text-gray-900">Popular Meal Kits</h2>
         <Link
           to="/packages#meal-kits"
@@ -22,14 +22,14 @@ export default function PopularMealKits({ packages }) {
           See All <ChevronRight className="w-3.5 h-3.5" />
         </Link>
       </div>
-      <div className="flex gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-1">
+      <div className="flex gap-2.5 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-1">
         {mealKits.map((kit) => (
           <div
             key={kit.id}
             onClick={() => navigate(`/package/${kit.id}`)}
             className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col w-40 shrink-0 active:scale-[0.98] transition-transform cursor-pointer"
           >
-            <div className="relative h-28 bg-gray-50">
+            <div className="relative h-24 bg-gray-50">
               {kit.image ? (
                 <MealKitImage src={kit.image} alt={kit.name} className="w-full h-full" />
               ) : (
@@ -41,7 +41,7 @@ export default function PopularMealKits({ packages }) {
                 Meal Kit
               </span>
             </div>
-            <div className="p-2.5 flex flex-col flex-1">
+            <div className="p-2 flex flex-col flex-1">
               <h3 className="text-xs font-bold text-gray-900 leading-tight line-clamp-1">
                 {kit.name}
               </h3>

@@ -6,13 +6,13 @@ export default function CustomerReviews({ reviews }) {
 
   return (
     <section className="px-4">
-      <h2 className="text-lg font-bold text-gray-900 mb-3">Customer Reviews</h2>
-      <div className="space-y-3">
+      <h2 className="text-lg font-bold text-gray-900 mb-2">Customer Reviews</h2>
+      <div className="space-y-2.5">
         {reviews.map((r) => (
-          <div key={r.id} className="bg-white rounded-2xl border border-gray-100 p-4">
-            <div className="flex items-center gap-3 mb-2">
+          <div key={r.id} className="bg-white rounded-2xl border border-gray-100 p-3">
+            <div className="flex items-center gap-2.5 mb-1.5">
               <div
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm"
                 style={{ background: 'linear-gradient(135deg, #76C237, #2E7D32)' }}
               >
                 {r.customer_name.charAt(0)}
@@ -22,7 +22,7 @@ export default function CustomerReviews({ reviews }) {
                 <div className="text-xs text-gray-500">{r.location}</div>
               </div>
             </div>
-            <div className="flex gap-0.5 mb-2">
+            <div className="flex gap-0.5 mb-1.5">
               {[...Array(r.rating || 5)].map((_, i) => (
                 <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
               ))}

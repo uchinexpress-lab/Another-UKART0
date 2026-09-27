@@ -26,14 +26,14 @@ export default function ShopByBudget() {
   return (
     <section className="px-4">
       <h2 className="text-lg font-bold text-gray-900 mb-1">Shop by Budget</h2>
-      <p className="text-xs text-gray-500 mb-3">Shop within your budget</p>
+      <p className="text-xs text-gray-500 mb-2">Shop within your budget</p>
       <div className="grid grid-cols-3 gap-2.5">
         {budgets.map((b) => (
           <button
             key={b.range}
             onClick={() => navigate(`/budget/${b.range}`)}
             aria-label={b.label}
-            className="relative rounded-2xl overflow-hidden h-28 flex flex-col justify-end hover:opacity-90 transition-opacity"
+            className="relative rounded-2xl overflow-hidden h-24 flex flex-col justify-end hover:opacity-90 transition-opacity"
           >
             <Image
               src={b.image}

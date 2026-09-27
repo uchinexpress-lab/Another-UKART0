@@ -17,13 +17,13 @@ export default function FeaturedCategories() {
 
   return (
     <section className="px-4">
-      <h2 className="text-lg font-bold text-gray-900 mb-3">Shop by Category</h2>
-      <div className="grid grid-cols-3 gap-3">
+      <h2 className="text-lg font-bold text-gray-900 mb-2">Shop by Category</h2>
+      <div className="grid grid-cols-3 gap-2.5">
         {BROAD_CATEGORIES.map((cat, i) => (
           <button
             key={cat.slug}
             onClick={() => navigate(cat.route || `/shop/${cat.slug}`)}
-            className="bg-white rounded-2xl border border-gray-100 p-3 flex flex-col items-center gap-2 active:scale-95 transition-transform"
+            className="bg-white rounded-2xl border border-gray-100 p-2.5 flex flex-col items-center gap-1.5 active:scale-95 transition-transform"
           >
             <div
               className={`w-14 h-14 rounded-2xl overflow-hidden flex items-center justify-center ${

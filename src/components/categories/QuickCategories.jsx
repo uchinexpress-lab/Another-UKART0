@@ -7,7 +7,7 @@ export default function QuickCategories() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex gap-3 overflow-x-auto pb-1 pt-3 -mx-4 px-4 scrollbar-hide">
+    <div className="flex gap-2.5 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-hide">
       {BROAD_CATEGORIES.map((cat) => (
         <button
           key={cat.slug}

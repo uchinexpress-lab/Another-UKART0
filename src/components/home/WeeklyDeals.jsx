@@ -9,7 +9,7 @@ export default function WeeklyDeals({ products }) {
 
   return (
     <section className="px-4">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <Flame className="w-5 h-5 text-[#FF6B35]" />
           <h2 className="text-lg font-bold text-gray-900">Weekly Deals</h2>

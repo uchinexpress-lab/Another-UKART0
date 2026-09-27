@@ -82,8 +82,8 @@ export default function ProductCard({ product }) {
           />
         </button>
       </div>
-      <div className="p-2 pt-3 flex flex-col flex-1">
-        <h3 className="text-[11px] font-semibold text-card-foreground leading-tight line-clamp-2 min-h-[28px] mb-1">
+      <div className="p-2 pt-2.5 flex flex-col flex-1">
+        <h3 className="text-[11px] font-semibold text-card-foreground leading-tight line-clamp-2 min-h-[26px] mb-0.5">
           {product.name}
         </h3>
         {comingSoon ? (

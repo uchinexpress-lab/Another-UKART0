@@ -55,8 +55,8 @@ export default function DealCard({ product }) {
           <Plus className="w-4 h-4 text-white" strokeWidth={2.5} />
         </button>
       </div>
-      <div className="p-2 pt-3 flex flex-col flex-1">
-        <h3 className="text-[11px] font-semibold text-card-foreground leading-tight line-clamp-2 min-h-[28px] mb-1">
+      <div className="p-2 pt-2.5 flex flex-col flex-1">
+        <h3 className="text-[11px] font-semibold text-card-foreground leading-tight line-clamp-2 min-h-[26px] mb-0.5">
           {product.name}
         </h3>
         <div className="mt-auto">
