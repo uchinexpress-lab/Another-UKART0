@@ -38,50 +38,52 @@ export default function ProductCard({ product }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-20px' }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
-      className="bg-card rounded-2xl border border-border overflow-hidden flex flex-col h-full"
+      className="bg-card rounded-2xl border border-border flex flex-col h-full"
     >
-      <div className="relative aspect-square bg-gray-50">
-        {product.image ? (
-          <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-[#E8F5E9]">
-            <ShoppingBag className="w-8 h-8 text-[#2E7D32]/40" />
-          </div>
-        )}
-        {comingSoon ? (
-          <span className="absolute top-1.5 left-1.5 bg-gray-700/90 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-            Coming Soon
-          </span>
-        ) : (
-          discount > 0 && (
-            <span className="absolute top-1.5 left-1.5 bg-[#2E7D32] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-              -{discount}%
+      <div className="relative">
+        <div className="relative h-[135px] bg-gray-50 rounded-t-2xl overflow-hidden">
+          {product.image ? (
+            <img src={product.image} alt={product.name} className="w-full h-full object-contain" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-[#E8F5E9]">
+              <ShoppingBag className="w-8 h-8 text-[#2E7D32]/40" />
+            </div>
+          )}
+          {comingSoon ? (
+            <span className="absolute top-1.5 left-1.5 bg-gray-700/90 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+              Coming Soon
             </span>
-          )
-        )}
-        <button
-          onClick={() => toggleItem(product)}
-          className="absolute top-1.5 right-1.5 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center shadow-sm active:scale-90 transition-transform"
-        >
-          <Heart
-            className={`w-3.5 h-3.5 ${wished ? 'fill-[#2E7D32] text-[#2E7D32]' : 'text-gray-400'}`}
-          />
-        </button>
+          ) : (
+            discount > 0 && (
+              <span className="absolute top-1.5 left-1.5 bg-[#2E7D32] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                -{discount}%
+              </span>
+            )
+          )}
+          <button
+            onClick={() => toggleItem(product)}
+            className="absolute top-1.5 right-1.5 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center shadow-sm active:scale-90 transition-transform"
+          >
+            <Heart
+              className={`w-3.5 h-3.5 ${wished ? 'fill-[#2E7D32] text-[#2E7D32]' : 'text-gray-400'}`}
+            />
+          </button>
+        </div>
         <button
           onClick={handleAdd}
           disabled={comingSoon}
-          className={`absolute bottom-1 right-1 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all active:scale-90 ${
+          className={`absolute right-1.5 -bottom-2.5 w-9 h-9 rounded-full flex items-center justify-center shadow-lg transition-all active:scale-90 ${
             comingSoon ? 'bg-gray-200 cursor-not-allowed' : 'bg-[#2E7D32] hover:bg-[#1B5E20]'
           }`}
         >
           <Plus
-            className={`w-3.5 h-3.5 ${comingSoon ? 'text-gray-400' : 'text-white'}`}
+            className={`w-4 h-4 ${comingSoon ? 'text-gray-400' : 'text-white'}`}
             strokeWidth={2.5}
           />
         </button>
       </div>
-      <div className="p-2 flex flex-col flex-1">
-        <h3 className="text-[11px] font-semibold text-card-foreground leading-tight line-clamp-2 mb-0.5">
+      <div className="p-2 pt-3 flex flex-col flex-1">
+        <h3 className="text-[11px] font-semibold text-card-foreground leading-tight line-clamp-2 min-h-[28px] mb-1">
           {product.name}
         </h3>
         {comingSoon ? (
@@ -91,7 +93,7 @@ export default function ProductCard({ product }) {
             <span className={`font-bold text-[#2E7D32] ${priceInfo.isRange ? 'text-[10px]' : 'text-[11px]'} block leading-tight whitespace-nowrap`}>
               {priceInfo.text}
             </span>
-            {!priceInfo.isRange && effectiveOriginal && (
+            {!priceInfo.isRange && effectiveOriginal > 0 && (
               <span className="text-[9px] text-gray-400 line-through block leading-tight">
                 ₦{effectiveOriginal.toLocaleString()}
               </span>

@@ -80,28 +80,30 @@ export default function InfiniteProductGrid({ products }) {
         {visible.map((p, idx) => (
           <div
             key={`${p.id}-${idx}`}
-            className="bg-white rounded-2xl border border-gray-100 overflow-hidden flex flex-col"
+            className="bg-white rounded-2xl border border-gray-100 flex flex-col"
           >
-            <div className="relative w-full aspect-square bg-[#F5F5F5] overflow-hidden">
-              <button
-                onClick={() => navigate(`/category/${p.category_ids?.[0] || ''}`)}
-                className="w-full h-full flex items-center justify-center"
-              >
-                {p.image ? (
-                  <Image src={p.image} alt={p.name} className="w-full h-full" fittingType="fill" />
-                ) : (
-                  <span className="text-3xl">🛒</span>
-                )}
-              </button>
+            <div className="relative">
+              <div className="relative h-[135px] bg-[#F5F5F5] rounded-t-2xl overflow-hidden">
+                <button
+                  onClick={() => navigate(`/category/${p.category_ids?.[0] || ''}`)}
+                  className="w-full h-full flex items-center justify-center"
+                >
+                  {p.image ? (
+                    <Image src={p.image} alt={p.name} className="w-full h-full" fittingType="fit" />
+                  ) : (
+                    <span className="text-3xl">🛒</span>
+                  )}
+                </button>
+              </div>
               <button
                 onClick={() => handleAdd(p)}
-                className="absolute bottom-1 right-1 w-8 h-8 rounded-full bg-[#2E7D32] text-white flex items-center justify-center shadow-md active:scale-90 transition-transform"
+                className="absolute right-1.5 -bottom-2.5 w-9 h-9 rounded-full bg-[#2E7D32] text-white flex items-center justify-center shadow-lg active:scale-90 transition-transform"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-4 h-4" />
               </button>
             </div>
-            <div className="p-2 flex flex-col flex-1">
-              <p className="text-[11px] font-semibold text-gray-900 leading-tight line-clamp-2 mb-0.5">
+            <div className="p-2 pt-3 flex flex-col flex-1">
+              <p className="text-[11px] font-semibold text-gray-900 leading-tight line-clamp-2 min-h-[28px] mb-1">
                 {p.name}
               </p>
               <span className={`font-bold text-[#2E7D32] leading-tight mt-auto ${(getDisplayPrice(p)).isRange ? 'text-[10px]' : 'text-[11px]'} whitespace-nowrap`}>
