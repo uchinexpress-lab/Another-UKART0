@@ -11,6 +11,26 @@
     "image": {
       "type": "string"
     },
+    "image_zoom": {
+      "type": "number",
+      "default": 1
+    },
+    "image_pos_x": {
+      "type": "number",
+      "default": 50
+    },
+    "image_pos_y": {
+      "type": "number",
+      "default": 50
+    },
+    "image_fit_mode": {
+      "type": "string",
+      "enum": [
+        "contain",
+        "cover"
+      ],
+      "default": "contain"
+    },
     "starting_price": {
       "type": "number"
     },
@@ -68,12 +88,59 @@
           },
           "notes": {
             "type": "string"
+          },
+          "image": {
+            "type": "string"
           }
         }
       }
     },
     "cooking_instructions": {
       "type": "string"
+    },
+    "cooking_steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "step": {
+            "type": "number"
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "optional_items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "product_id": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number"
+          },
+          "active": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      }
     },
     "optional_categories": {
       "type": "array",

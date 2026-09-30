@@ -1,10 +1,12 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Package, Boxes, ImagePlus, ClipboardList, Settings, LayoutDashboard } from 'lucide-react';
+import { Package, Boxes, ImagePlus, ClipboardList, Settings, LayoutDashboard, Home, UtensilsCrossed } from 'lucide-react';
 
 const TABS = [
   { to: '/admin/products', label: 'Products', icon: Package },
+  { to: '/admin/meal-kits', label: 'Meal Kits', icon: UtensilsCrossed },
   { to: '/admin/categories', label: 'Categories', icon: Boxes },
+  { to: '/admin/homepage', label: 'Homepage', icon: Home },
   { to: '/admin/banners', label: 'Banners', icon: LayoutDashboard },
   { to: '/admin/bulk-images', label: 'Photos', icon: ImagePlus },
   { to: '/admin/orders', label: 'Orders', icon: ClipboardList },

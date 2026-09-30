@@ -18,17 +18,30 @@ export default function Home() {
   const [packages, setPackages] = useState([]);
   const [products, setProducts] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [weeklyDeals, setWeeklyDeals] = useState([]);
+  const [moreToExplore, setMoreToExplore] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const loadData = () =>
   Promise.all([
   base44.entities.Package.list(),
   base44.entities.Product.list(),
-  base44.entities.Review.list()]
-  ).then(([pkgs, prods, revs]) => {
+  base44.entities.Review.list(),
+  base44.entities.HomepageSection.list()]
+  ).then(([pkgs, prods, revs, hsections]) => {
+    const sMap = {};
+    hsections.forEach(s => { sMap[s.section] = s.product_ids || []; });
+    const wdIds = sMap.weekly_deals || [];
+    const wdProducts = wdIds.map(sid => prods.find(p => p.id === sid)).filter(Boolean);
+    const finalWd = wdProducts.length > 0 ? wdProducts : prods.filter(p => p.is_weekly_deal);
+    const mteIds = sMap.more_to_explore || [];
+    const mteProducts = mteIds.map(sid => prods.find(p => p.id === sid)).filter(Boolean);
+    const finalMte = mteProducts.length > 0 ? mteProducts : prods;
     setPackages(pkgs);
     setProducts(prods);
     setReviews(revs);
+    setWeeklyDeals(finalWd);
+    setMoreToExplore(finalMte);
     setLoading(false);
   });
 
@@ -45,7 +58,6 @@ export default function Home() {
   }
 
   const bestSellers = products.filter((p) => p.is_best_seller);
-  const weeklyDeals = products.filter((p) => p.is_weekly_deal);
 
   return (
     <PullToRefresh onRefresh={loadData}>
@@ -64,7 +76,7 @@ export default function Home() {
       <FeaturedCategories />
       <BestSellers products={bestSellers} />
       <CustomerReviews reviews={reviews} />
-      <InfiniteProductGrid products={products} />
+      <InfiniteProductGrid products={moreToExplore} />
     </div>
     </PullToRefresh>);
 

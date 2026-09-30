@@ -1,54 +1,63 @@
-import React from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plus, Trash2, Upload, X } from 'lucide-react';
+import { base44 } from '@/api/base44Client';
 
-const newItem = () => ({ name: '', price: 0, available: true, image: '' });
+export default function OptionalItemsEditor({ items, onChange, products }) {
+  const [newItem, setNewItem] = useState({ name: '', product_id: '', price: 0, active: true });
 
-export default function OptionalItemsEditor({ items, onChange }) {
-  const add = () => onChange([...(items || []), newItem()]);
-  const update = (i, patch) => {
-    const next = [...(items || [])];
-    next[i] = { ...next[i], ...patch };
+  const add = () => {
+    if (!newItem.name.trim()) return;
+    onChange([...items, { ...newItem }]);
+    setNewItem({ name: '', product_id: '', price: 0, active: true });
+  };
+  const remove = (idx) => onChange(items.filter((_, i) => i !== idx));
+  const update = (idx, field, value) => {
+    const next = [...items];
+    next[idx] = { ...next[idx], [field]: value };
     onChange(next);
   };
-  const remove = (i) => onChange((items || []).filter((_, idx) => idx !== i));
+  const uploadImage = async (idx, file) => {
+    const { file_url } = await base44.integrations.Core.UploadPublicFile({ file });
+    update(idx, 'image', file_url);
+  };
 
   return (
-    <div className="space-y-2.5">
-      {(items || []).map((it, i) => (
-        <div key={i} className="rounded-xl border border-border bg-card p-3 space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-muted-foreground">Add-on {i + 1}</span>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => update(i, { available: !it.available })}
-                className={`relative w-9 h-5 rounded-full transition-colors ${it.available ? 'bg-[#2E7D32]' : 'bg-gray-300'}`}
-              >
-                <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${it.available ? 'translate-x-4' : 'translate-x-0.5'}`} />
-              </button>
-              <button onClick={() => remove(i)} className="w-6 h-6 rounded-md bg-red-50 flex items-center justify-center"><Trash2 className="w-3.5 h-3.5 text-red-500" /></button>
+    <div className="space-y-2">
+      {items.map((item, idx) => (
+        <div key={idx} className="p-2.5 rounded-xl bg-muted/50 space-y-2">
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+              {item.image ? (
+                <div className="relative w-full h-full">
+                  <img src={item.image} alt="" className="w-full h-full object-contain" />
+                  <button onClick={() => update(idx, 'image', '')} className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/50 text-white flex items-center justify-center"><X className="w-2.5 h-2.5" /></button>
+                </div>
+              ) : (
+                <label className="w-full h-full flex items-center justify-center cursor-pointer">
+                  <Upload className="w-3.5 h-3.5 text-muted-foreground" />
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadImage(idx, f); }} />
+                </label>
+              )}
             </div>
+            <input type="text" value={item.name || ''} onChange={(e) => update(idx, 'name', e.target.value)} placeholder="Optional item name" className="flex-1 px-2 py-1.5 rounded-lg border border-input bg-background text-xs" />
+            <button onClick={() => remove(idx)} className="text-red-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
           </div>
-          <input
-            value={it.name}
-            onChange={(e) => update(i, { name: e.target.value })}
-            placeholder="Add-on name (e.g. Chicken)"
-            className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-[#2E7D32]"
-          />
-          <input
-            type="number"
-            value={it.price}
-            onChange={(e) => update(i, { price: Number(e.target.value) })}
-            placeholder="Price (₦)"
-            className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-[#2E7D32]"
-          />
+          <div className="flex items-center gap-2 pl-12">
+            <select value={item.product_id || ''} onChange={(e) => update(idx, 'product_id', e.target.value)} className="flex-1 px-2 py-1.5 rounded-lg border border-input bg-background text-xs">
+              <option value="">Link to product (optional)</option>
+              {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+            <input type="number" value={item.price || 0} onChange={(e) => update(idx, 'price', parseFloat(e.target.value) || 0)} placeholder="Price" className="w-20 px-2 py-1.5 rounded-lg border border-input bg-background text-xs" />
+            <button onClick={() => update(idx, 'active', !item.active)} className={`w-9 h-5 rounded-full transition-colors relative flex-shrink-0 ${item.active ? 'bg-[#2E7D32]' : 'bg-gray-300'}`}>
+              <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${item.active ? 'translate-x-4' : 'translate-x-0.5'}`} />
+            </button>
+          </div>
         </div>
       ))}
-      <button
-        onClick={add}
-        className="w-full py-2.5 rounded-xl border-2 border-dashed border-[#2E7D32]/40 text-[#2E7D32] text-sm font-semibold flex items-center justify-center gap-1.5"
-      >
-        <Plus className="w-4 h-4" /> Add Optional Item
-      </button>
+      <div className="flex items-center gap-2 p-2 rounded-xl border border-dashed border-border">
+        <input type="text" value={newItem.name} onChange={(e) => setNewItem({ ...newItem, name: e.target.value })} placeholder="Add optional item..." className="flex-1 px-2 py-1.5 rounded-lg border border-input bg-background text-xs" onKeyDown={(e) => e.key === 'Enter' && add()} />
+        <button onClick={add} className="w-8 h-8 rounded-lg bg-[#2E7D32] text-white flex items-center justify-center"><Plus className="w-4 h-4" /></button>
+      </div>
     </div>
   );
 }

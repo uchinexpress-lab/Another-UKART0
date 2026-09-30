@@ -38,6 +38,9 @@ const AdminProductEdit = lazy(() => import('@/pages/AdminProductEdit'));
 const AdminCategories = lazy(() => import('@/pages/AdminCategories'));
 const AdminBulkImages = lazy(() => import('@/pages/AdminBulkImages'));
 const AdminBanners = lazy(() => import('@/pages/AdminBanners'));
+const AdminHomepage = lazy(() => import('@/pages/AdminHomepage'));
+const AdminMealKits = lazy(() => import('@/pages/AdminMealKits'));
+const AdminMealKitEdit = lazy(() => import('@/pages/AdminMealKitEdit'));
 const Login = lazy(() => import('@/pages/Login'));
 const Register = lazy(() => import('@/pages/Register'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
@@ -107,6 +110,10 @@ const AuthenticatedApp = () => {
               <Route path="/admin/categories" element={<GuestGate><AdminCategories /></GuestGate>} />
               <Route path="/admin/bulk-images" element={<GuestGate><AdminBulkImages /></GuestGate>} />
               <Route path="/admin/banners" element={<GuestGate><AdminBanners /></GuestGate>} />
+              <Route path="/admin/homepage" element={<GuestGate><AdminHomepage /></GuestGate>} />
+              <Route path="/admin/meal-kits" element={<GuestGate><AdminMealKits /></GuestGate>} />
+              <Route path="/admin/meal-kits/new" element={<GuestGate><AdminMealKitEdit /></GuestGate>} />
+              <Route path="/admin/meal-kits/:id" element={<GuestGate><AdminMealKitEdit /></GuestGate>} />
               <Route path="/orders" element={<GuestGate><Orders /></GuestGate>} />
               <Route path="/orders/:id" element={<GuestGate><OrderDetail /></GuestGate>} />
               <Route path="/payment-methods" element={<GuestGate><PaymentMethods /></GuestGate>} />
