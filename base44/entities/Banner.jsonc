@@ -56,6 +56,22 @@
     "slide_duration": {
       "type": "number",
       "default": 5
+    },
+    "heading": {
+      "type": "string"
+    },
+    "subheading": {
+      "type": "string"
+    },
+    "badge_text": {
+      "type": "string"
+    },
+    "cta_text": {
+      "type": "string"
+    },
+    "show_overlay": {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [

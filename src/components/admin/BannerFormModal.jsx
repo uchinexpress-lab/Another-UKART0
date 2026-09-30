@@ -16,6 +16,11 @@ export default function BannerFormModal({ banner, onSave, onCancel }) {
   const [location, setLocation] = useState(banner?.location || 'home');
   const [image, setImage] = useState(banner?.image || '');
   const [link, setLink] = useState(banner?.link || '');
+  const [heading, setHeading] = useState(banner?.heading || '');
+  const [subheading, setSubheading] = useState(banner?.subheading || '');
+  const [badgeText, setBadgeText] = useState(banner?.badge_text || '');
+  const [ctaText, setCtaText] = useState(banner?.cta_text || '');
+  const [showOverlay, setShowOverlay] = useState(banner?.show_overlay ?? false);
   const [active, setActive] = useState(banner?.active ?? true);
   const [autoSlide, setAutoSlide] = useState(banner?.auto_slide ?? true);
   const [slideDuration, setSlideDuration] = useState(banner?.slide_duration ?? 5);
@@ -79,6 +84,11 @@ export default function BannerFormModal({ banner, onSave, onCancel }) {
       active,
       auto_slide: autoSlide,
       slide_duration: slideDuration,
+      heading: heading.trim() || null,
+      subheading: subheading.trim() || null,
+      badge_text: badgeText.trim() || null,
+      cta_text: ctaText.trim() || null,
+      show_overlay: showOverlay,
       ...editorSettings,
     });
   };
@@ -211,6 +221,66 @@ export default function BannerFormModal({ banner, onSave, onCancel }) {
               className="w-full px-3 py-2.5 rounded-xl border border-input bg-background text-sm focus:outline-none focus:ring-2 focus:ring-[#2E7D32]/30"
             />
             <p className="text-[10px] text-muted-foreground mt-1">Where the banner navigates when clicked</p>
+          </div>
+
+          {/* Text Overlay (optional) */}
+          <div className="space-y-2 p-3 rounded-xl bg-muted/50">
+            <label className="text-xs font-semibold text-foreground flex items-center justify-between">
+              Text Overlay
+              <button
+                onClick={() => setShowOverlay(!showOverlay)}
+                className={`relative w-10 h-5 rounded-full transition-colors ${showOverlay ? 'bg-[#2E7D32]' : 'bg-gray-300'}`}
+              >
+                <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${showOverlay ? 'translate-x-5' : 'translate-x-0.5'}`} />
+              </button>
+            </label>
+            {showOverlay && (
+              <div className="space-y-2.5">
+                <p className="text-[10px] text-muted-foreground">
+                  Adds a gradient overlay with text on top of the banner image.
+                </p>
+                <div>
+                  <label className="text-[10px] font-semibold text-muted-foreground mb-1 block">Badge Text</label>
+                  <input
+                    type="text"
+                    value={badgeText}
+                    onChange={(e) => setBadgeText(e.target.value)}
+                    placeholder="e.g. Delivering Across Lagos"
+                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-[#2E7D32]/30"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-semibold text-muted-foreground mb-1 block">Heading</label>
+                  <input
+                    type="text"
+                    value={heading}
+                    onChange={(e) => setHeading(e.target.value)}
+                    placeholder="e.g. NO MARKET WAHALA."
+                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-[#2E7D32]/30"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-semibold text-muted-foreground mb-1 block">Subheading</label>
+                  <input
+                    type="text"
+                    value={subheading}
+                    onChange={(e) => setSubheading(e.target.value)}
+                    placeholder="e.g. Fresh groceries delivered across Lagos"
+                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-[#2E7D32]/30"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-semibold text-muted-foreground mb-1 block">CTA Button Text</label>
+                  <input
+                    type="text"
+                    value={ctaText}
+                    onChange={(e) => setCtaText(e.target.value)}
+                    placeholder="e.g. Shop Now"
+                    className="w-full px-3 py-2 rounded-lg border border-input bg-background text-xs focus:outline-none focus:ring-2 focus:ring-[#2E7D32]/30"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Auto-slide settings */}

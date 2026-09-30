@@ -3,6 +3,7 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Plus, Loader2, X, Image as ImageIcon } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { BANNER_LOCATIONS } from '@/lib/bannerConfig';
+import { migrateSeedBanners } from '@/lib/bannerSeeds';
 import AdminNav from '@/components/admin/AdminNav';
 import BannerCard from '@/components/admin/BannerCard';
 import BannerFormModal from '@/components/admin/BannerFormModal';
@@ -33,7 +34,16 @@ export default function AdminBanners() {
   }, []);
 
   useEffect(() => {
-    loadBanners();
+    // Migrate existing hardcoded banners into the database on first load,
+    // then refresh the list. Idempotent — only creates missing banners.
+    migrateSeedBanners()
+      .then((created) => {
+        if (created > 0) {
+          console.log(`Migrated ${created} existing banner(s) into Banner Manager.`);
+        }
+      })
+      .catch(() => {})
+      .finally(() => loadBanners());
   }, [loadBanners]);
 
   const filtered = filter === 'all'
@@ -310,8 +320,39 @@ function PreviewModal({ banner, onClose }) {
                 backgroundRepeat: 'no-repeat',
               }}
             />
-          </div>
-          <div className="flex gap-4 mt-3 text-[10px] text-muted-foreground">
+            {banner.show_overlay && (
+              <div
+                className="absolute inset-0 opacity-40"
+                style={{
+                  background:
+                    'linear-gradient(135deg, rgba(27,94,32,0.55) 0%, rgba(46,125,50,0.30) 100%)',
+                }}
+              />
+            )}
+            {banner.heading && (
+              <div className="relative p-4 h-full flex flex-col justify-center">
+                {banner.badge_text && (
+                  <span className="inline-block bg-white/25 backdrop-blur-sm text-white text-[9px] font-semibold px-2 py-0.5 rounded-full mb-1 w-fit">
+                    {banner.badge_text}
+                  </span>
+                )}
+                <h3 className="text-lg font-bold text-white leading-tight drop-shadow-md">
+                  {banner.heading}
+                </h3>
+                {banner.subheading && (
+                  <p className="text-[10px] text-white/90 mt-0.5 max-w-[200px] font-medium">
+                    {banner.subheading}
+                  </p>
+                )}
+                {banner.cta_text && (
+                  <span className="inline-flex items-center gap-1 bg-white text-[#2E7D32] text-[10px] font-bold px-3 py-1.5 rounded-full w-fit shadow-md mt-2">
+                    {banner.cta_text}
+                  </span>
+                )}
+              </div>
+            )}
+            </div>
+            <div className="flex gap-4 mt-3 text-[10px] text-muted-foreground">
             <span>Zoom: {banner.zoom || 1}x</span>
             <span>Position: {banner.pos_x || 50}% × {banner.pos_y || 50}%</span>
             <span>Mode: {banner.fit_mode || 'cover'}</span>
