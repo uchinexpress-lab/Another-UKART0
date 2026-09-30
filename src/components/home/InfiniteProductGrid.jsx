@@ -1,31 +1,17 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCart } from '@/context/CartContext';
-import { Plus } from 'lucide-react';
-import VariantPickerSheet from '@/components/product/VariantPickerSheet';
-import { getDisplayPrice, getActiveVariants, getSingleVariant, buildCartItem } from '@/lib/variantPricing';
+import ProductCard from '@/components/product/ProductCard';
 
 const BATCH_SIZE = 10;
 
 export default function InfiniteProductGrid({ products }) {
   const navigate = useNavigate();
-  const { addItem } = useCart();
+
   const [visible, setVisible] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [sheetProduct, setSheetProduct] = useState(null);
+
   const sentinelRef = useRef(null);
   const indexRef = useRef(0);
-
-  const handleAdd = (p) => {
-    const active = getActiveVariants(p);
-    if (active.length > 1) {
-      setSheetProduct(p);
-    } else if (active.length === 1) {
-      addItem(buildCartItem(p, active[0]));
-    } else {
-      addItem(p);
-    }
-  };
 
   const loadMore = useCallback(() => {
     if (!products.length) return;
@@ -77,39 +63,9 @@ export default function InfiniteProductGrid({ products }) {
       <h2 className="text-lg font-bold text-gray-900 mb-2">More to Explore</h2>
       <div className="grid grid-cols-3 gap-2">
         {visible.map((p, idx) => (
-          <div
-            key={`${p.id}-${idx}`}
-            className="bg-white rounded-2xl border border-gray-100 flex flex-col"
-          >
-            <div className="relative">
-              <div className="relative h-[135px] bg-gray-50 rounded-t-2xl overflow-hidden">
-                <button
-                  onClick={() => navigate(`/category/${p.category_ids?.[0] || ''}`)}
-                  className="w-full h-full flex items-center justify-center"
-                >
-                  {p.image ? (
-                    <img src={p.image} alt={p.name} className="w-full h-full object-contain" />
-                  ) : (
-                    <span className="text-3xl">🛒</span>
-                  )}
-                </button>
-              </div>
-              <button
-                onClick={() => handleAdd(p)}
-                className="absolute right-1.5 -bottom-2.5 w-9 h-9 rounded-full bg-[#2E7D32] text-white flex items-center justify-center shadow-lg active:scale-90 transition-transform"
-              >
-                <Plus className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="p-2 pt-2.5 flex flex-col flex-1">
-              <p className="text-[11px] font-semibold text-gray-900 leading-tight line-clamp-2 min-h-[26px] mb-0.5">
-                {p.name}
-              </p>
-              <span className={`font-bold text-[#2E7D32] leading-tight mt-auto ${(getDisplayPrice(p)).isRange ? 'text-[10px]' : 'text-[11px]'} whitespace-nowrap`}>
-                {(getDisplayPrice(p)).text}
-              </span>
-            </div>
-          </div>
+          <ProductCard key={`${p.id}-${idx}`} product={p} animated={false}
+            showOriginalPrice={false} showDiscount={false} respectComingSoon={false}
+            onImageClick={() => navigate(`/category/${p.category_ids?.[0] || ''}`)} />
         ))}
       </div>
       <div ref={sentinelRef} className="h-8 flex items-center justify-center py-2">
@@ -117,12 +73,7 @@ export default function InfiniteProductGrid({ products }) {
           <div className="w-6 h-6 border-3 border-gray-200 border-t-[#2E7D32] rounded-full animate-spin" />
         )}
       </div>
-      <VariantPickerSheet
-        product={sheetProduct}
-        open={!!sheetProduct}
-        onOpenChange={(open) => !open && setSheetProduct(null)}
-        onAdd={(variant) => sheetProduct && addItem(buildCartItem(sheetProduct, variant))}
-      />
+
     </div>
   );
 }

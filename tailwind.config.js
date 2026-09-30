@@ -10,6 +10,10 @@ module.exports = {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		colors: {
+  			retail: {
+  				DEFAULT: 'hsl(var(--retail))',
+  				hover: 'hsl(var(--retail-hover))'
+  			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {

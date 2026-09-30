@@ -14,6 +14,8 @@
     --primary-foreground: 0 0% 100%;
     --brand: 150 75% 20%;
     --brand-foreground: 0 0% 100%;
+    --retail: 123.037975 46.19883% 33.529412%;
+    --retail-hover: 124.477612 55.371901% 23.72549%;
     --secondary: 150 56% 95%;
     --secondary-foreground: 150 76% 25%;
     --muted: 0 0% 96.1%;
@@ -56,6 +58,8 @@
     --primary-foreground: 0 0% 100%;
     --brand: 150 75% 20%;
     --brand-foreground: 0 0% 100%;
+    --retail: 123.037975 46.19883% 33.529412%;
+    --retail-hover: 124.477612 55.371901% 23.72549%;
     --secondary: 150 8% 17%;
     --secondary-foreground: 0 0% 96%;
     --muted: 150 8% 17%;

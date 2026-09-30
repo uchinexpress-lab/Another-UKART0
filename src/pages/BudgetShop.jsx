@@ -66,7 +66,7 @@ export default function BudgetShop() {
       {products.length === 0 ? (
         <p className="text-muted-foreground text-center py-8">No products in this range</p>
       ) : (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           {products.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}

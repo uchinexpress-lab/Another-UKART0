@@ -2,7 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useWishlist } from '@/context/WishlistContext';
 import { useCart } from '@/context/CartContext';
-import { Heart, Plus } from 'lucide-react';
+import { Heart } from 'lucide-react';
+import ProductCardSurface from '@/components/product/ProductCardSurface';
 
 export default function Wishlist() {
   const { items, removeItem } = useWishlist();
@@ -26,33 +27,11 @@ export default function Wishlist() {
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold text-foreground mb-4">My Wishlist ({items.length})</h1>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-2">
         {items.map((item) => (
-          <div key={item.id} className="bg-card rounded-2xl border border-border overflow-hidden">
-            <div className="relative aspect-square">
-              <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-              <button
-                onClick={() => removeItem(item.id)}
-                className="absolute top-2 right-2 w-11 h-11 rounded-full bg-card/90 flex items-center justify-center shadow-sm active:scale-90 transition-transform"
-              >
-                <Heart className="w-4 h-4 fill-[#2E7D32] text-[#2E7D32]" />
-              </button>
-            </div>
-            <div className="p-2.5">
-              <h3 className="text-xs font-semibold text-foreground mb-1 line-clamp-2">{item.name}</h3>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-bold text-[#2E7D32]">
-                  ₦{item.price.toLocaleString()}
-                </span>
-                <button
-                  onClick={() => addItem(item)}
-                  className="w-11 h-11 rounded-full bg-[#2E7D32] flex items-center justify-center active:scale-90 transition-transform"
-                >
-                  <Plus className="w-4 h-4 text-white" strokeWidth={2.5} />
-                </button>
-              </div>
-            </div>
-          </div>
+          <ProductCardSurface key={item.id} product={item}
+            priceInfo={{ text: `₦${item.price.toLocaleString()}`, isRange: false }} wished
+            onWishlist={() => removeItem(item.id)} onAdd={() => addItem(item)} />
         ))}
       </div>
     </div>

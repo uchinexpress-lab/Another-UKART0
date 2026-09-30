@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import DealCard from '@/components/product/DealCard';
+import ProductCard from '@/components/product/ProductCard';
 import { Flame, ChevronRight } from 'lucide-react';
 
 export default function WeeklyDeals({ products }) {
@@ -23,7 +23,7 @@ export default function WeeklyDeals({ products }) {
       </div>
       <div className="grid grid-cols-3 gap-2">
         {deals.map((p) =>
-        <DealCard key={p.id} product={p} />
+        <ProductCard key={p.id} product={p} respectComingSoon={false} animated={false} />
         )}
       </div>
     </section>);
