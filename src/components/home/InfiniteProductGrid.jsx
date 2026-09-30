@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Image } from '@/components/ui/image';
 import { useCart } from '@/context/CartContext';
 import { Plus } from 'lucide-react';
 import VariantPickerSheet from '@/components/product/VariantPickerSheet';
@@ -83,13 +82,13 @@ export default function InfiniteProductGrid({ products }) {
             className="bg-white rounded-2xl border border-gray-100 flex flex-col"
           >
             <div className="relative">
-              <div className="relative h-[135px] bg-[#F5F5F5] rounded-t-2xl overflow-hidden">
+              <div className="relative h-[135px] bg-gray-50 rounded-t-2xl overflow-hidden">
                 <button
                   onClick={() => navigate(`/category/${p.category_ids?.[0] || ''}`)}
                   className="w-full h-full flex items-center justify-center"
                 >
                   {p.image ? (
-                    <Image src={p.image} alt={p.name} className="w-full h-full" fittingType="fit" />
+                    <img src={p.image} alt={p.name} className="w-full h-full object-contain" />
                   ) : (
                     <span className="text-3xl">🛒</span>
                   )}
