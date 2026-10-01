@@ -10,6 +10,8 @@ const BRAND = {
   lightGreen: '#E8F5E9',
 };
 
+const BANNER_URL = 'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/250e47ebc_ChatGPTImageSep16202612_22_03PM1.png';
+
 export function formatCurrency(n) {
   return '\u20A6' + (n || 0).toLocaleString();
 }
@@ -50,9 +52,8 @@ function emailShell(content) {
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
   <div style="max-width:600px;margin:0 auto;padding:20px;">
-    <div style="background:${BRAND.green};padding:24px 20px;border-radius:12px 12px 0 0;text-align:center;">
-      <h1 style="color:#fff;margin:0;font-size:24px;letter-spacing:0.5px;">\uD83D\uDED2 ${BRAND.name}</h1>
-      <p style="color:#C8E6C9;margin:4px 0 0;font-size:13px;">${BRAND.tagline} \uD83D\uDCA1</p>
+    <div style="text-align:center;">
+      <img src="${BANNER_URL}" alt="Ukart — No Market Wahala" style="width:100%;max-width:680px;height:auto;display:block;margin:0 auto;border-radius:12px 12px 0 0;" />
     </div>
     <div style="background:#fff;padding:28px 24px;border-radius:0 0 12px 12px;">
       ${content}

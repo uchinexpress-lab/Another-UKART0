@@ -4,6 +4,7 @@ import {
   logDeliveryEvent,
   ORDER_STATUS_MAP,
 } from "../../shared/deliveryUtils.ts";
+import { emailShell } from "../../shared/emailBanner.ts";
 
 export default async function (req: Request): Promise<Response> {
   try {
@@ -185,7 +186,7 @@ export default async function (req: Request): Promise<Response> {
         await base44.integrations.Core.SendEmail({
           to: delivery.customer_email,
           subject: `✅ Your Ukart order has been delivered`,
-          body: `<p>Hi ${delivery.customer_name || "Customer"},</p><p>Your order <strong>#${delivery.order_number}</strong> has been delivered successfully. Thank you for shopping with Ukart!</p><p>Please rate your delivery experience in the app.</p>`,
+          body: emailShell(`<p>Hi ${delivery.customer_name || "Customer"},</p><p>Your order <strong>#${delivery.order_number}</strong> has been delivered successfully. Thank you for shopping with Ukart!</p><p>Please rate your delivery experience in the app.</p>`),
         });
       } catch (e) {
         console.error("Delivered notification failed:", e);
