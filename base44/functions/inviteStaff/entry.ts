@@ -32,19 +32,21 @@ export default async function(req) {
       // Invite with Base44 auth role = "admin" (never a custom role)
       await base44.users.inviteUser(email, 'admin');
 
-      // Try to set staffRole immediately — the user record may already exist
-      // (e.g., an existing customer being promoted to staff).
+      // Try to set role + staffRole immediately — the user record may already exist
+      // (e.g., an existing customer being promoted to staff). For existing users,
+      // inviteUser alone does NOT change their role, so we must explicitly set
+      // role: 'admin' alongside staffRole.
       let userUpdated = false;
       try {
         const users = await admin.entities.User.list();
         const invitedUser = users.find((u) => u.email === email);
         if (invitedUser) {
-          await admin.entities.User.update(invitedUser.id, { staffRole });
+          await admin.entities.User.update(invitedUser.id, { role: 'admin', staffRole });
           userUpdated = true;
         }
       } catch (updateErr) {
-        // User hasn't accepted the invitation yet — staffRole will need to be
-        // set manually from Staff Settings after they register.
+        // User hasn't accepted the invitation yet — role and staffRole will need
+        // to be set manually from Staff Settings after they register.
       }
 
       await admin.entities.StaffAuditLog.create({
@@ -125,7 +127,37 @@ export default async function(req) {
       return Response.json({ success: true, message: 'Staff access removed' });
     }
 
-    return Response.json({ error: 'Unknown action. Use invite, updateRole, or deactivate.' }, { status: 400 });
+    if (action === 'promote') {
+      // Fix users who have staffRole set but Base44 role is still 'user'.
+      // This happens when inviteUser was called for an existing customer but
+      // the role was never promoted to 'admin'.
+      const { userId } = body;
+      if (!userId) return Response.json({ error: 'userId is required' }, { status: 400 });
+
+      const targetUser = await admin.entities.User.get(userId);
+      if (!targetUser) return Response.json({ error: 'User not found' }, { status: 404 });
+
+      const previousRole = targetUser.role || 'user';
+      const staffRole = targetUser.staffRole || 'super_admin';
+      await admin.entities.User.update(userId, { role: 'admin', staffRole });
+
+      await admin.entities.StaffAuditLog.create({
+        staff_id: user.id,
+        staff_name: user.full_name || user.email,
+        staff_role: callerStaffRole,
+        action: 'staff_promoted',
+        entity_type: 'User',
+        record_id: userId,
+        record_name: targetUser.email,
+        previous_value: previousRole,
+        new_value: 'admin',
+        details: `Role promoted to admin with staffRole: ${staffRole}`,
+      });
+
+      return Response.json({ success: true, message: 'User promoted to staff admin' });
+    }
+
+    return Response.json({ error: 'Unknown action. Use invite, updateRole, promote, or deactivate.' }, { status: 400 });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
