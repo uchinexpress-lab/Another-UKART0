@@ -40,19 +40,34 @@ function StaffLoading() {
 }
 
 function StaffNotAuthorized() {
+  const { user } = useAuth();
   const handleBack = () => {
     base44.auth.logout('/');
   };
+
+  // Check if this user has a staffRole but their Base44 role wasn't promoted
+  const hasStaffRole = user?.staffRole && user?.role !== 'admin';
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-8">
       <div className="text-center max-w-md">
-        <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${hasStaffRole ? 'bg-amber-100' : 'bg-red-100'}`}>
+          <svg className={`w-8 h-8 ${hasStaffRole ? 'text-amber-600' : 'text-red-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            {hasStaffRole ? (
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            ) : (
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            )}
           </svg>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Not Authorized</h1>
-        <p className="text-gray-600 mb-6">You are not authorized to access Ukart Staff Admin.</p>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          {hasStaffRole ? 'Staff Account Not Activated' : 'Not Authorized'}
+        </h1>
+        <p className="text-gray-600 mb-6">
+          {hasStaffRole
+            ? `Your account has a staff role (${user.staffRole}) but your access level hasn't been promoted yet. Please ask a Super Admin to activate your staff access from Staff Settings.`
+            : 'You are not authorized to access Ukart Staff Admin. Only invited staff members can access this portal.'}
+        </p>
         <button
           onClick={handleBack}
           className="h-10 px-5 rounded-lg bg-[#2E7D32] text-white text-sm font-bold hover:bg-[#1B5E20]"

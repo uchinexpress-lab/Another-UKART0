@@ -31,13 +31,27 @@ export default function StaffSettings() {
   const loadStaff = async () => {
     try {
       const list = await base44.entities.User.list();
-      // All staff have Base44 role = "admin"; staffRole distinguishes their position
-      const staffOnly = list.filter((u) => u.role === 'admin');
+      // Staff have Base44 role = "admin". Also show users who have a staffRole
+      // set but role is still "user" — these are broken records that need promotion.
+      const staffOnly = list.filter((u) => u.role === 'admin' || u.staffRole);
       setStaff(staffOnly);
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const promote = async (s) => {
+    try {
+      await base44.functions.invoke('inviteStaff', {
+        action: 'promote',
+        userId: s.id,
+      });
+      loadStaff();
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.data?.error || 'Failed to promote staff';
+      alert(msg);
     }
   };
 
@@ -201,12 +215,16 @@ export default function StaffSettings() {
                   const sRole = resolveStaffRole(s);
                   const isSelf = s.id === user?.id;
                   const isSuper = sRole === 'super_admin';
+                  const needsPromotion = s.role !== 'admin';
                   return (
-                    <tr key={s.id} className="hover:bg-gray-50">
+                    <tr key={s.id} className={`hover:bg-gray-50 ${needsPromotion ? 'bg-amber-50' : ''}`}>
                       <td className="px-4 py-3 font-medium text-gray-900">
                         {s.full_name || s.email?.split('@')[0]}
                         {isSelf && (
                           <span className="ml-2 text-xs text-gray-400">(you)</span>
+                        )}
+                        {needsPromotion && (
+                          <span className="ml-2 text-xs text-amber-600 font-medium">⚠ Role not promoted</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-gray-600">{s.email}</td>
@@ -242,15 +260,26 @@ export default function StaffSettings() {
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        {!isSuper && (
-                          <button
-                            onClick={() => deactivate(s)}
-                            className="text-red-500 hover:text-red-600 p-1.5 rounded hover:bg-red-50"
-                            title="Remove staff access"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
+                        <div className="flex items-center gap-1">
+                          {needsPromotion && (
+                            <button
+                              onClick={() => promote(s)}
+                              className="text-xs font-bold text-white bg-amber-500 hover:bg-amber-600 px-2.5 py-1 rounded"
+                              title="Promote Base44 role to admin"
+                            >
+                              Promote
+                            </button>
+                          )}
+                          {!isSuper && !needsPromotion && (
+                            <button
+                              onClick={() => deactivate(s)}
+                              className="text-red-500 hover:text-red-600 p-1.5 rounded hover:bg-red-50"
+                              title="Remove staff access"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
