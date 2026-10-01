@@ -161,9 +161,34 @@ export default function OrderDetail() {
           <p className="flex items-center gap-2 text-gray-600">
             <Phone className="w-4 h-4 text-gray-400" /> {order.customer_phone}
           </p>
-          <p className="flex items-center gap-2 text-muted-foreground text-xs pt-1">
-            <span className="font-medium">Payment:</span> {order.payment_method}
-          </p>
+          <div className="pt-2 mt-1 border-t border-gray-50 space-y-1">
+            <p className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Payment Method</span>
+              <span className="font-medium text-foreground">Paystack</span>
+            </p>
+            <p className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Payment Status</span>
+              {order.payment_status === 'Paid' ? (
+                <span className="font-bold text-[#2E7D32] flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> Paid
+                </span>
+              ) : (
+                <span className="font-medium text-muted-foreground">{order.payment_status || 'Pending'}</span>
+              )}
+            </p>
+            {order.paystack_reference && (
+              <p className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Reference</span>
+                <span className="font-medium text-foreground text-right text-[10px]">{order.paystack_reference}</span>
+              </p>
+            )}
+            {order.payment_channel && (
+              <p className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Channel</span>
+                <span className="font-medium text-foreground capitalize">{order.payment_channel}</span>
+              </p>
+            )}
+          </div>
         </div>
       </div>
 

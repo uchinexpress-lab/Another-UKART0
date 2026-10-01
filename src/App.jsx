@@ -27,6 +27,7 @@ const SearchResults = lazy(() => import('@/pages/SearchResults'));
 const Offers = lazy(() => import('@/pages/Offers'));
 const Cart = lazy(() => import('@/pages/Cart'));
 const Checkout = lazy(() => import('@/pages/Checkout'));
+const PaymentCallback = lazy(() => import('@/pages/PaymentCallback'));
 const Shop = lazy(() => import('@/pages/Shop'));
 const Wishlist = lazy(() => import('@/pages/Wishlist'));
 const Profile = lazy(() => import('@/pages/Profile'));
@@ -121,6 +122,7 @@ const AuthenticatedApp = () => {
               <Route path="/cart" element={<Cart />} />
           <Route path="/order" element={<Order />} />
               <Route path="/checkout" element={<GuestGate><Checkout /></GuestGate>} />
+              <Route path="/payment/callback" element={<PaymentCallback />} />
               <Route path="/wishlist" element={<Wishlist />} />
               <Route path="/profile" element={<GuestGate><Profile /></GuestGate>} />
               <Route path="/budget/:range" element={<BudgetShop />} />

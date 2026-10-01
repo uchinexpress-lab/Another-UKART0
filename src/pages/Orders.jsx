@@ -155,6 +155,11 @@ export default function Orders() {
                   <span className="text-sm font-bold text-foreground">{o.order_number}</span>
                   <StatusBadge status={o.status} />
                 </div>
+                {o.payment_status === 'Paid' && (
+                  <div className="flex items-center gap-1 text-[10px] font-bold text-[#2E7D32] mb-1">
+                    <CheckCircle2 className="w-3 h-3" /> Paid · Paystack
+                  </div>
+                )}
                 <p className="text-xs text-muted-foreground mb-3">{formatDate(o.created_date)}</p>
 
                 {/* Mini progress bar for active orders */}

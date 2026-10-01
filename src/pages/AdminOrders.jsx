@@ -64,9 +64,14 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted, onViewCusto
         className="w-full flex items-center justify-between">
         
         <div className="text-left">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="text-sm font-bold text-foreground">{order.order_number}</span>
             <StatusBadge status={order.status} />
+            {order.payment_status === 'Paid' ? (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-green-100 text-green-700">PAID</span>
+            ) : (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">{(order.payment_status || 'PENDING').toUpperCase()}</span>
+            )}
           </div>
           <p className="text-xs text-muted-foreground">
             {order.customer_name} · {order.items?.length || 0} items · ₦
@@ -124,6 +129,28 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted, onViewCusto
             </span>
           </div>
 
+          {/* Payment details */}
+          <div className="bg-muted/50 rounded-xl p-2 space-y-1">
+            <div className="flex justify-between text-xs">
+              <span className="text-muted-foreground">Payment</span>
+              <span className="font-medium text-foreground">
+                {order.payment_status === 'Paid' ? '✓ Paid · Paystack' : order.payment_status || 'Pending'}
+              </span>
+            </div>
+            {order.paystack_reference && (
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Reference</span>
+                <span className="font-medium text-foreground text-right text-[10px]">{order.paystack_reference}</span>
+              </div>
+            )}
+            {order.payment_channel && (
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Channel</span>
+                <span className="font-medium text-foreground capitalize">{order.payment_channel}</span>
+              </div>
+            )}
+          </div>
+
           {/* Delivery rating */}
           {order.status === 'delivered' && (
             <div className="bg-primary/10 rounded-xl p-2.5">
@@ -154,13 +181,18 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted, onViewCusto
           )}
 
           {/* Assign Rider */}
-          {!['delivered', 'cancelled'].includes(order.status) && (
+          {!['delivered', 'cancelled'].includes(order.status) && order.payment_status === 'Paid' && (
             <button
               onClick={() => onAssignRider(order)}
               className="w-full h-10 rounded-xl bg-[#1B4332] text-white text-xs font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform mb-2"
             >
               <Bike className="w-3.5 h-3.5" /> Assign Rider
             </button>
+          )}
+          {!['delivered', 'cancelled'].includes(order.status) && order.payment_status !== 'Paid' && (
+            <p className="text-[11px] text-amber-600 font-semibold mb-2 flex items-center gap-1">
+              <Lock className="w-3 h-3" /> Rider assignment requires confirmed payment
+            </p>
           )}
 
           {/* Status selector */}

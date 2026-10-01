@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
 import { base44 } from '@/api/base44Client';
 import { notifyOrderCreated } from '@/lib/notifications';
-import { ArrowLeft, MapPin, Navigation, Phone, User, Loader2, CheckCircle2, ShoppingBag, Tag, History, X, Banknote, Building2, ChevronRight } from 'lucide-react';
+import { ArrowLeft, MapPin, Navigation, Phone, User, Loader2, ShoppingBag, Tag, History, X, CreditCard, Lock, ChevronRight } from 'lucide-react';
 
 const REWARD_AMOUNT = 1000;
 
@@ -16,7 +16,6 @@ export default function Checkout() {
   const [address, setAddress] = useState('');
   const [landmark, setLandmark] = useState('');
   const [placing, setPlacing] = useState(false);
-  const [done, setDone] = useState(null);
   const [referralDiscount, setReferralDiscount] = useState(0);
   const [rewardRef, setRewardRef] = useState(null);
   const [savedAddresses, setSavedAddresses] = useState([]);
@@ -24,7 +23,8 @@ export default function Checkout() {
   const [voucher, setVoucher] = useState(null);
   const [voucherError, setVoucherError] = useState('');
   const [step, setStep] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState('Cash on Delivery');
+  const [paymentMethod, setPaymentMethod] = useState('Pay Online');
+  const [createdOrderId, setCreatedOrderId] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -131,90 +131,72 @@ export default function Checkout() {
     if (!canPlace) return;
     setPlacing(true);
     try {
-      const orderNumber = `UK-${Date.now().toString().slice(-6)}`;
-      const orderItems = items.map((i) => ({
-        name: i.details ? `${i.name} (${i.details})` : i.name,
-        price: i.price,
-        quantity: i.quantity,
-        unit: i.unit,
-      }));
-      const me = await base44.auth.me();
-      const order = await base44.entities.Order.create({
-        order_number: orderNumber,
-        items: orderItems,
-        subtotal: total,
-        delivery_fee: deliveryFee,
-        discount: appliedDiscount,
-        voucher_code: voucher ? voucher.code : '',
-        total: grandTotal,
-        customer_name: name,
-        customer_phone: phone,
-        customer_email: me?.email || '',
-        customer_address: address,
-        landmark,
-        status: 'new',
-        payment_method: paymentMethod,
-        payment_status: 'Pending',
-      });
-      try {
-        await notifyOrderCreated(order, me?.email);
-      } catch (e) {
-        console.error('Notification error:', e);
-      }
-      try {
-        if (rewardRef) {
-          await base44.entities.Referral.update(
-            rewardRef.id,
-            rewardRef.type === 'referred' ? { referred_rewarded: true } : { referrer_rewarded: true }
-          );
-        }
-        if (me?.id) {
-          const pending = await base44.entities.Referral.filter({
-            referred_user_id: me.id,
-            status: 'pending',
-          });
-          if (pending.length > 0) {
-            await base44.entities.Referral.update(pending[0].id, { status: 'first_order_placed' });
-          }
-        }
-      } catch (e) {
-        console.error('Referral reward error:', e);
-      }
-      if (voucher) {
+      let orderId = createdOrderId;
+
+      // Create the order once (pending payment) — reuse if retrying
+      if (!orderId) {
+        const orderNumber = `UK-${Date.now().toString().slice(-6)}`;
+        const orderItems = items.map((i) => ({
+          name: i.details ? `${i.name} (${i.details})` : i.name,
+          price: i.price,
+          quantity: i.quantity,
+          unit: i.unit,
+        }));
+        const me = await base44.auth.me();
+        const order = await base44.entities.Order.create({
+          order_number: orderNumber,
+          items: orderItems,
+          subtotal: total,
+          delivery_fee: deliveryFee,
+          discount: appliedDiscount,
+          voucher_code: voucher ? voucher.code : '',
+          total: grandTotal,
+          customer_name: name,
+          customer_phone: phone,
+          customer_email: me?.email || '',
+          customer_address: address,
+          landmark,
+          status: 'new',
+          payment_method: 'Pay Online',
+          payment_status: 'Pending',
+        });
+        orderId = order.id;
+        setCreatedOrderId(orderId);
+
+        try { await notifyOrderCreated(order, me?.email); } catch (e) { console.error('Notification error:', e); }
         try {
-          await base44.entities.Voucher.update(voucher.id, { uses: (voucher.uses || 0) + 1 });
-        } catch (e) {
-          console.error('Voucher update error:', e);
+          if (rewardRef) {
+            await base44.entities.Referral.update(
+              rewardRef.id,
+              rewardRef.type === 'referred' ? { referred_rewarded: true } : { referrer_rewarded: true }
+            );
+          }
+          if (me?.id) {
+            const pending = await base44.entities.Referral.filter({ referred_user_id: me.id, status: 'pending' });
+            if (pending.length > 0) {
+              await base44.entities.Referral.update(pending[0].id, { status: 'first_order_placed' });
+            }
+          }
+        } catch (e) { console.error('Referral reward error:', e); }
+        if (voucher) {
+          try { await base44.entities.Voucher.update(voucher.id, { uses: (voucher.uses || 0) + 1 }); } catch (e) { console.error('Voucher update error:', e); }
         }
       }
-      clearCart();
-      setDone(orderNumber);
+
+      // Initiate Paystack payment — amount is recalculated server-side from the stored order
+      const callbackUrl = `${window.location.origin}/payment/callback`;
+      const res = await base44.functions.invoke('initiatePaystackPayment', { orderId, callbackUrl });
+
+      if (res.data?.authorization_url) {
+        window.location.href = res.data.authorization_url;
+      } else {
+        throw new Error('Could not initialize payment');
+      }
     } catch (e) {
       setPlacing(false);
-      alert('Could not place order. Please try again.');
+      alert('Could not start payment. Please try again.');
     }
   };
-
-  if (done) {
-    return (
-      <div className="flex flex-col items-center justify-center p-8 text-center min-h-[70vh]">
-        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-          <CheckCircle2 className="w-12 h-12 text-[#2E7D32]" />
-        </div>
-        <h2 className="text-xl font-bold text-foreground mb-1">Order Placed!</h2>
-        <p className="text-sm text-muted-foreground mb-1">
-          Your order <span className="font-bold text-[#2E7D32]">{done}</span> has been received.
-        </p>
-        <p className="text-xs text-gray-400 mb-6">We'll call {phone} to confirm your delivery.</p>
-        <Link to={`/track?order=${done}`} className="bg-[#2E7D32] text-white text-sm font-bold px-6 py-3 rounded-full mb-3">
-          Track My Order
-        </Link>
-        <Link to="/order" className="text-[#2E7D32] text-sm font-medium px-6 py-3 rounded-full border border-[#2E7D32]/20">
-          View My Orders
-        </Link>
-      </div>
-    );
-  }
 
   if (items.length === 0) {
     return (
@@ -369,46 +351,20 @@ export default function Checkout() {
         <>
           <div className="bg-card rounded-2xl border border-border p-4 mb-4">
             <p className="text-sm font-bold text-foreground mb-3">Payment Method</p>
-            <div className="space-y-2.5">
-              <button
-                onClick={() => setPaymentMethod('Cash on Delivery')}
-                className={`w-full flex items-center gap-3 p-3.5 rounded-xl border-2 transition-all active:scale-[0.98] ${
-                  paymentMethod === 'Cash on Delivery'
-                    ? 'border-[#2E7D32] bg-[#2E7D32]/5'
-                    : 'border-border bg-card'
-                }`}
-              >
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${paymentMethod === 'Cash on Delivery' ? 'bg-[#2E7D32]' : 'bg-muted'}`}>
-                  <Banknote className={`w-5 h-5 ${paymentMethod === 'Cash on Delivery' ? 'text-white' : 'text-muted-foreground'}`} />
-                </div>
-                <div className="flex-1 text-left">
-                  <p className="text-sm font-semibold text-foreground">Cash on Delivery</p>
-                  <p className="text-xs text-muted-foreground">Pay with cash when your order arrives</p>
-                </div>
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'Cash on Delivery' ? 'border-[#2E7D32]' : 'border-border'}`}>
-                  {paymentMethod === 'Cash on Delivery' && <div className="w-2.5 h-2.5 rounded-full bg-[#2E7D32]" />}
-                </div>
-              </button>
-
-              <button
-                onClick={() => setPaymentMethod('Bank Transfer')}
-                className={`w-full flex items-center gap-3 p-3.5 rounded-xl border-2 transition-all active:scale-[0.98] ${
-                  paymentMethod === 'Bank Transfer'
-                    ? 'border-[#2E7D32] bg-[#2E7D32]/5'
-                    : 'border-border bg-card'
-                }`}
-              >
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${paymentMethod === 'Bank Transfer' ? 'bg-[#2E7D32]' : 'bg-muted'}`}>
-                  <Building2 className={`w-5 h-5 ${paymentMethod === 'Bank Transfer' ? 'text-white' : 'text-muted-foreground'}`} />
-                </div>
-                <div className="flex-1 text-left">
-                  <p className="text-sm font-semibold text-foreground">Bank Transfer</p>
-                  <p className="text-xs text-muted-foreground">Transfer to our account before delivery</p>
-                </div>
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'Bank Transfer' ? 'border-[#2E7D32]' : 'border-border'}`}>
-                  {paymentMethod === 'Bank Transfer' && <div className="w-2.5 h-2.5 rounded-full bg-[#2E7D32]" />}
-                </div>
-              </button>
+            <div className="flex items-center gap-3 p-3.5 rounded-xl border-2 border-[#2E7D32] bg-[#2E7D32]/5">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[#2E7D32]">
+                <CreditCard className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-foreground">Pay Online</p>
+                <p className="text-xs text-muted-foreground">Pay with card, bank transfer, or USSD via Paystack</p>
+              </div>
+              <div className="w-5 h-5 rounded-full border-2 border-[#2E7D32] flex items-center justify-center">
+                <div className="w-2.5 h-2.5 rounded-full bg-[#2E7D32]" />
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 mt-2.5 text-[11px] text-muted-foreground">
+              <Lock className="w-3 h-3" /> Secured by Paystack
             </div>
           </div>
 
@@ -500,7 +456,7 @@ export default function Checkout() {
                 <Loader2 className="w-4 h-4 animate-spin" /> Placing order...
               </>
             ) : (
-              <>Place Order — ₦{grandTotal.toLocaleString()}</>
+              <>Pay ₦{grandTotal.toLocaleString()}</>
             )}
           </button>
         )}
