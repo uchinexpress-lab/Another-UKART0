@@ -71,7 +71,7 @@ function BannerOverlay({ banner, onCtaClick }) {
  * Uses saved zoom/position/fit settings for consistent responsive display.
  * Renders text overlay (heading, CTA, badge) when the banner has overlay fields.
  */
-export default function BannerSlider({ location, className = '', rounded = 'rounded-3xl', children }) {
+export default function BannerSlider({ location, className = '', rounded = 'rounded-3xl', aspectRatio: frameAspectRatio, children }) {
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [current, setCurrent] = useState(0);
@@ -110,7 +110,7 @@ export default function BannerSlider({ location, className = '', rounded = 'roun
   if (banners.length === 0) return children;
 
   const config = BANNER_LOCATIONS[location];
-  const aspectRatio = config?.aspectRatio || 16 / 7;
+  const aspectRatio = frameAspectRatio ?? config?.aspectRatio ?? 16 / 7;
 
   const handleClick = (banner) => {
     if (banner.link) navigate(banner.link);
