@@ -24,24 +24,23 @@ export default async function (req: Request): Promise<Response> {
 
     const admin = base44.asServiceRole;
 
-    // Find the customer
-    const usersRes = await admin.entities.User.list({ limit: 1000 });
-    const customer = (usersRes.items || []).find(
-      (u) => u.email === customerEmail
+    // Find the customer's DOB record
+    const dobRes = await admin.entities.CustomerDOB.filter(
+      { customer_email: customerEmail },
+      { limit: 1 }
     );
+    const customer = dobRes.items && dobRes.items[0];
     if (!customer)
-      return Response.json({ error: "Customer not found" }, { status: 404 });
-    if (!customer.date_of_birth)
       return Response.json(
-        { error: "Customer has no date of birth set" },
-        { status: 400 }
+        { error: "Customer not found or no date of birth set" },
+        { status: 404 }
       );
 
     const { year } = getLagosDateParts();
 
     // Check for existing test reward this year
     const existing = await admin.entities.BirthdayReward.filter(
-      { customer_id: customer.id, birthday_year: year, is_test: true },
+      { customer_id: customer.customer_id, birthday_year: year, is_test: true },
       { limit: 1 }
     );
     if (existing.items && existing.items.length > 0) {
@@ -64,17 +63,17 @@ export default async function (req: Request): Promise<Response> {
       max_uses: 1,
       uses: 0,
       active: true,
-      assigned_to_email: customer.email,
+      assigned_to_email: customer.customer_email,
       expiry_date: expiryDate,
       one_time_use: true,
-      description: `TEST birthday reward for ${customer.full_name || customer.email}`,
+      description: `TEST birthday reward for ${customer.customer_name || customer.customer_email}`,
     });
 
     // Create test birthday reward
     const reward = await admin.entities.BirthdayReward.create({
-      customer_id: customer.id,
-      customer_email: customer.email,
-      customer_name: customer.full_name || "",
+      customer_id: customer.customer_id,
+      customer_email: customer.customer_email,
+      customer_name: customer.customer_name || "",
       date_of_birth: customer.date_of_birth,
       birthday_year: year,
       voucher_id: voucher.id,
@@ -94,10 +93,10 @@ export default async function (req: Request): Promise<Response> {
     let emailSent = false;
     let emailError = null;
     try {
-      const firstName = (customer.full_name || "").split(" ")[0] || "there";
+      const firstName = (customer.customer_name || "").split(" ")[0] || "there";
       const { subject, html } = buildBirthdayEmail(firstName, voucherCode, true);
       await admin.integrations.Core.SendEmail({
-        to: customer.email,
+        to: customer.customer_email,
         subject,
         html,
       });
@@ -116,8 +115,8 @@ export default async function (req: Request): Promise<Response> {
       voucherCode,
       voucherAmount: BIRTHDAY_VOUCHER_AMOUNT,
       expiryDate,
-      customer: customer.email,
-      customerName: customer.full_name,
+      customer: customer.customer_email,
+      customerName: customer.customer_name,
       dateOfBirth: customer.date_of_birth,
       rewardId: reward.id,
       emailSent,

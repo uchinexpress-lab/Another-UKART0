@@ -1,0 +1,61 @@
+{
+  "name": "CustomerDOB",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "description": "User account id"
+    },
+    "customer_email": {
+      "type": "string",
+      "description": "Customer email (for RLS and lookup)"
+    },
+    "customer_name": {
+      "type": "string"
+    },
+    "date_of_birth": {
+      "type": "string",
+      "format": "date",
+      "description": "Customer date of birth (YYYY-MM-DD)"
+    }
+  },
+  "required": [
+    "customer_id",
+    "customer_email",
+    "date_of_birth"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.customer_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "data.customer_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

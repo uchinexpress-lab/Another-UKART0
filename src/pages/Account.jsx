@@ -81,6 +81,28 @@ export default function Account() {
         date_of_birth: dateOfBirth || undefined,
       });
       setUser(u);
+      // Sync CustomerDOB for birthday rewards
+      if (dateOfBirth && !dobLocked) {
+        try {
+          const existing = await base44.entities.CustomerDOB.filter(
+            { customer_id: u.id },
+            { limit: 1 }
+          );
+          if (existing.items && existing.items.length > 0) {
+            await base44.entities.CustomerDOB.update(existing.items[0].id, {
+              date_of_birth: dateOfBirth,
+              customer_name: fullName.trim(),
+            });
+          } else {
+            await base44.entities.CustomerDOB.create({
+              customer_id: u.id,
+              customer_email: u.email,
+              customer_name: fullName.trim(),
+              date_of_birth: dateOfBirth,
+            });
+          }
+        } catch {}
+      }
       toast({ title: 'Profile updated' });
     } catch {
       toast({ title: 'Could not update profile', variant: 'destructive' });

@@ -150,7 +150,7 @@ export default function StaffBirthdayRewards() {
             </button>
           </div>
           {testResult && (
-            <div className="mt-3 p-3 bg-white rounded-lg border border-amber-200 text-sm">
+            <div className="mt-3 p-3 bg-white rounded-lg border border-amber-200 text-sm relative">
               {testResult.error ? (
                 <p className="text-red-600">❌ {testResult.error}</p>
               ) : (

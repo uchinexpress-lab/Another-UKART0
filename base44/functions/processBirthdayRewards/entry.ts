@@ -24,17 +24,17 @@ export default async function (req: Request): Promise<Response> {
     const { year, month, day } = getLagosDateParts();
     const todayMonthDay = `${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
-    // Get all users
-    const usersRes = await admin.entities.User.list({ limit: 1000 });
-    const users = usersRes.items || [];
+    // Get all CustomerDOB records
+    const dobRes = await admin.entities.CustomerDOB.filter({}, { limit: 1000 });
+    const customers = dobRes.items || [];
 
     const results = [];
 
-    for (const u of users) {
-      if (!u.date_of_birth) continue;
+    for (const c of customers) {
+      if (!c.date_of_birth) continue;
 
       // Parse DOB
-      const dob = new Date(u.date_of_birth);
+      const dob = new Date(c.date_of_birth);
       if (isNaN(dob.getTime())) continue;
 
       const dobMonth = dob.getMonth() + 1;
@@ -46,11 +46,11 @@ export default async function (req: Request): Promise<Response> {
 
       // Check for existing reward this year (non-test)
       const existing = await admin.entities.BirthdayReward.filter(
-        { customer_id: u.id, birthday_year: year, is_test: { $ne: true } },
+        { customer_id: c.customer_id, birthday_year: year, is_test: { $ne: true } },
         { limit: 1 }
       );
       if (existing.items && existing.items.length > 0) {
-        results.push({ customer: u.email, status: "already_rewarded" });
+        results.push({ customer: c.customer_email, status: "already_rewarded" });
         continue;
       }
 
@@ -64,18 +64,18 @@ export default async function (req: Request): Promise<Response> {
         max_uses: 1,
         uses: 0,
         active: true,
-        assigned_to_email: u.email,
+        assigned_to_email: c.customer_email,
         expiry_date: expiryDate,
         one_time_use: true,
-        description: `Birthday reward for ${u.full_name || u.email}`,
+        description: `Birthday reward for ${c.customer_name || c.customer_email}`,
       });
 
       // Create birthday reward record
       const reward = await admin.entities.BirthdayReward.create({
-        customer_id: u.id,
-        customer_email: u.email,
-        customer_name: u.full_name || "",
-        date_of_birth: u.date_of_birth,
+        customer_id: c.customer_id,
+        customer_email: c.customer_email,
+        customer_name: c.customer_name || "",
+        date_of_birth: c.date_of_birth,
         birthday_year: year,
         voucher_id: voucher.id,
         voucher_code: voucherCode,
@@ -91,10 +91,10 @@ export default async function (req: Request): Promise<Response> {
 
       // Send birthday email
       try {
-        const firstName = (u.full_name || "").split(" ")[0] || "there";
+        const firstName = (c.customer_name || "").split(" ")[0] || "there";
         const { subject, html } = buildBirthdayEmail(firstName, voucherCode);
         await admin.integrations.Core.SendEmail({
-          to: u.email,
+          to: c.customer_email,
           subject,
           html,
         });
@@ -104,10 +104,10 @@ export default async function (req: Request): Promise<Response> {
           sent_at: new Date().toISOString(),
         });
 
-        results.push({ customer: u.email, status: "rewarded", voucherCode });
+        results.push({ customer: c.customer_email, status: "rewarded", voucherCode });
       } catch (emailErr) {
         results.push({
-          customer: u.email,
+          customer: c.customer_email,
           status: "email_failed",
           voucherCode,
           error: emailErr.message,

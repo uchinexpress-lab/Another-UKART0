@@ -101,6 +101,28 @@ export default function Register() {
         });
       } catch {}
       try {
+        if (dateOfBirth) {
+          const me = await base44.auth.me();
+          const existing = await base44.entities.CustomerDOB.filter(
+            { customer_id: me.id },
+            { limit: 1 }
+          );
+          if (existing.items && existing.items.length > 0) {
+            await base44.entities.CustomerDOB.update(existing.items[0].id, {
+              date_of_birth: dateOfBirth,
+              customer_name: me.full_name,
+            });
+          } else {
+            await base44.entities.CustomerDOB.create({
+              customer_id: me.id,
+              customer_email: me.email,
+              customer_name: me.full_name,
+              date_of_birth: dateOfBirth,
+            });
+          }
+        }
+      } catch {}
+      try {
         const ref = localStorage.getItem("ukart_ref");
         if (ref) {
           const me = await base44.auth.me();
