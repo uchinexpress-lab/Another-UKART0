@@ -32,7 +32,7 @@ export default function StaffOrders() {
   const [updatingId, setUpdatingId] = useState(null);
   const [assignOrder, setAssignOrder] = useState(null);
 
-  const canManage = canAccessPage(user?.role, 'orders');
+  const canManage = canAccessPage(user, 'orders');
 
   useEffect(() => {
     loadOrders();

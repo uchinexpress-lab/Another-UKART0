@@ -2,44 +2,37 @@ import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
-import { STAFF_ROLES, getRoleLabel } from '@/lib/staffRoles';
+import { STAFF_ROLE_OPTIONS, getRoleLabel, isSuperAdmin, resolveStaffRole } from '@/lib/staffRoles';
 import { logStaffAction } from '@/lib/staffAudit';
 import {
   Loader2, UserPlus, Shield, Mail, RefreshCw, Trash2, AlertCircle,
 } from 'lucide-react';
 
-const STAFF_ROLE_OPTIONS = [
-  { value: 'staff_admin', label: 'Staff Admin' },
-  { value: 'operations', label: 'Operations' },
-  { value: 'content', label: 'Content' },
-  { value: 'support', label: 'Support' },
-];
-
 export default function StaffSettings() {
   const { user } = useAuth();
-  const isSuperAdmin = user?.role === 'admin';
+  const canManageStaff = isSuperAdmin(user);
   const [staff, setStaff] = useState([]);
   const [loading, setLoading] = useState(true);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('support');
   const [inviting, setInviting] = useState(false);
+  const [inviteMsg, setInviteMsg] = useState(null);
   const [auditLogs, setAuditLogs] = useState([]);
 
   useEffect(() => {
-    if (isSuperAdmin) {
+    if (canManageStaff) {
       loadStaff();
       loadAuditLogs();
     } else {
       setLoading(false);
     }
-  }, [isSuperAdmin]);
+  }, [canManageStaff]);
 
   const loadStaff = async () => {
     try {
       const list = await base44.entities.User.list();
-      const staffOnly = list.filter(
-        (u) => ['admin', 'staff_admin', 'operations', 'content', 'support'].includes(u.role)
-      );
+      // All staff have Base44 role = "admin"; staffRole distinguishes their position
+      const staffOnly = list.filter((u) => u.role === 'admin');
       setStaff(staffOnly);
     } catch (e) {
       console.error(e);
@@ -64,50 +57,60 @@ export default function StaffSettings() {
     e.preventDefault();
     if (!inviteEmail.trim()) return;
     setInviting(true);
+    setInviteMsg(null);
     try {
-      await base44.users.inviteUser(inviteEmail.trim(), inviteRole);
-      await logStaffAction('staff_invited', {
-        entity_type: 'User', record_name: inviteEmail.trim(),
-        new_value: inviteRole,
+      const response = await base44.functions.invoke('inviteStaff', {
+        action: 'invite',
+        email: inviteEmail.trim(),
+        staffRole: inviteRole,
       });
+      const data = response.data || response;
+      if (data.userUpdated) {
+        setInviteMsg(`Invitation sent to ${inviteEmail.trim()} as ${getRoleLabel(inviteRole)}. Role assigned.`);
+      } else {
+        setInviteMsg(`Invitation sent to ${inviteEmail.trim()} as ${getRoleLabel(inviteRole)}. They will appear in the staff list after they accept the invitation — then assign their role.`);
+      }
       setInviteEmail('');
-      alert(`Invitation sent to ${inviteEmail.trim()} as ${getRoleLabel(inviteRole)}`);
       loadStaff();
     } catch (err) {
-      alert('Failed to invite: ' + (err.message || 'Unknown error'));
+      const msg = err?.response?.data?.error || err?.data?.error || err.message || 'Unknown error';
+      setInviteMsg(`Failed to invite: ${msg}`);
     } finally {
       setInviting(false);
     }
   };
 
-  const changeRole = async (s, newRole) => {
+  const changeRole = async (s, newStaffRole) => {
     try {
-      await base44.entities.User.update(s.id, { role: newRole });
-      await logStaffAction('staff_role_changed', {
-        entity_type: 'User', record_id: s.id, record_name: s.email,
-        previous_value: s.role, new_value: newRole,
+      await base44.functions.invoke('inviteStaff', {
+        action: 'updateRole',
+        userId: s.id,
+        staffRole: newStaffRole,
       });
-      setStaff((prev) => prev.map((x) => (x.id === s.id ? { ...x, role: newRole } : x)));
-    } catch (e) {
-      alert('Failed to change role');
+      setStaff((prev) =>
+        prev.map((x) => (x.id === s.id ? { ...x, staffRole: newStaffRole } : x))
+      );
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.data?.error || 'Failed to change role';
+      alert(msg);
     }
   };
 
   const deactivate = async (s) => {
     if (!confirm(`Remove staff access for ${s.email}? They will become a regular customer.`)) return;
     try {
-      await base44.entities.User.update(s.id, { role: 'user' });
-      await logStaffAction('staff_deactivated', {
-        entity_type: 'User', record_id: s.id, record_name: s.email,
-        previous_value: s.role, new_value: 'user',
+      await base44.functions.invoke('inviteStaff', {
+        action: 'deactivate',
+        userId: s.id,
       });
       setStaff((prev) => prev.filter((x) => x.id !== s.id));
-    } catch (e) {
-      alert('Failed to deactivate staff');
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.data?.error || 'Failed to deactivate staff';
+      alert(msg);
     }
   };
 
-  if (!isSuperAdmin) {
+  if (!canManageStaff) {
     return (
       <div className="text-center py-16">
         <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
@@ -129,9 +132,12 @@ export default function StaffSettings() {
 
       {/* Invite Staff */}
       <div className="bg-white rounded-xl border border-gray-200 p-5">
-        <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+        <h3 className="font-bold text-gray-900 mb-1 flex items-center gap-2">
           <UserPlus className="w-4 h-4 text-[#2E7D32]" /> Invite New Staff Member
         </h3>
+        <p className="text-xs text-gray-500 mb-3">
+          Staff are invited with Base44 role "admin" and a separate Ukart staff role that controls their dashboard access.
+        </p>
         <form onSubmit={handleInvite} className="flex flex-wrap gap-3">
           <input
             type="email"
@@ -158,6 +164,13 @@ export default function StaffSettings() {
             {inviting ? 'Sending...' : 'Send Invitation'}
           </button>
         </form>
+        {inviteMsg && (
+          <div className={`mt-3 text-sm rounded-lg p-3 ${inviteMsg.startsWith('Failed')
+            ? 'bg-red-50 text-red-600'
+            : 'bg-green-50 text-green-700'}`}>
+            {inviteMsg}
+          </div>
+        )}
       </div>
 
       {/* Staff List */}
@@ -179,47 +192,69 @@ export default function StaffSettings() {
                 <tr>
                   <th className="text-left px-4 py-3 font-semibold">Name</th>
                   <th className="text-left px-4 py-3 font-semibold">Email</th>
-                  <th className="text-left px-4 py-3 font-semibold">Role</th>
+                  <th className="text-left px-4 py-3 font-semibold">Staff Role</th>
                   <th className="px-4 py-3 font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {staff.map((s) => (
-                  <tr key={s.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 font-medium text-gray-900">
-                      {s.full_name || s.email?.split('@')[0]}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">{s.email}</td>
-                    <td className="px-4 py-3">
-                      {s.role === 'admin' ? (
-                        <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">
-                          Super Admin
-                        </span>
-                      ) : (
-                        <select
-                          value={s.role}
-                          onChange={(e) => changeRole(s, e.target.value)}
-                          className="text-xs rounded border border-gray-200 px-2 py-1 outline-none focus:border-[#2E7D32]"
-                        >
-                          {STAFF_ROLE_OPTIONS.map((r) => (
-                            <option key={r.value} value={r.value}>{r.label}</option>
-                          ))}
-                        </select>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      {s.role !== 'admin' && (
-                        <button
-                          onClick={() => deactivate(s)}
-                          className="text-red-500 hover:text-red-600 p-1.5 rounded hover:bg-red-50"
-                          title="Remove staff access"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                {staff.map((s) => {
+                  const sRole = resolveStaffRole(s);
+                  const isSelf = s.id === user?.id;
+                  const isSuper = sRole === 'super_admin';
+                  return (
+                    <tr key={s.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 font-medium text-gray-900">
+                        {s.full_name || s.email?.split('@')[0]}
+                        {isSelf && (
+                          <span className="ml-2 text-xs text-gray-400">(you)</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">{s.email}</td>
+                      <td className="px-4 py-3">
+                        {isSuper ? (
+                          <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700">
+                            Super Admin
+                          </span>
+                        ) : !s.staffRole ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-amber-600 font-medium">Unassigned</span>
+                            <select
+                              value=""
+                              onChange={(e) => changeRole(s, e.target.value)}
+                              className="text-xs rounded border border-gray-200 px-2 py-1 outline-none focus:border-[#2E7D32]"
+                            >
+                              <option value="" disabled>Assign role…</option>
+                              {STAFF_ROLE_OPTIONS.filter((r) => r.value !== 'super_admin').map((r) => (
+                                <option key={r.value} value={r.value}>{r.label}</option>
+                              ))}
+                            </select>
+                          </div>
+                        ) : (
+                          <select
+                            value={s.staffRole}
+                            onChange={(e) => changeRole(s, e.target.value)}
+                            className="text-xs rounded border border-gray-200 px-2 py-1 outline-none focus:border-[#2E7D32]"
+                          >
+                            {STAFF_ROLE_OPTIONS.filter((r) => r.value !== 'super_admin').map((r) => (
+                              <option key={r.value} value={r.value}>{r.label}</option>
+                            ))}
+                          </select>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {!isSuper && (
+                          <button
+                            onClick={() => deactivate(s)}
+                            className="text-red-500 hover:text-red-600 p-1.5 rounded hover:bg-red-50"
+                            title="Remove staff access"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

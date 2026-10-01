@@ -7,7 +7,7 @@ import { RefreshCw, Loader2, Plus, Edit } from 'lucide-react';
 
 export default function StaffMealKits() {
   const { user } = useAuth();
-  const canManage = canAccessPage(user?.role, 'meal-kits');
+  const canManage = canAccessPage(user, 'meal-kits');
   const [kits, setKits] = useState([]);
   const [loading, setLoading] = useState(true);
 

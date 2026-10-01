@@ -10,7 +10,7 @@ export async function logStaffAction(action, details = {}) {
     await base44.entities.StaffAuditLog.create({
       staff_id: user.id,
       staff_name: user.full_name || user.email,
-      staff_role: user.role,
+      staff_role: user.staffRole || 'super_admin',
       action,
       entity_type: details.entity_type || '',
       record_id: details.record_id || '',

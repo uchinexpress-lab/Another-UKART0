@@ -10,7 +10,7 @@ import {
 
 export default function StaffProducts() {
   const { user } = useAuth();
-  const canManage = canAccessPage(user?.role, 'products');
+  const canManage = canAccessPage(user, 'products');
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
-import { getAccessiblePages, getRoleLabel } from '@/lib/staffRoles';
+import { getAccessiblePages, getRoleLabel, isSuperAdmin } from '@/lib/staffRoles';
 import {
   LayoutDashboard, ShoppingCart, Ticket as TicketIcon, Bike, Truck,
   Package, FolderTree, UtensilsCrossed, Image as ImageIcon, Upload, Users,
@@ -33,7 +33,7 @@ export default function StaffLayout({ children }) {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const accessiblePages = getAccessiblePages(user?.role);
+  const accessiblePages = getAccessiblePages(user);
   const visibleNav = NAV_ITEMS.filter(
     (item) => item.key === 'dashboard' || accessiblePages.includes(item.key)
   );
@@ -97,7 +97,7 @@ export default function StaffLayout({ children }) {
               <p className="text-xs font-semibold truncate">
                 {user?.full_name || user?.email}
               </p>
-              <p className="text-[10px] text-white/50">{getRoleLabel(user?.role)}</p>
+              <p className="text-[10px] text-white/50">{getRoleLabel(user)}</p>
             </div>
           </div>
           <button

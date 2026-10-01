@@ -6,7 +6,7 @@ import { RefreshCw, Loader2, Plus, Edit, Trash2 } from 'lucide-react';
 
 export default function StaffCategories() {
   const { user } = useAuth();
-  const canManage = canAccessPage(user?.role, 'categories');
+  const canManage = canAccessPage(user, 'categories');
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);

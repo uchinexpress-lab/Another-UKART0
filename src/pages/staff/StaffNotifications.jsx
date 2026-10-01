@@ -6,7 +6,7 @@ import { Loader2, Save, Bell, Mail } from 'lucide-react';
 
 export default function StaffNotifications() {
   const { user } = useAuth();
-  const canManage = user?.role === 'admin' || user?.role === 'staff_admin';
+  const canManage = canAccessPage(user, 'notifications');
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

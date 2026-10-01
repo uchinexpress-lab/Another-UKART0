@@ -91,16 +91,6 @@
           "user_condition": {
             "role": "admin"
           }
-        },
-        {
-          "user_condition": {
-            "role": "staff_admin"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "operations"
-          }
         }
       ]
     },
@@ -130,23 +120,9 @@
       ]
     },
     "update": {
-      "$or": [
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "staff_admin"
-          }
-        },
-        {
-          "user_condition": {
-            "role": "operations"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "delete": {
       "user_condition": {

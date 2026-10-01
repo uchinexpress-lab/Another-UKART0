@@ -1,7 +1,7 @@
 import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
-import { isStaffRole, canAccessPage } from '@/lib/staffRoles';
+import { isStaffMember, canAccessPage } from '@/lib/staffRoles';
 
 const StaffLogin = lazy(() => import('@/pages/staff/StaffLogin'));
 const StaffLayout = lazy(() => import('@/components/staff/StaffLayout'));
@@ -62,7 +62,7 @@ export default function StaffApp({ dashboardOnly = false }) {
   if (isLoadingAuth) return <StaffLoading />;
 
   if (isLoginRoute) {
-    if (user && isStaffRole(user.role)) return <Navigate to="/admin" replace />;
+    if (user && isStaffMember(user)) return <Navigate to="/admin" replace />;
     return (
       <Suspense fallback={<StaffLoading />}>
         <StaffLogin />
@@ -72,7 +72,7 @@ export default function StaffApp({ dashboardOnly = false }) {
 
   if (!user) return <Navigate to={`/admin/login?returnTo=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   const section = location.pathname.split('/')[2] || 'dashboard';
-  if (!isStaffRole(user.role) || !canAccessPage(user.role, section)) return <StaffNotAuthorized />;
+  if (!isStaffMember(user) || !canAccessPage(user, section)) return <StaffNotAuthorized />;
 
   if (dashboardOnly) return <Suspense fallback={<StaffLoading />}><StaffLayout><StaffDashboard /></StaffLayout></Suspense>;
 

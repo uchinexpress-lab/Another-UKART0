@@ -16,7 +16,7 @@ const VEHICLE_LABELS = {
 
 export default function StaffRiders() {
   const { user } = useAuth();
-  const canManage = canAccessPage(user?.role, 'riders');
+  const canManage = canAccessPage(user, 'riders');
   const [riders, setRiders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');

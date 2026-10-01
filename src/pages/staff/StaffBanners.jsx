@@ -14,7 +14,7 @@ const LOCATIONS = [
 
 export default function StaffBanners() {
   const { user } = useAuth();
-  const canManage = canAccessPage(user?.role, 'banners');
+  const canManage = canAccessPage(user, 'banners');
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [locationFilter, setLocationFilter] = useState('all');
