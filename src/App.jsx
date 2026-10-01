@@ -16,6 +16,8 @@ import Splash from '@/components/Splash';
 import RiderSplash from '@/components/rider/RiderSplash';
 import BrowseGuard from '@/components/BrowseGuard';
 import GuestGate from '@/components/GuestGate';
+import ProtectedRoute from '@/components/ProtectedRoute';
+const Admin = lazy(() => import('@/pages/Admin'));
 import { AnimatePresence } from 'framer-motion';
 import { ThemeProvider } from 'next-themes';
 const Home = lazy(() => import('@/pages/Home'));
@@ -69,10 +71,20 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Integrated operations sections — rendered directly (each has its own
-  // internal <Routes>), kept outside the customer layout and onboarding guards.
+  // Operations stay outside customer layout and onboarding. The named Admin
+  // page is an explicit route; subpages use relative routes under the wildcard.
   if (isRiderPath) return <RiderApp />;
-  if (isStaffPath) return <StaffApp />;
+  if (isStaffPath) return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading Admin...</div>}>
+      <Routes>
+        <Route path="/admin/login" element={<StaffApp />} />
+        <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to={`/admin/login?returnTo=${encodeURIComponent(location.pathname + location.search)}`} replace />} />}>
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/*" element={<StaffApp />} />
+        </Route>
+      </Routes>
+    </Suspense>
+  );
 
   // Prevent riders from accessing customer shopping / admin pages.
   // Riders are redirected to their dashboard.

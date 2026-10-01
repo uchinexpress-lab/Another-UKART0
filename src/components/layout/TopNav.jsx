@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '@/lib/AuthContext';
+import AdminEntry from '@/components/staff/AdminEntry';
 import { useLocation } from '@/context/LocationContext';
 import {
   Drawer,
@@ -248,6 +249,7 @@ export default function TopNav() {
             <Search className="w-4 h-4 text-primary-foreground" strokeWidth={2.5} />
           </button>
         </form>
+        <AdminEntry compact />
       </div>
     </div>
   );

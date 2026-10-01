@@ -54,7 +54,7 @@ function StaffNotAuthorized() {
   );
 }
 
-export default function StaffApp() {
+export default function StaffApp({ dashboardOnly = false }) {
   const { isLoadingAuth, user } = useAuth();
   const location = useLocation();
   const isLoginRoute = location.pathname === '/admin/login';
@@ -74,34 +74,36 @@ export default function StaffApp() {
   const section = location.pathname.split('/')[2] || 'dashboard';
   if (!isStaffRole(user.role) || !canAccessPage(user.role, section)) return <StaffNotAuthorized />;
 
+  if (dashboardOnly) return <Suspense fallback={<StaffLoading />}><StaffLayout><StaffDashboard /></StaffLayout></Suspense>;
+
   return (
     <Suspense fallback={<StaffLoading />}>
       <Routes>
         <Route element={<StaffLayout />}>
-          <Route path="/admin" element={<StaffDashboard />} />
-          <Route path="/admin/orders" element={<StaffOrders />} />
-          <Route path="/admin/tickets" element={<StaffTickets />} />
-          <Route path="/admin/tickets/:id" element={<StaffTicketDetail />} />
-          <Route path="/admin/riders" element={<StaffRiders />} />
-          <Route path="/admin/riders/:id" element={<AdminRiderProfile />} />
-          <Route path="/admin/live-deliveries" element={<StaffLiveDeliveries />} />
-          <Route path="/admin/products" element={<StaffProducts />} />
-          <Route path="/admin/products/new" element={<AdminProductEdit />} />
-          <Route path="/admin/products/:id" element={<AdminProductEdit />} />
-          <Route path="/admin/categories" element={<StaffCategories />} />
-          <Route path="/admin/meal-kits" element={<StaffMealKits />} />
-          <Route path="/admin/meal-kits/new" element={<AdminMealKitEdit />} />
-          <Route path="/admin/meal-kits/:id" element={<AdminMealKitEdit />} />
-          <Route path="/admin/banners" element={<StaffBanners />} />
-          <Route path="/admin/banners/manage" element={<AdminBanners />} />
-          <Route path="/admin/bulk-images" element={<StaffBulkImages />} />
-          <Route path="/admin/bulk-images/manage" element={<AdminBulkImages />} />
-          <Route path="/admin/homepage" element={<AdminHomepage />} />
-          <Route path="/admin/customers" element={<StaffCustomers />} />
-          <Route path="/admin/reports" element={<StaffReports />} />
-          <Route path="/admin/notifications" element={<StaffNotifications />} />
-          <Route path="/admin/settings" element={<StaffSettings />} />
-          <Route path="/admin/settings/notifications" element={<AdminSettings />} />
+          <Route index element={<StaffDashboard />} />
+          <Route path="orders" element={<StaffOrders />} />
+          <Route path="tickets" element={<StaffTickets />} />
+          <Route path="tickets/:id" element={<StaffTicketDetail />} />
+          <Route path="riders" element={<StaffRiders />} />
+          <Route path="riders/:id" element={<AdminRiderProfile />} />
+          <Route path="live-deliveries" element={<StaffLiveDeliveries />} />
+          <Route path="products" element={<StaffProducts />} />
+          <Route path="products/new" element={<AdminProductEdit />} />
+          <Route path="products/:id" element={<AdminProductEdit />} />
+          <Route path="categories" element={<StaffCategories />} />
+          <Route path="meal-kits" element={<StaffMealKits />} />
+          <Route path="meal-kits/new" element={<AdminMealKitEdit />} />
+          <Route path="meal-kits/:id" element={<AdminMealKitEdit />} />
+          <Route path="banners" element={<StaffBanners />} />
+          <Route path="banners/manage" element={<AdminBanners />} />
+          <Route path="bulk-images" element={<StaffBulkImages />} />
+          <Route path="bulk-images/manage" element={<AdminBulkImages />} />
+          <Route path="homepage" element={<AdminHomepage />} />
+          <Route path="customers" element={<StaffCustomers />} />
+          <Route path="reports" element={<StaffReports />} />
+          <Route path="notifications" element={<StaffNotifications />} />
+          <Route path="settings" element={<StaffSettings />} />
+          <Route path="settings/notifications" element={<AdminSettings />} />
         </Route>
       </Routes>
     </Suspense>

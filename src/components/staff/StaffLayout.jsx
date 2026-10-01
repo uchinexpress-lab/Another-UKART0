@@ -27,7 +27,7 @@ const NAV_ITEMS = [
   { key: 'settings', label: 'Settings', path: '/admin/settings', icon: SettingsIcon },
 ];
 
-export default function StaffLayout() {
+export default function StaffLayout({ children }) {
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -156,7 +156,7 @@ export default function StaffLayout() {
           </div>
         </header>
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">
-          <Outlet />
+          {children || <Outlet />}
         </main>
       </div>
     </div>

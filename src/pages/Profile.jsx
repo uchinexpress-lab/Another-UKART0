@@ -18,6 +18,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import SavedAddresses from '@/components/profile/SavedAddresses';
+import AdminEntry from '@/components/staff/AdminEntry';
 import ReferEarn from '@/components/profile/ReferEarn';
 import { Image } from '@/components/ui/image';
 import { toast } from '@/components/ui/use-toast';
@@ -142,6 +143,7 @@ export default function Profile() {
         <ChevronRight className="w-4 h-4 text-gray-300" />
       </motion.button>
 
+      <AdminEntry />
       <ReferEarn />
 
       <div>
