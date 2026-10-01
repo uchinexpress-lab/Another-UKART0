@@ -58,11 +58,47 @@
     },
     "payment_method": {
       "type": "string",
-      "default": "Cash on Delivery"
+      "default": "Pay Online"
     },
     "payment_status": {
       "type": "string",
+      "enum": [
+        "Pending",
+        "Processing",
+        "Paid",
+        "Failed",
+        "Cancelled",
+        "Refunded"
+      ],
       "default": "Pending"
+    },
+    "paystack_reference": {
+      "type": "string",
+      "description": "Unique Paystack transaction reference"
+    },
+    "paystack_transaction_id": {
+      "type": "number",
+      "description": "Paystack transaction ID"
+    },
+    "payment_channel": {
+      "type": "string",
+      "description": "Payment channel used (card, bank_transfer, ussd, etc.)"
+    },
+    "payment_timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "paystack_mode": {
+      "type": "string",
+      "enum": [
+        "test",
+        "live"
+      ],
+      "description": "Whether the payment was processed in test or live mode"
+    },
+    "paystack_response": {
+      "type": "object",
+      "description": "Full Paystack transaction response for audit"
     },
     "status": {
       "type": "string",
