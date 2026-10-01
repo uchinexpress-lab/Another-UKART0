@@ -10,6 +10,18 @@
       "items": {
         "type": "object",
         "properties": {
+          "product_id": {
+            "type": "string",
+            "description": "Linked Product entity id (server-authored)"
+          },
+          "product_name": {
+            "type": "string",
+            "description": "Base product name (for reorder reconstruction)"
+          },
+          "variant_label": {
+            "type": "string",
+            "description": "Selected variant label (for reorder reconstruction)"
+          },
           "name": {
             "type": "string"
           },
@@ -122,6 +134,18 @@
     },
     "last_status_notified": {
       "type": "string"
+    },
+    "referral_id": {
+      "type": "string",
+      "description": "Linked Referral record id applied to this order (for reward finalization on payment)"
+    },
+    "referral_type": {
+      "type": "string",
+      "enum": [
+        "referred",
+        "referrer"
+      ],
+      "description": "Whether the customer was the referred user or the referrer for the applied reward"
     }
   },
   "required": [
@@ -146,16 +170,9 @@
       ]
     },
     "update": {
-      "$or": [
-        {
-          "data.customer_email": "{{user.email}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
+      "user_condition": {
+        "role": "admin"
+      }
     },
     "delete": {
       "user_condition": {

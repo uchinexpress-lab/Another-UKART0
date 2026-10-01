@@ -1,3 +1,5 @@
+import { escapeHtml } from "./escapeHtml.ts";
+
 export const BIRTHDAY_VOUCHER_AMOUNT = 2000;
 const LAGOS_TZ = "Africa/Lagos";
 const APP_URL = "https://ukart-fresh-now.base44.app";
@@ -64,7 +66,7 @@ export function buildBirthdayEmail(
 ): { subject: string; html: string } {
   const testLabel = isTest ? " [TEST]" : "";
   const content = `
-    <h2 style="margin:0 0 8px;color:#2E7D32;font-size:20px;line-height:1.3;">Happy Birthday, ${firstName}! 🎉</h2>
+    <h2 style="margin:0 0 8px;color:#2E7D32;font-size:20px;line-height:1.3;">Happy Birthday, ${escapeHtml(firstName)}! 🎉</h2>
     <p style="margin:0 0 16px;color:#444;font-size:14px;line-height:1.6;">We hope you have a wonderful birthday and an amazing year ahead.</p>
     <p style="margin:0 0 16px;color:#444;font-size:14px;line-height:1.6;">As our special birthday gift to you, we've added a:</p>
     <p style="margin:0 0 16px;color:#2E7D32;font-size:15px;font-weight:bold;line-height:1.6;">₦2,000 UKART BIRTHDAY VOUCHER</p>
@@ -75,7 +77,7 @@ export function buildBirthdayEmail(
         <p style="margin:0 0 6px;color:#1B5E20;font-size:32px;font-weight:bold;line-height:1.1;">₦2,000</p>
         <p style="margin:0 0 12px;color:#2E7D32;font-size:12px;font-weight:bold;letter-spacing:1px;">BIRTHDAY VOUCHER</p>
         <p style="margin:0 0 8px;color:#666;font-size:11px;">Your voucher code:</p>
-        <div style="background:#fff;border:1px dashed #2E7D32;border-radius:6px;padding:8px 12px;font-size:15px;font-weight:bold;color:#1B5E20;letter-spacing:1.5px;word-break:break-all;">${voucherCode}</div>
+        <div style="background:#fff;border:1px dashed #2E7D32;border-radius:6px;padding:8px 12px;font-size:15px;font-weight:bold;color:#1B5E20;letter-spacing:1.5px;word-break:break-all;">${escapeHtml(voucherCode)}</div>
         <p style="margin:10px 0 0;color:#e53935;font-size:11px;font-weight:600;">⏰ Valid today only</p>
       </div>
     </div>

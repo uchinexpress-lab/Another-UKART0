@@ -28,9 +28,15 @@ export default async function (req) {
       return Response.json({ error: "Order does not belong to you" }, { status: 403 });
     }
 
-    // Don't re-initiate if already paid
-    if (order.payment_status === "Paid") {
-      return Response.json({ error: "Order already paid" }, { status: 400 });
+    // Only allow initiation while payment is still pending or processing
+    if (
+      order.payment_status &&
+      !["Pending", "Processing"].includes(order.payment_status)
+    ) {
+      return Response.json(
+        { error: `Order payment is ${order.payment_status}` },
+        { status: 400 }
+      );
     }
 
     // Server-side amount — never trust a client-sent amount

@@ -4,6 +4,7 @@ import { useCart } from '@/context/CartContext';
 import { base44 } from '@/api/base44Client';
 import { notifyOrderCreated } from '@/lib/notifications';
 import { ArrowLeft, MapPin, Navigation, Phone, User, Loader2, ShoppingBag, Tag, History, X, CreditCard, Lock, ChevronRight } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 const REWARD_AMOUNT = 1000;
 
@@ -144,54 +145,34 @@ export default function Checkout() {
     try {
       let orderId = createdOrderId;
 
-      // Create the order once (pending payment) — reuse if retrying
       if (!orderId) {
-        const orderNumber = `UK-${Date.now().toString().slice(-6)}`;
-        const orderItems = items.map((i) => ({
-          name: i.details ? `${i.name} (${i.details})` : i.name,
-          price: i.price,
-          quantity: i.quantity,
-          unit: i.unit,
-        }));
-        const me = await base44.auth.me();
-        const order = await base44.entities.Order.create({
-          order_number: orderNumber,
-          items: orderItems,
-          subtotal: total,
-          delivery_fee: deliveryFee,
-          discount: appliedDiscount,
-          voucher_code: voucher ? voucher.code : '',
-          total: grandTotal,
+        // The server authors the order — prices, totals, voucher and referral
+        // validation all happen server-side. The client only sends the cart
+        // (product_id + variant + quantity), voucher code, and delivery details.
+        const res = await base44.functions.invoke('prepareOrder', {
+          items: items.map((i) => ({
+            product_id: i.id,
+            variant_label: i.details || '',
+            quantity: i.quantity,
+          })),
+          voucherCode: voucher ? voucher.code : '',
           customer_name: name,
           customer_phone: phone,
-          customer_email: me?.email || '',
           customer_address: address,
           landmark,
-          status: 'new',
-          payment_method: 'Pay Online',
-          payment_status: 'Pending',
         });
-        orderId = order.id;
+        orderId = res.data?.orderId;
+        if (!orderId) {
+          throw new Error(res.data?.error || 'Could not prepare order');
+        }
         setCreatedOrderId(orderId);
 
-        try { await notifyOrderCreated(order, me?.email); } catch (e) { console.error('Notification error:', e); }
-        try {
-          if (rewardRef) {
-            await base44.entities.Referral.update(
-              rewardRef.id,
-              rewardRef.type === 'referred' ? { referred_rewarded: true } : { referrer_rewarded: true }
-            );
-          }
-          if (me?.id) {
-            const pending = await base44.entities.Referral.filter({ referred_user_id: me.id, status: 'pending' });
-            if (pending.length > 0) {
-              await base44.entities.Referral.update(pending[0].id, { status: 'first_order_placed' });
-            }
-          }
-        } catch (e) { console.error('Referral reward error:', e); }
-        if (voucher) {
-          try { await base44.entities.Voucher.update(voucher.id, { uses: (voucher.uses || 0) + 1 }); } catch (e) { console.error('Voucher update error:', e); }
+        const serverTotal = res.data?.total;
+        if (serverTotal != null && serverTotal !== grandTotal) {
+          toast({ title: 'Order total adjusted', description: `Final total: ₦${serverTotal.toLocaleString()}` });
         }
+
+        try { await notifyOrderCreated(orderId); } catch (e) { console.error('Notification error:', e); }
       }
 
       // Initiate Paystack payment — amount is recalculated server-side from the stored order
@@ -205,7 +186,8 @@ export default function Checkout() {
       }
     } catch (e) {
       setPlacing(false);
-      alert('Could not start payment. Please try again.');
+      const msg = e?.response?.data?.error || e?.message || 'Could not start payment. Please try again.';
+      alert(msg);
     }
   };
 

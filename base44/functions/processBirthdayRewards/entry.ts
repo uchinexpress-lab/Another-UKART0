@@ -1,4 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.52";
+import { secrets } from "base44:runtime";
 import {
   BIRTHDAY_VOUCHER_AMOUNT,
   getLagosDateParts,
@@ -7,54 +8,56 @@ import {
   buildBirthdayEmail,
 } from "../../shared/birthdayUtils.ts";
 
+// Daily birthday reward batch. Secured: requires either an authenticated admin
+// OR the BIRTHDAY_CRON_SECRET (passed by the scheduled workflow). Anonymous HTTP
+// calls are rejected. The response returns only aggregate counts — no customer
+// emails or voucher codes are leaked.
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Allow workflow calls (no user) and admin calls
+    // Authenticate: admin user OR shared cron secret.
     let user = null;
     try {
       user = await base44.auth.me();
     } catch {}
-    if (user && user.role !== "admin") {
-      return Response.json({ error: "Admin only" }, { status: 403 });
+    const body = await req.json().catch(() => ({}));
+    const cronSecret = secrets.get("BIRTHDAY_CRON_SECRET");
+    const isCron = !!(cronSecret && body?.secret && body.secret === cronSecret);
+    if (!isCron) {
+      if (!user || user.role !== "admin") {
+        return Response.json({ error: "Forbidden" }, { status: 403 });
+      }
     }
 
     const admin = base44.asServiceRole;
     const { year, month, day } = getLagosDateParts();
     const todayMonthDay = `${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
-    // Get all CustomerDOB records
     const dobRes = await admin.entities.CustomerDOB.filter({}, { limit: 1000 });
     const customers = dobRes.items || [];
 
-    const results = [];
+    let alreadyRewardCount = 0;
+    let rewardedCount = 0;
+    let emailFailedCount = 0;
 
     for (const c of customers) {
       if (!c.date_of_birth) continue;
-
-      // Parse DOB
       const dob = new Date(c.date_of_birth);
       if (isNaN(dob.getTime())) continue;
-
-      const dobMonth = dob.getMonth() + 1;
-      const dobDay = dob.getDate();
-      const dobMonthDay = `${String(dobMonth).padStart(2, "0")}-${String(dobDay).padStart(2, "0")}`;
-
-      // Check if today is the birthday
+      const dobMonthDay = `${String(dob.getMonth() + 1).padStart(2, "0")}-${String(dob.getDate()).padStart(2, "0")}`;
       if (dobMonthDay !== todayMonthDay) continue;
 
-      // Check for existing reward this year (non-test)
+      // Skip if already rewarded this year (non-test)
       const existing = await admin.entities.BirthdayReward.filter(
         { customer_id: c.customer_id, birthday_year: year, is_test: { $ne: true } },
         { limit: 1 }
       );
       if (existing.items && existing.items.length > 0) {
-        results.push({ customer: c.customer_email, status: "already_rewarded" });
+        alreadyRewardCount++;
         continue;
       }
 
-      // Create voucher
       const voucherCode = generateVoucherCode(year);
       const expiryDate = getEndOfLagosDay();
       const voucher = await admin.entities.Voucher.create({
@@ -70,7 +73,6 @@ export default async function (req: Request): Promise<Response> {
         description: `Birthday reward for ${c.customer_name || c.customer_email}`,
       });
 
-      // Create birthday reward record
       const reward = await admin.entities.BirthdayReward.create({
         customer_id: c.customer_id,
         customer_email: c.customer_email,
@@ -84,12 +86,10 @@ export default async function (req: Request): Promise<Response> {
         status: "created",
       });
 
-      // Link voucher to reward
       await admin.entities.Voucher.update(voucher.id, {
         birthday_reward_id: reward.id,
       });
 
-      // Send birthday email
       try {
         const firstName = (c.customer_name || "").split(" ")[0] || "there";
         const { subject, html } = buildBirthdayEmail(firstName, voucherCode);
@@ -98,27 +98,23 @@ export default async function (req: Request): Promise<Response> {
           subject,
           html,
         });
-
         await admin.entities.BirthdayReward.update(reward.id, {
           status: "sent",
           sent_at: new Date().toISOString(),
         });
-
-        results.push({ customer: c.customer_email, status: "rewarded", voucherCode });
+        rewardedCount++;
       } catch (emailErr) {
-        results.push({
-          customer: c.customer_email,
-          status: "email_failed",
-          voucherCode,
-          error: emailErr.message,
-        });
+        emailFailedCount++;
+        console.error("Birthday email failed:", emailErr.message);
       }
     }
 
     return Response.json({
-      processed: results.length,
+      processed: alreadyRewardCount + rewardedCount + emailFailedCount,
       date: `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
-      results,
+      already_rewarded_count: alreadyRewardCount,
+      rewarded_count: rewardedCount,
+      email_failed_count: emailFailedCount,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

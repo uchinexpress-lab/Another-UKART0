@@ -181,7 +181,7 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted, onViewCusto
           )}
 
           {/* Assign Rider */}
-          {!['delivered', 'cancelled'].includes(order.status) && order.payment_status === 'Paid' && (
+          {!['delivered', 'cancelled'].includes(order.status) && order._paid && (
             <button
               onClick={() => onAssignRider(order)}
               className="w-full h-10 rounded-xl bg-[#1B4332] text-white text-xs font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform mb-2"
@@ -189,7 +189,7 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted, onViewCusto
               <Bike className="w-3.5 h-3.5" /> Assign Rider
             </button>
           )}
-          {!['delivered', 'cancelled'].includes(order.status) && order.payment_status !== 'Paid' && (
+          {!['delivered', 'cancelled'].includes(order.status) && !order._paid && (
             <p className="text-[11px] text-amber-600 font-semibold mb-2 flex items-center gap-1">
               <Lock className="w-3 h-3" /> Rider assignment requires confirmed payment
             </p>
@@ -247,7 +247,14 @@ export default function AdminOrders() {
     setLoading(true);
     try {
       const list = await base44.entities.Order.list('-created_date', 100);
-      setOrders(list);
+      // Fulfillment gate: verify payment via the Payment entity (not the
+      // client-writable order.payment_status field).
+      const paidRes = await base44.entities.Payment.filter(
+        { status: 'paid' },
+        { limit: 200, fields: ['order_id'] }
+      );
+      const paidIds = new Set((paidRes.items || []).map((p) => p.order_id));
+      setOrders(list.map((o) => ({ ...o, _paid: paidIds.has(o.id) })));
     } catch (e) {
       console.error(e);
     } finally {
@@ -267,7 +274,6 @@ export default function AdminOrders() {
     );
     setUpdatingId(orderId);
     try {
-      await base44.entities.Order.update(orderId, { status: newStatus });
       await notifyOrderStatusChanged(orderId, newStatus);
     } catch (e) {
       setOrders(snapshot);

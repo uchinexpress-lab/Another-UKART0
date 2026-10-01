@@ -46,13 +46,16 @@ export default function OrderDetail() {
   const navigate = useNavigate();
 
   const reorder = () => {
-    const cartItems = (order.items || []).map((it) => ({
-      id: it.name,
-      name: it.name,
-      price: it.price || 0,
-      quantity: it.quantity || 1,
-      unit: it.unit || '',
-    }));
+    const cartItems = (order.items || [])
+      .map((it) => ({
+        id: it.product_id || it.name,
+        name: it.product_name || it.name,
+        details: it.variant_label || '',
+        price: it.price || 0,
+        quantity: it.quantity || 1,
+        unit: it.unit || '',
+      }))
+      .filter((it) => it.id);
     if (cartItems.length === 0) {
       toast({ title: 'No items to reorder' });
       return;

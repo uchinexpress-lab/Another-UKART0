@@ -9,6 +9,7 @@ import {
   minutesFromNow,
 } from "../../shared/deliveryUtils.ts";
 import { emailShell } from "../../shared/emailBanner.ts";
+import { escapeHtml } from "../../shared/escapeHtml.ts";
 
 export default async function (req: Request): Promise<Response> {
   try {
@@ -67,7 +68,7 @@ export default async function (req: Request): Promise<Response> {
         await base44.integrations.Core.SendEmail({
           to: delivery.customer_email,
           subject: `UKART DELIVERY VERIFICATION — Order #${delivery.order_number}`,
-          body: emailShell(`<h2 style="color:#1B4332;">Ukart Delivery Verification</h2><p>Hi ${delivery.customer_name || "Customer"},</p><p>Your delivery verification code for Order <strong>#${delivery.order_number}</strong> is:</p><div style="font-size:32px;font-weight:bold;letter-spacing:8px;text-align:center;background:#E8F5E9;border-radius:12px;padding:20px;margin:16px 0;color:#1B4332;">${code}</div><p style="font-size:13px;color:#666;">Give this code to your Ukart rider to confirm that you received your order.</p><p style="font-size:12px;color:#999;">Do not share this code before the rider arrives.<br>This code expires in ${OTP_EXPIRY_MINUTES} minutes.</p>`),
+          body: emailShell(`<h2 style="color:#1B4332;">Ukart Delivery Verification</h2><p>Hi ${escapeHtml(delivery.customer_name || "Customer")},</p><p>Your delivery verification code for Order <strong>#${escapeHtml(delivery.order_number)}</strong> is:</p><div style="font-size:32px;font-weight:bold;letter-spacing:8px;text-align:center;background:#E8F5E9;border-radius:12px;padding:20px;margin:16px 0;color:#1B4332;">${code}</div><p style="font-size:13px;color:#666;">Give this code to your Ukart rider to confirm that you received your order.</p><p style="font-size:12px;color:#999;">Do not share this code before the rider arrives.<br>This code expires in ${OTP_EXPIRY_MINUTES} minutes.</p>`),
         });
         emailStatus = "sent";
       } catch (e) {

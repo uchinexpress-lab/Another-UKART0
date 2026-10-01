@@ -42,7 +42,13 @@ export default function StaffOrders() {
     setLoading(true);
     try {
       const res = await base44.entities.Order.filter({}, { sort: '-created_date', limit: 100 });
-      setOrders(res.items || []);
+      // Fulfillment gate: verify payment via the Payment entity.
+      const paidRes = await base44.entities.Payment.filter(
+        { status: 'paid' },
+        { limit: 200, fields: ['order_id'] }
+      );
+      const paidIds = new Set((paidRes.items || []).map((p) => p.order_id));
+      setOrders((res.items || []).map((o) => ({ ...o, _paid: paidIds.has(o.id) })));
     } catch (e) {
       console.error(e);
     } finally {
@@ -53,7 +59,6 @@ export default function StaffOrders() {
   const handleStatusChange = async (orderId, orderNumber, newStatus) => {
     setUpdatingId(orderId);
     try {
-      await base44.entities.Order.update(orderId, { status: newStatus });
       await notifyOrderStatusChanged(orderId, newStatus);
       await logStaffAction('order_status_changed', {
         entity_type: 'Order', record_id: orderId, record_name: orderNumber,
@@ -217,7 +222,7 @@ export default function StaffOrders() {
                             <div className="space-y-2">
                               {canManage &&
                                 !['delivered', 'cancelled'].includes(o.status) &&
-                                o.payment_status === 'Paid' && (
+                                o._paid && (
                                   <button
                                     onClick={() => setAssignOrder(o)}
                                     className="w-full h-8 rounded-lg bg-[#1B4332] text-white text-xs font-bold flex items-center justify-center gap-1.5"

@@ -11,6 +11,7 @@ import {
   logDeliveryEvent,
 } from "../../shared/deliveryUtils.ts";
 import { emailShell } from "../../shared/emailBanner.ts";
+import { escapeHtml } from "../../shared/escapeHtml.ts";
 
 export default async function (req: Request): Promise<Response> {
   try {
@@ -189,7 +190,7 @@ export default async function (req: Request): Promise<Response> {
           await base44.integrations.Core.SendEmail({
             to: delivery.customer_email,
             subject: `🛵 Your Ukart order is on the way!`,
-            body: emailShell(`<p>Hi ${delivery.customer_name || "Customer"},</p><p>Your order <strong>#${delivery.order_number}</strong> is now on the way! Your rider ${delivery.rider_name || ""} is heading to your address.</p><p>Estimated arrival: <strong>${etaMin} minutes</strong>.</p><p>Track your delivery live in the Ukart app.</p>`),
+            body: emailShell(`<p>Hi ${escapeHtml(delivery.customer_name || "Customer")},</p><p>Your order <strong>#${escapeHtml(delivery.order_number)}</strong> is now on the way! Your rider ${escapeHtml(delivery.rider_name || "")} is heading to your address.</p><p>Estimated arrival: <strong>${etaMin} minutes</strong>.</p><p>Track your delivery live in the Ukart app.</p>`),
           });
         } catch (e) {
           console.error("Customer notification failed:", e);
@@ -233,7 +234,7 @@ export default async function (req: Request): Promise<Response> {
           await base44.integrations.Core.SendEmail({
             to: delivery.customer_email,
             subject: `📍 Your Ukart rider is almost here!`,
-            body: emailShell(`<p>Hi ${delivery.customer_name || "Customer"},</p><p>Your rider is arriving in approximately <strong>5 minutes</strong>. Please get ready to receive your order.</p>`),
+            body: emailShell(`<p>Hi ${escapeHtml(delivery.customer_name || "Customer")},</p><p>Your rider is arriving in approximately <strong>5 minutes</strong>. Please get ready to receive your order.</p>`),
           });
         } catch (e) {
           console.error("Arriving soon notification failed:", e);
@@ -275,7 +276,7 @@ export default async function (req: Request): Promise<Response> {
           await base44.integrations.Core.SendEmail({
             to: delivery.customer_email,
             subject: `🛵 Your Ukart rider has arrived!`,
-            body: emailShell(`<h2 style="color:#1B4332;">Your rider has arrived!</h2><p>Hi ${delivery.customer_name || "Customer"},</p><p>Your Ukart rider is at your delivery address for Order <strong>#${delivery.order_number}</strong>.</p><p>Please provide the delivery verification code to your rider to confirm that you received your order.</p><p style="font-size:12px;color:#999;">A verification code has been sent to your phone/email.</p>`),
+            body: emailShell(`<h2 style="color:#1B4332;">Your rider has arrived!</h2><p>Hi ${escapeHtml(delivery.customer_name || "Customer")},</p><p>Your Ukart rider is at your delivery address for Order <strong>#${escapeHtml(delivery.order_number)}</strong>.</p><p>Please provide the delivery verification code to your rider to confirm that you received your order.</p><p style="font-size:12px;color:#999;">A verification code has been sent to your phone/email.</p>`),
           });
         } catch (e) {
           console.error("Arrived notification failed:", e);
@@ -318,7 +319,7 @@ export default async function (req: Request): Promise<Response> {
           await base44.integrations.Core.SendEmail({
             to: delivery.customer_email,
             subject: `✅ Your Ukart order has been delivered`,
-            body: emailShell(`<p>Hi ${delivery.customer_name || "Customer"},</p><p>Your order <strong>#${delivery.order_number}</strong> has been delivered. Thank you for shopping with Ukart!</p><p>Please rate your delivery experience in the app.</p>`),
+            body: emailShell(`<p>Hi ${escapeHtml(delivery.customer_name || "Customer")},</p><p>Your order <strong>#${escapeHtml(delivery.order_number)}</strong> has been delivered. Thank you for shopping with Ukart!</p><p>Please rate your delivery experience in the app.</p>`),
           });
         } catch (e) {
           console.error("Delivered notification failed:", e);

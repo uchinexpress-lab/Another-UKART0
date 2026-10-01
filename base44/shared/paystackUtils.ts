@@ -126,5 +126,42 @@ export async function confirmPayment(base44, reference) {
     paystack_response: tx,
   });
 
+  // Finalize discounts only on successful payment — failed/abandoned payments
+  // never consume a one-time voucher or a referral reward. Idempotent: this
+  // block only runs on the first confirmation (early-return above for paid).
+  const paidOrder = await base44.asServiceRole.entities.Order.get(payment.order_id);
+  if (paidOrder) {
+    if (paidOrder.voucher_code) {
+      try {
+        const vRes = await base44.asServiceRole.entities.Voucher.filter(
+          { code: paidOrder.voucher_code },
+          { limit: 1 }
+        );
+        const v = vRes.items && vRes.items[0];
+        if (v) {
+          await base44.asServiceRole.entities.Voucher.update(v.id, {
+            uses: (v.uses || 0) + 1,
+          });
+        }
+      } catch (e) {
+        console.error("Voucher usage increment failed:", e);
+      }
+    }
+    if (paidOrder.referral_id) {
+      try {
+        const ref = await base44.asServiceRole.entities.Referral.get(paidOrder.referral_id);
+        if (ref) {
+          const rewardUpdate =
+            paidOrder.referral_type === "referrer"
+              ? { referrer_rewarded: true, status: "rewarded" }
+              : { referred_rewarded: true, status: "rewarded" };
+          await base44.asServiceRole.entities.Referral.update(ref.id, rewardUpdate);
+        }
+      } catch (e) {
+        console.error("Referral reward finalization failed:", e);
+      }
+    }
+  }
+
   return { ok: true, orderId: payment.order_id, channel };
 }
