@@ -19,9 +19,16 @@ export default function StaffLogin() {
         window.history.replaceState({}, '', url);
       }
       await base44.auth.loginViaEmailPassword(email, password);
+      // Fallback: if the SDK didn't hard-redirect, do it manually
+      const returnTo = new URLSearchParams(window.location.search).get('returnTo') || '/admin';
+      window.location.href = returnTo;
     } catch (err) {
       setError(err.message || 'Invalid credentials');
-      setLoading(false);
+    } finally {
+      // Safety net: clean up loading state after a brief delay.
+      // If the redirect happened, the page is reloading and this callback never fires.
+      // If the redirect failed, this ensures the user is not stuck on "Signing in...".
+      setTimeout(() => setLoading(false), 300);
     }
   };
 

@@ -1,6 +1,7 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
+import { base44 } from '@/api/base44Client';
 import { isStaffMember, canAccessPage } from '@/lib/staffRoles';
 
 const StaffLogin = lazy(() => import('@/pages/staff/StaffLogin'));
@@ -38,6 +39,9 @@ function StaffLoading() {
 }
 
 function StaffNotAuthorized() {
+  const handleBack = () => {
+    base44.auth.logout('/');
+  };
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-8">
       <div className="text-center max-w-md">
@@ -46,20 +50,62 @@ function StaffNotAuthorized() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h1>
-        <p className="text-gray-600 mb-4">You don't have permission to access the Ukart Staff Admin portal.</p>
-        <a href="/" className="text-[#2E7D32] font-semibold underline">Back to Ukart</a>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Not Authorized</h1>
+        <p className="text-gray-600 mb-6">You are not authorized to access Ukart Staff Admin.</p>
+        <button
+          onClick={handleBack}
+          className="h-10 px-5 rounded-lg bg-[#2E7D32] text-white text-sm font-bold hover:bg-[#1B5E20]"
+        >
+          Back to Ukart
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function StaffAuthTimeout({ onRetry }) {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-8">
+      <div className="text-center max-w-md">
+        <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Connection Timeout</h1>
+        <p className="text-gray-600 mb-6">The server is taking too long to respond. Please try again.</p>
+        <button
+          onClick={onRetry}
+          className="h-10 px-5 rounded-lg bg-[#2E7D32] text-white text-sm font-bold hover:bg-[#1B5E20]"
+        >
+          Retry
+        </button>
       </div>
     </div>
   );
 }
 
 export default function StaffApp({ dashboardOnly = false }) {
-  const { isLoadingAuth, user } = useAuth();
+  const { isLoadingAuth, user, checkUserAuth } = useAuth();
   const location = useLocation();
   const isLoginRoute = location.pathname === '/admin/login';
+  const [authTimedOut, setAuthTimedOut] = useState(false);
 
-  if (isLoadingAuth) return <StaffLoading />;
+  useEffect(() => {
+    if (!isLoadingAuth) {
+      setAuthTimedOut(false);
+      return;
+    }
+    const timer = setTimeout(() => setAuthTimedOut(true), 15000);
+    return () => clearTimeout(timer);
+  }, [isLoadingAuth]);
+
+  if (isLoadingAuth) {
+    if (authTimedOut) {
+      return <StaffAuthTimeout onRetry={() => { setAuthTimedOut(false); checkUserAuth(); }} />;
+    }
+    return <StaffLoading />;
+  }
 
   if (isLoginRoute) {
     if (user && isStaffMember(user)) return <Navigate to="/admin" replace />;
