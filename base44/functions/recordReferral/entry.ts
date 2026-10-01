@@ -19,6 +19,18 @@ export default async function (req: Request): Promise<Response> {
 
     const admin = base44.asServiceRole;
 
+    // Reject self-referral — a user must not be their own referrer.
+    if (referrerId === user.id) {
+      return Response.json({ error: "Cannot refer yourself" }, { status: 400 });
+    }
+
+    // Validate the referrer is a real user (prevents garbage/orphan referrals).
+    try {
+      await admin.entities.User.get(referrerId);
+    } catch {
+      return Response.json({ error: "Invalid referrer" }, { status: 400 });
+    }
+
     // Only create one referral per referred user
     const existing = await admin.entities.Referral.filter(
       { referred_user_id: user.id },

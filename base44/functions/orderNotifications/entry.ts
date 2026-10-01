@@ -84,7 +84,16 @@ export default async function (req: Request): Promise<Response> {
     }
 
     if (type === "status") {
-      if (!status || status === "new") return Response.json({ ok: true, skipped: true });
+      // Only staff/admins may change order status. Customers must never drive
+      // order status — the Order entity's update RLS is admin-only, and this
+      // service-role write must not be reachable by the order owner.
+      if (user.role !== "admin") {
+        return Response.json({ error: "Forbidden — admins only" }, { status: 403 });
+      }
+      const ALLOWED_STATUSES = ["processing", "ready", "on_the_way", "delivered", "cancelled"];
+      if (!status || !ALLOWED_STATUSES.includes(status)) {
+        return Response.json({ error: "Invalid status" }, { status: 400 });
+      }
 
       // Update the order status (service role — Order.update is admin-only).
       await admin.entities.Order.update(order.id, { status });

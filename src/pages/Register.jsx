@@ -21,6 +21,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import GoogleIcon from "@/components/GoogleIcon";
 import AuthShell from "@/components/auth/AuthShell";
 import { toast } from "@/components/ui/use-toast";
+import { safeReturnTo } from "@/lib/authReturnTo";
 
 export default function Register() {
   const [firstName, setFirstName] = useState("");
@@ -38,8 +39,7 @@ export default function Register() {
   const [showOtp, setShowOtp] = useState(false);
   const [otpCode, setOtpCode] = useState("");
 
-  const returnTo =
-    new URLSearchParams(window.location.search).get("returnTo") || "/";
+  const returnTo = safeReturnTo();
   const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
   const todayStr = new Date().toISOString().split("T")[0];
 

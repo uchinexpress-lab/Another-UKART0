@@ -38,6 +38,17 @@ export default async function (req: Request): Promise<Response> {
     if (delivery.otp_verified)
       return Response.json({ error: "OTP already verified" }, { status: 400 });
 
+    // Do not allow resend while brute-force locked — resending must not clear
+    // the lock or the attempt counter (otherwise a locked-out rider just
+    // cycles resend to get fresh guesses). Admin/support clears locks.
+    if (delivery.otp_locked_until && new Date(delivery.otp_locked_until) > new Date()) {
+      return Response.json({
+        error: "OTP verification is locked. Contact Ukart support.",
+        locked: true,
+        locked_until: delivery.otp_locked_until,
+      }, { status: 423 });
+    }
+
     // Rate limit: enforce cooldown between resends
     if (delivery.otp_last_sent_at) {
       const elapsed = (Date.now() - new Date(delivery.otp_last_sent_at).getTime()) / 1000;
@@ -111,11 +122,10 @@ export default async function (req: Request): Promise<Response> {
       send_sms_status: smsStatus,
     });
 
-    // Reset attempts on resend (customer requested a new code)
+    // Activate the new code WITHOUT resetting otp_attempts/otp_locked_until —
+    // the brute-force counter and lock persist across resends.
     await admin.entities.Delivery.update(deliveryId, {
       otp_active: true,
-      otp_attempts: 0,
-      otp_locked_until: null,
       otp_send_status: otpSendStatus,
       otp_last_sent_at: now.toISOString(),
     });

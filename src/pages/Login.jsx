@@ -17,6 +17,7 @@ import GoogleIcon from "@/components/GoogleIcon";
 import AppleIcon from "@/components/AppleIcon";
 import AuthShell from "@/components/auth/AuthShell";
 import { useAuth } from "@/lib/AuthContext";
+import { safeReturnTo } from "@/lib/authReturnTo";
 
 export default function Login() {
   const { enterGuest } = useAuth();
@@ -36,7 +37,7 @@ export default function Login() {
     setIsIOS(ios);
   }, []);
 
-  const returnTo = new URLSearchParams(window.location.search).get("returnTo") || "/";
+  const returnTo = safeReturnTo();
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Lock, Mail, Loader2, ShieldCheck } from 'lucide-react';
+import { safeReturnTo } from '@/lib/authReturnTo';
 
 export default function StaffLogin() {
   const [email, setEmail] = useState('');
@@ -20,7 +21,7 @@ export default function StaffLogin() {
       }
       await base44.auth.loginViaEmailPassword(email, password);
       // Fallback: if the SDK didn't hard-redirect, do it manually
-      const returnTo = new URLSearchParams(window.location.search).get('returnTo') || '/admin';
+      const returnTo = safeReturnTo();
       window.location.href = returnTo;
     } catch (err) {
       setError(err.message || 'Invalid credentials');

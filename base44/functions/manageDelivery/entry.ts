@@ -331,10 +331,22 @@ export default async function (req: Request): Promise<Response> {
 
     // ── CANCEL ──
     if (action === "cancel") {
+      // Only allow cancellation from active pre-delivery states. A delivery
+      // that is already delivered/verified/cancelled cannot be flipped by a
+      // rider — post-delivery changes are admin-only (adminOverrideDelivery).
+      const CANCELLABLE = ["assigned", "accepted", "preparing", "ready_for_pickup", "picked_up", "on_the_way", "arriving_soon", "arrived"];
+      if (!CANCELLABLE.includes(delivery.status)) {
+        return Response.json({ error: `Cannot cancel a delivery in '${delivery.status}' state` }, { status: 400 });
+      }
+
       await admin.entities.Delivery.update(deliveryId, {
         status: "cancelled",
         latest_lat: null,
         latest_lng: null,
+      });
+      // Sync the order status so the order/delivery state machine stays consistent.
+      await admin.entities.Order.update(delivery.order_id, {
+        status: "cancelled",
       });
 
       await logDeliveryEvent(admin, {
