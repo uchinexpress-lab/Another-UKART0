@@ -19,6 +19,7 @@ const NAV_ITEMS = [
   { key: 'products', label: 'Products', path: '/admin/products', icon: Package },
   { key: 'categories', label: 'Categories', path: '/admin/categories', icon: FolderTree },
   { key: 'meal-kits', label: 'Meal Kits', path: '/admin/meal-kits', icon: UtensilsCrossed },
+  { key: 'packages', label: 'Packages', path: '/admin/packages', icon: Package },
   { key: 'banners', label: 'Banners', path: '/admin/banners', icon: ImageIcon },
   { key: 'bulk-images', label: 'Bulk Images', path: '/admin/bulk-images', icon: Upload },
   { key: 'homepage', label: 'Homepage', path: '/admin/homepage', icon: LayoutDashboard },

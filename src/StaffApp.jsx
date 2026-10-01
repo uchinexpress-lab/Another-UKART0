@@ -15,6 +15,8 @@ const StaffLiveDeliveries = lazy(() => import('@/pages/staff/StaffLiveDeliveries
 const StaffProducts = lazy(() => import('@/pages/staff/StaffProducts'));
 const StaffCategories = lazy(() => import('@/pages/staff/StaffCategories'));
 const StaffMealKits = lazy(() => import('@/pages/staff/StaffMealKits'));
+const StaffPackages = lazy(() => import('@/pages/staff/StaffPackages'));
+const StaffPackageEdit = lazy(() => import('@/pages/staff/StaffPackageEdit'));
 const StaffBanners = lazy(() => import('@/pages/staff/StaffBanners'));
 const StaffBulkImages = lazy(() => import('@/pages/staff/StaffBulkImages'));
 const StaffCustomers = lazy(() => import('@/pages/staff/StaffCustomers'));
@@ -156,6 +158,9 @@ export default function StaffApp({ dashboardOnly = false }) {
           <Route path="meal-kits" element={<StaffMealKits />} />
           <Route path="meal-kits/new" element={<AdminMealKitEdit />} />
           <Route path="meal-kits/:id" element={<AdminMealKitEdit />} />
+          <Route path="packages" element={<StaffPackages />} />
+          <Route path="packages/new" element={<StaffPackageEdit />} />
+          <Route path="packages/:id" element={<StaffPackageEdit />} />
           <Route path="banners" element={<StaffBanners />} />
           <Route path="banners/manage" element={<AdminBanners />} />
           <Route path="bulk-images" element={<StaffBulkImages />} />

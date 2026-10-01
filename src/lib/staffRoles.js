@@ -26,7 +26,7 @@ export const STAFF_ROLES = {
   },
   content_manager: {
     label: 'Content Manager',
-    pages: ['dashboard', 'products', 'categories', 'meal-kits', 'banners', 'bulk-images', 'homepage'],
+    pages: ['dashboard', 'products', 'categories', 'meal-kits', 'packages', 'banners', 'bulk-images', 'homepage'],
     color: 'bg-green-100 text-green-700',
   },
   finance: {
@@ -56,7 +56,7 @@ export const STAFF_ROLE_OPTIONS = [
 
 export const ALL_STAFF_PAGES = [
   'dashboard', 'orders', 'tickets', 'riders', 'live-deliveries',
-  'products', 'categories', 'meal-kits', 'banners', 'bulk-images', 'homepage',
+  'products', 'categories', 'meal-kits', 'packages', 'banners', 'bulk-images', 'homepage',
   'customers', 'reports', 'notifications', 'birthday-rewards', 'settings',
 ];
 
