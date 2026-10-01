@@ -1,9 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.52';
 
-// TEMPORARY diagnostic: reports the auth context the workflow runtime provides
-// when it invokes a backend function. Used to decide how processBirthdayRewards
-// should authenticate scheduled calls without hardcoding a secret in the
-// workflow JSON. Will be deleted after the diagnostic run.
+// TEMPORARY diagnostic: records the auth context the workflow runtime provides
+// when it invokes a backend function, by writing it to a StaffAuditLog record
+// that can be read afterwards. Will be deleted after the diagnostic.
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
@@ -11,20 +10,25 @@ export default async function (req: Request): Promise<Response> {
     try { isAuthenticated = await base44.auth.isAuthenticated(); } catch (e) {}
     let user: any = null;
     try { user = await base44.auth.me(); } catch (e) {}
-    const headers: Record<string, string> = {};
-    req.headers.forEach((value: string, key: string) => {
-      headers[key] = key.toLowerCase().startsWith('auth') || key.toLowerCase().includes('token') || key.toLowerCase().includes('base44') ? value.slice(0, 20) + '…' : value;
-    });
-    return Response.json({
+    const hasUserAuth = !!req.headers.get('authorization');
+    const hasServiceAuth = !!req.headers.get('base44-service-authorization');
+    const ctx = {
       isAuthenticated,
       hasUser: !!user,
       userRole: user?.role || null,
       userId: user?.id || null,
-      headerKeys: Object.keys(headers),
-      hasAuthorization: !!req.headers.get('authorization'),
-      hasBase44Token: !!req.headers.get('x-base44-token'),
-      method: req.method,
+      hasUserAuthHeader: hasUserAuth,
+      hasServiceAuthHeader: hasServiceAuth,
+      ts: new Date().toISOString(),
+    };
+    // Persist so we can read it after the run
+    await base44.asServiceRole.entities.StaffAuditLog.create({
+      action: 'workflow_auth_probe',
+      entity_type: 'diagnostic',
+      details: JSON.stringify(ctx),
+      staff_name: 'workflow-runtime-probe',
     });
+    return Response.json(ctx);
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
