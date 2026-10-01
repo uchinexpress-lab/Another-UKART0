@@ -15,7 +15,7 @@ export default function StaffLogin() {
     try {
       const url = new URL(window.location.href);
       if (!url.searchParams.get('returnTo')) {
-        url.searchParams.set('returnTo', '/staff');
+        url.searchParams.set('returnTo', '/admin');
         window.history.replaceState({}, '', url);
       }
       await base44.auth.loginViaEmailPassword(email, password);

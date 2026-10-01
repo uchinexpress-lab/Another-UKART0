@@ -10,20 +10,21 @@ import {
 } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { key: 'dashboard', label: 'Dashboard', path: '/staff', icon: LayoutDashboard },
-  { key: 'orders', label: 'Orders', path: '/staff/orders', icon: ShoppingCart },
-  { key: 'tickets', label: 'Tickets', path: '/staff/tickets', icon: TicketIcon },
-  { key: 'riders', label: 'Riders', path: '/staff/riders', icon: Bike },
-  { key: 'live-deliveries', label: 'Live Deliveries', path: '/staff/live-deliveries', icon: Truck },
-  { key: 'products', label: 'Products', path: '/staff/products', icon: Package },
-  { key: 'categories', label: 'Categories', path: '/staff/categories', icon: FolderTree },
-  { key: 'meal-kits', label: 'Meal Kits', path: '/staff/meal-kits', icon: UtensilsCrossed },
-  { key: 'banners', label: 'Banners', path: '/staff/banners', icon: ImageIcon },
-  { key: 'bulk-images', label: 'Bulk Images', path: '/staff/bulk-images', icon: Upload },
-  { key: 'customers', label: 'Customers', path: '/staff/customers', icon: Users },
-  { key: 'reports', label: 'Reports', path: '/staff/reports', icon: BarChart3 },
-  { key: 'notifications', label: 'Notifications', path: '/staff/notifications', icon: Bell },
-  { key: 'settings', label: 'Settings', path: '/staff/settings', icon: SettingsIcon },
+  { key: 'dashboard', label: 'Dashboard', path: '/admin', icon: LayoutDashboard },
+  { key: 'orders', label: 'Orders', path: '/admin/orders', icon: ShoppingCart },
+  { key: 'tickets', label: 'Tickets', path: '/admin/tickets', icon: TicketIcon },
+  { key: 'riders', label: 'Riders', path: '/admin/riders', icon: Bike },
+  { key: 'live-deliveries', label: 'Live Deliveries', path: '/admin/live-deliveries', icon: Truck },
+  { key: 'products', label: 'Products', path: '/admin/products', icon: Package },
+  { key: 'categories', label: 'Categories', path: '/admin/categories', icon: FolderTree },
+  { key: 'meal-kits', label: 'Meal Kits', path: '/admin/meal-kits', icon: UtensilsCrossed },
+  { key: 'banners', label: 'Banners', path: '/admin/banners', icon: ImageIcon },
+  { key: 'bulk-images', label: 'Bulk Images', path: '/admin/bulk-images', icon: Upload },
+  { key: 'homepage', label: 'Homepage', path: '/admin/homepage', icon: LayoutDashboard },
+  { key: 'customers', label: 'Customers', path: '/admin/customers', icon: Users },
+  { key: 'reports', label: 'Reports', path: '/admin/reports', icon: BarChart3 },
+  { key: 'notifications', label: 'Notifications', path: '/admin/notifications', icon: Bell },
+  { key: 'settings', label: 'Settings', path: '/admin/settings', icon: SettingsIcon },
 ];
 
 export default function StaffLayout() {
@@ -133,7 +134,7 @@ export default function StaffLayout() {
                 className="w-full pl-9 pr-3 h-9 text-sm rounded-lg border border-gray-200 bg-gray-50 outline-none focus:border-[#2E7D32] focus:bg-white"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && e.target.value.trim()) {
-                    navigate(`/staff/orders?search=${encodeURIComponent(e.target.value.trim())}`);
+                    navigate(`/admin/orders?search=${encodeURIComponent(e.target.value.trim())}`);
                   }
                 }}
               />
@@ -141,13 +142,13 @@ export default function StaffLayout() {
           </div>
           <div className="flex items-center gap-1">
             <Link
-              to="/staff/notifications"
+              to="/admin/notifications"
               className="p-2 rounded-lg hover:bg-gray-100 text-gray-600"
             >
               <Bell className="w-5 h-5" />
             </Link>
             <Link
-              to="/staff/settings"
+              to="/admin/settings"
               className="p-2 rounded-lg hover:bg-gray-100 text-gray-600"
             >
               <SettingsIcon className="w-5 h-5" />

@@ -55,7 +55,7 @@ export default function StaffBanners() {
         </div>
         {canManage && (
           <Link
-            to="/admin/banners"
+            to="/admin/banners/manage"
             className="h-9 px-3 rounded-lg bg-[#2E7D32] text-white text-sm font-bold flex items-center gap-1.5"
           >
             <Edit className="w-4 h-4" /> Manage Banners

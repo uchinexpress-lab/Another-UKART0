@@ -19,7 +19,7 @@ export default function StaffBulkImages() {
           Use the full bulk image upload tool to upload multiple product images at once and assign them to products.
         </p>
         <Link
-          to="/admin/bulk-images"
+          to="/admin/bulk-images/manage"
           className="inline-flex items-center gap-2 h-10 px-4 rounded-lg bg-[#2E7D32] text-white text-sm font-bold"
         >
           <Upload className="w-4 h-4" /> Open Bulk Image Tool

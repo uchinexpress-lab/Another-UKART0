@@ -10,7 +10,7 @@ export const STAFF_ROLES = {
     label: 'Staff Admin',
     pages: [
       'dashboard', 'orders', 'tickets', 'riders', 'live-deliveries',
-      'products', 'categories', 'meal-kits', 'banners', 'bulk-images',
+      'products', 'categories', 'meal-kits', 'banners', 'bulk-images', 'homepage',
       'customers', 'reports', 'notifications', 'settings',
     ],
     color: 'bg-purple-100 text-purple-700',
@@ -22,7 +22,7 @@ export const STAFF_ROLES = {
   },
   content: {
     label: 'Content',
-    pages: ['dashboard', 'products', 'categories', 'meal-kits', 'banners', 'bulk-images'],
+    pages: ['dashboard', 'products', 'categories', 'meal-kits', 'banners', 'bulk-images', 'homepage'],
     color: 'bg-green-100 text-green-700',
   },
   support: {
@@ -36,7 +36,7 @@ export const STAFF_ROLE_VALUES = ['admin', 'staff_admin', 'operations', 'content
 
 export const ALL_STAFF_PAGES = [
   'dashboard', 'orders', 'tickets', 'riders', 'live-deliveries',
-  'products', 'categories', 'meal-kits', 'banners', 'bulk-images',
+  'products', 'categories', 'meal-kits', 'banners', 'bulk-images', 'homepage',
   'customers', 'reports', 'notifications', 'settings',
 ];
 

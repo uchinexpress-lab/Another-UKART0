@@ -33,16 +33,7 @@ const Wishlist = lazy(() => import('@/pages/Wishlist'));
 const Profile = lazy(() => import('@/pages/Profile'));
 const BudgetShop = lazy(() => import('@/pages/BudgetShop'));
 const OrderTracking = lazy(() => import('@/pages/OrderTracking'));
-const AdminSettings = lazy(() => import('@/pages/AdminSettings'));
-const AdminOrders = lazy(() => import('@/pages/AdminOrders'));
-const AdminProducts = lazy(() => import('@/pages/AdminProducts'));
-const AdminProductEdit = lazy(() => import('@/pages/AdminProductEdit'));
-const AdminCategories = lazy(() => import('@/pages/AdminCategories'));
-const AdminBulkImages = lazy(() => import('@/pages/AdminBulkImages'));
-const AdminBanners = lazy(() => import('@/pages/AdminBanners'));
-const AdminHomepage = lazy(() => import('@/pages/AdminHomepage'));
-const AdminMealKits = lazy(() => import('@/pages/AdminMealKits'));
-const AdminMealKitEdit = lazy(() => import('@/pages/AdminMealKitEdit'));
+
 const Login = lazy(() => import('@/pages/Login'));
 const Register = lazy(() => import('@/pages/Register'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
@@ -54,7 +45,7 @@ const PaymentMethods = lazy(() => import('@/pages/PaymentMethods'));
 const Notifications = lazy(() => import('@/pages/Notifications'));
 const HelpSupport = lazy(() => import('@/pages/HelpSupport'));
 const SupportTickets = lazy(() => import('@/pages/SupportTickets'));
-const AdminTickets = lazy(() => import('@/pages/AdminTickets'));
+
 const About = lazy(() => import('@/pages/About'));
 const SettingsPage = lazy(() => import('@/pages/Settings'));
 const Account = lazy(() => import('@/pages/Account'));
@@ -62,15 +53,13 @@ const Onboarding = lazy(() => import('@/pages/Onboarding'));
 import RiderApp from '@/RiderApp';
 import StaffApp from '@/StaffApp';
 const LiveOrderTracking = lazy(() => import('@/pages/LiveOrderTracking'));
-const AdminRiders = lazy(() => import('@/pages/AdminRiders'));
-const AdminLiveDeliveries = lazy(() => import('@/pages/AdminLiveDeliveries'));
-const AdminRiderProfile = lazy(() => import('@/pages/AdminRiderProfile'));
+
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, user } = useAuth();
   const location = useLocation();
   const isRiderPath = location.pathname.startsWith('/rider');
-  const isStaffPath = location.pathname.startsWith('/staff');
+  const isStaffPath = location.pathname.startsWith('/admin');
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
@@ -136,28 +125,14 @@ const AuthenticatedApp = () => {
               <Route path="/budget/:range" element={<BudgetShop />} />
               <Route path="/track" element={<OrderTracking />} />
               <Route path="/track-order/:id" element={<LiveOrderTracking />} />
-              <Route path="/admin/settings" element={<GuestGate><AdminSettings /></GuestGate>} />
-              <Route path="/admin/orders" element={<GuestGate><AdminOrders /></GuestGate>} />
-              <Route path="/admin/riders" element={<GuestGate><AdminRiders /></GuestGate>} />
-              <Route path="/admin/live-deliveries" element={<GuestGate><AdminLiveDeliveries /></GuestGate>} />
-              <Route path="/admin/riders/:id" element={<GuestGate><AdminRiderProfile /></GuestGate>} />
-              <Route path="/admin/products" element={<GuestGate><AdminProducts /></GuestGate>} />
-              <Route path="/admin/products/new" element={<GuestGate><AdminProductEdit /></GuestGate>} />
-              <Route path="/admin/products/:id" element={<GuestGate><AdminProductEdit /></GuestGate>} />
-              <Route path="/admin/categories" element={<GuestGate><AdminCategories /></GuestGate>} />
-              <Route path="/admin/bulk-images" element={<GuestGate><AdminBulkImages /></GuestGate>} />
-              <Route path="/admin/banners" element={<GuestGate><AdminBanners /></GuestGate>} />
-              <Route path="/admin/homepage" element={<GuestGate><AdminHomepage /></GuestGate>} />
-              <Route path="/admin/meal-kits" element={<GuestGate><AdminMealKits /></GuestGate>} />
-              <Route path="/admin/meal-kits/new" element={<GuestGate><AdminMealKitEdit /></GuestGate>} />
-              <Route path="/admin/meal-kits/:id" element={<GuestGate><AdminMealKitEdit /></GuestGate>} />
+
               <Route path="/orders" element={<GuestGate><Orders /></GuestGate>} />
               <Route path="/orders/:id" element={<GuestGate><OrderDetail /></GuestGate>} />
               <Route path="/payment-methods" element={<GuestGate><PaymentMethods /></GuestGate>} />
               <Route path="/notifications" element={<GuestGate><Notifications /></GuestGate>} />
               <Route path="/support" element={<HelpSupport />} />
               <Route path="/tickets" element={<GuestGate><SupportTickets /></GuestGate>} />
-              <Route path="/admin/tickets" element={<GuestGate><AdminTickets /></GuestGate>} />
+
               <Route path="/about" element={<About />} />
               <Route path="/settings" element={<GuestGate><SettingsPage /></GuestGate>} />
               <Route path="/account" element={<GuestGate><Account /></GuestGate>} />
@@ -177,7 +152,7 @@ function AppShell() {
   const [showSplash, setShowSplash] = useState(true);
   const location = useLocation();
   const isRiderPath = location.pathname.startsWith('/rider');
-  const isStaffPath = location.pathname.startsWith('/staff');
+  const isStaffPath = location.pathname.startsWith('/admin');
   useEffect(() => {
     const ref = new URLSearchParams(window.location.search).get('ref');
     if (ref) {

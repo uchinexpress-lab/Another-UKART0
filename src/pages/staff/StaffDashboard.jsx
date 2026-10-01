@@ -93,7 +93,7 @@ export default function StaffDashboard() {
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-gray-900">Recent Orders</h3>
-            <Link to="/staff/orders" className="text-xs font-semibold text-[#2E7D32]">
+            <Link to="/admin/orders" className="text-xs font-semibold text-[#2E7D32]">
               View all →
             </Link>
           </div>
@@ -127,7 +127,7 @@ export default function StaffDashboard() {
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-bold text-gray-900">Open Tickets</h3>
-            <Link to="/staff/tickets" className="text-xs font-semibold text-[#2E7D32]">
+            <Link to="/admin/tickets" className="text-xs font-semibold text-[#2E7D32]">
               View all →
             </Link>
           </div>

@@ -165,7 +165,7 @@ export default function StaffTicketDetail() {
     return (
       <div className="text-center py-16">
         <p className="text-sm text-gray-400">Ticket not found.</p>
-        <Link to="/staff/tickets" className="text-[#2E7D32] text-sm font-medium mt-2 inline-block">
+        <Link to="/admin/tickets" className="text-[#2E7D32] text-sm font-medium mt-2 inline-block">
           Back to tickets
         </Link>
       </div>
@@ -174,7 +174,7 @@ export default function StaffTicketDetail() {
 
   return (
     <div className="space-y-4">
-      <Link to="/staff/tickets" className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900">
+      <Link to="/admin/tickets" className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900">
         <ArrowLeft className="w-4 h-4" /> Back to Tickets
       </Link>
 

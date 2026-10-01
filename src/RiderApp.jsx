@@ -67,8 +67,8 @@ export default function RiderApp() {
             <Route path="/rider/profile" element={<RiderLayout><RiderProfile /></RiderLayout>} />
           </Route>
 
-          {/* Default — send everything else to rider login */}
-          <Route path="/rider" element={<Navigate to="/rider/login" replace />} />
+          {/* /rider → rider home (RiderGuard redirects to login if not authenticated) */}
+          <Route path="/rider" element={<Navigate to="/rider/home" replace />} />
           <Route path="*" element={<Navigate to="/rider/login" replace />} />
         </Routes>
       </Suspense>
