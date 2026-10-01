@@ -10,8 +10,8 @@ export const BANNER_LOCATIONS = {
   },
   meal_kits: {
     label: 'Meal Kits',
-    aspectRatio: 5 / 3,
-    heightClass: 'h-56',
+    aspectRatio: 16 / 7,
+    heightClass: 'h-44',
     description: 'Meal kits section banner',
   },
   promotions: {

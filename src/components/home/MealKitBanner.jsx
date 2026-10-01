@@ -10,7 +10,7 @@ export default function MealKitBanner() {
   const navigate = useNavigate();
 
   return (
-    <section className="px-4">
+    <section className="px-4" style={{ marginTop: '0.5rem', marginBottom: '-0.75rem' }}>
       <BannerSlider location="meal_kits" rounded="rounded-2xl">
         <button
           onClick={() => navigate('/packages#meal-kits')}
