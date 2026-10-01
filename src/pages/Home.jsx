@@ -3,7 +3,6 @@ import { base44 } from '@/api/base44Client';
 import QuickCategories from '@/components/categories/QuickCategories';
 import PromoBanner from '@/components/home/PromoBanner';
 import PackageCarousel from '@/components/home/PackageCarousel';
-import ShopByBudget from '@/components/home/ShopByBudget';
 import FeaturedCategories from '@/components/home/FeaturedCategories';
 import BestSellers from '@/components/home/BestSellers';
 import WeeklyDeals from '@/components/home/WeeklyDeals';
@@ -72,7 +71,6 @@ export default function Home() {
       <MealKitBanner />
       <PopularMealKits packages={packages} />
       <PackageCarousel packages={packages} />
-      <ShopByBudget />
       <FeaturedCategories />
       <BestSellers products={bestSellers} />
       <CustomerReviews reviews={reviews} />
