@@ -1,7 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import UkartLogo from '@/components/UkartLogo';
+import { Image } from '@/components/ui/image';
+
+const UKART_LOGO_URL =
+  'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/01b5442de_ukart.jpg';
 
 export default function AuthShell({
   showBack = false,
@@ -42,7 +45,12 @@ export default function AuthShell({
             <ArrowLeft className="w-5 h-5 text-[#2E7D32]" />
           </button>
         )}
-        <UkartLogo size="lg" />
+        <Image
+          src={UKART_LOGO_URL}
+          alt="Ukart"
+          fittingType="fit"
+          className="w-20 h-20"
+        />
       </div>
 
       {/* optional hero icon */}
