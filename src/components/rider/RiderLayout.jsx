@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation, useOutletContext, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Home, Bike, User, LogOut } from 'lucide-react';
 
 export default function RiderLayout({ children }) {
   const navigate = useNavigate();
   const location = useLocation();
-  const [rider, setRider] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // RiderGuard already verified the rider and passes it via outlet context.
+  // Fall back to our own check if used outside the guard (safety net).
+  const ctx = useOutletContext();
+  const [rider, setRider] = useState(ctx?.rider || null);
+  const [loading, setLoading] = useState(!ctx?.rider);
 
   useEffect(() => {
+    if (ctx?.rider) return; // already have rider from guard
     checkRider();
   }, []);
 

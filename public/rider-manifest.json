@@ -1,0 +1,26 @@
+{
+  "name": "Ukart Rider",
+  "short_name": "Ukart Rider",
+  "description": "Ukart Rider — Delivery operations app for Ukart delivery riders in Lagos",
+  "start_url": "/rider/login",
+  "scope": "/rider/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1B4332",
+  "theme_color": "#1B4332",
+  "icons": [
+    {
+      "src": "/rider-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/rider-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["business", "navigation", "productivity"]
+}

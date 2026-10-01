@@ -2,7 +2,7 @@ import { useState, useEffect, lazy, Suspense } from 'react';
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -13,6 +13,7 @@ import { LocationProvider } from '@/context/LocationContext';
 import { MealKitProvider } from '@/context/MealKitContext';
 import Layout from '@/components/layout/Layout';
 import Splash from '@/components/Splash';
+import RiderSplash from '@/components/rider/RiderSplash';
 import BrowseGuard from '@/components/BrowseGuard';
 import GuestGate from '@/components/GuestGate';
 import { AnimatePresence } from 'framer-motion';
@@ -57,20 +58,16 @@ const About = lazy(() => import('@/pages/About'));
 const SettingsPage = lazy(() => import('@/pages/Settings'));
 const Account = lazy(() => import('@/pages/Account'));
 const Onboarding = lazy(() => import('@/pages/Onboarding'));
-const RiderLogin = lazy(() => import('@/pages/rider/RiderLogin'));
-const RiderRegister = lazy(() => import('@/pages/rider/RiderRegister'));
-const RiderPending = lazy(() => import('@/pages/rider/RiderPending'));
-const RiderHome = lazy(() => import('@/pages/rider/RiderHome'));
-const RiderActiveDelivery = lazy(() => import('@/pages/rider/RiderActiveDelivery'));
-const RiderProfile = lazy(() => import('@/pages/rider/RiderProfile'));
+import RiderApp from '@/RiderApp';
 const LiveOrderTracking = lazy(() => import('@/pages/LiveOrderTracking'));
 const AdminRiders = lazy(() => import('@/pages/AdminRiders'));
 const AdminLiveDeliveries = lazy(() => import('@/pages/AdminLiveDeliveries'));
 const AdminRiderProfile = lazy(() => import('@/pages/AdminRiderProfile'));
-const RiderLayout = lazy(() => import('@/components/rider/RiderLayout'));
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, user } = useAuth();
+  const location = useLocation();
+  const isRiderPath = location.pathname.startsWith('/rider');
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
@@ -78,6 +75,19 @@ const AuthenticatedApp = () => {
         <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
       </div>
     );
+  }
+
+  // Rider app — completely separate from the customer experience.
+  // Rendered before the user_not_registered check so riders who haven't
+  // completed customer onboarding can still use the rider app.
+  if (isRiderPath) {
+    return <RiderApp />;
+  }
+
+  // Prevent riders from accessing customer shopping / admin pages.
+  // Riders are redirected to their dashboard.
+  if (user?.role === 'rider') {
+    return <Navigate to="/rider/home" replace />;
   }
 
   if (authError && authError.type === 'user_not_registered') {
@@ -96,14 +106,8 @@ const AuthenticatedApp = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          {/* Rider app — standalone, no customer layout */}
-          <Route path="/rider/login" element={<RiderLogin />} />
-          <Route path="/rider/register" element={<RiderRegister />} />
-          <Route path="/rider/pending" element={<RiderPending />} />
-          <Route path="/rider/home" element={<RiderLayout><RiderHome /></RiderLayout>} />
-          <Route path="/rider/delivery/:id" element={<RiderLayout><RiderActiveDelivery /></RiderLayout>} />
-          <Route path="/rider/delivery" element={<RiderLayout><RiderHome /></RiderLayout>} />
-          <Route path="/rider/profile" element={<RiderLayout><RiderProfile /></RiderLayout>} />
+          {/* Rider app lives at /rider/* — handled by <RiderApp /> above,
+              completely separate from the customer routes below. */}
           <Route element={<BrowseGuard />}>
             <Route element={<Layout />}>
               <Route path="/" element={<Home />} />
@@ -161,6 +165,8 @@ const AuthenticatedApp = () => {
 
 function AppShell() {
   const [showSplash, setShowSplash] = useState(true);
+  const location = useLocation();
+  const isRiderPath = location.pathname.startsWith('/rider');
   useEffect(() => {
     const ref = new URLSearchParams(window.location.search).get('ref');
     if (ref) {
@@ -170,11 +176,24 @@ function AppShell() {
       window.history.replaceState({}, '', url.pathname + url.search);
     }
   }, []);
+
+  // Restore customer app identity when leaving rider routes
+  useEffect(() => {
+    if (!isRiderPath) {
+      document.title = 'Ukart';
+      const manifest = document.querySelector('link[rel="manifest"]');
+      if (manifest) manifest.setAttribute('href', '/manifest.json');
+      const themeColor = document.querySelector('meta[name="theme-color"]');
+      if (themeColor) themeColor.setAttribute('content', '#2E7D32');
+    }
+  }, [isRiderPath]);
   return (
     <>
       <AuthenticatedApp />
       <AnimatePresence>
-        {showSplash && <Splash onDone={() => setShowSplash(false)} />}
+        {showSplash && (
+          isRiderPath ? <RiderSplash onDone={() => setShowSplash(false)} /> : <Splash onDone={() => setShowSplash(false)} />
+        )}
       </AnimatePresence>
     </>
   );
