@@ -34,7 +34,7 @@ export default function ForgotPassword() {
       footer={
         <Link
           to="/login"
-          className="inline-flex items-center gap-1 text-sm text-[#2E7D32] font-medium hover:underline"
+          className="inline-flex items-center gap-1 text-sm text-primary font-medium hover:underline"
         >
           <ArrowLeft className="w-3.5 h-3.5" /> Back to login
         </Link>
@@ -42,10 +42,10 @@ export default function ForgotPassword() {
     >
       {sent ? (
         <div className="flex flex-col items-center text-center py-6">
-          <div className="w-14 h-14 rounded-full bg-[#EEF8EE] flex items-center justify-center mb-4">
-            <CheckCircle2 className="w-7 h-7 text-[#2E7D32]" />
+          <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+            <CheckCircle2 className="w-7 h-7 text-primary" />
           </div>
-          <p className="text-sm text-gray-600 leading-relaxed max-w-xs">
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
             If an account exists with that email, you'll receive a password
             reset link shortly.
           </p>
@@ -55,7 +55,7 @@ export default function ForgotPassword() {
           <div>
             <Label className="mb-1.5 block">Email address</Label>
             <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 type="email"
                 autoComplete="email"

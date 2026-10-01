@@ -16,7 +16,7 @@ export const STAFF_ROLES = {
   },
   support: {
     label: 'Support',
-    pages: ['dashboard', 'orders', 'tickets', 'customers'],
+    pages: ['dashboard', 'orders', 'tickets', 'customers', 'birthday-rewards'],
     color: 'bg-amber-100 text-amber-700',
   },
   operations: {
@@ -31,7 +31,7 @@ export const STAFF_ROLES = {
   },
   finance: {
     label: 'Finance',
-    pages: ['dashboard', 'orders', 'reports'],
+    pages: ['dashboard', 'orders', 'reports', 'birthday-rewards'],
     color: 'bg-purple-100 text-purple-700',
   },
   rider_manager: {
@@ -57,7 +57,7 @@ export const STAFF_ROLE_OPTIONS = [
 export const ALL_STAFF_PAGES = [
   'dashboard', 'orders', 'tickets', 'riders', 'live-deliveries',
   'products', 'categories', 'meal-kits', 'banners', 'bulk-images', 'homepage',
-  'customers', 'reports', 'notifications', 'settings',
+  'customers', 'reports', 'notifications', 'birthday-rewards', 'settings',
 ];
 
 // Check if a user is a Ukart staff member (Base44 role = admin).

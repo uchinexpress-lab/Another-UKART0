@@ -6,7 +6,7 @@ import { getAccessiblePages, getRoleLabel, isSuperAdmin } from '@/lib/staffRoles
 import {
   LayoutDashboard, ShoppingCart, Ticket as TicketIcon, Bike, Truck,
   Package, FolderTree, UtensilsCrossed, Image as ImageIcon, Upload, Users,
-  BarChart3, Bell, Settings as SettingsIcon, Search, Menu, LogOut, X,
+  BarChart3, Bell, Gift, Settings as SettingsIcon, Search, Menu, LogOut, X,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -24,6 +24,7 @@ const NAV_ITEMS = [
   { key: 'customers', label: 'Customers', path: '/admin/customers', icon: Users },
   { key: 'reports', label: 'Reports', path: '/admin/reports', icon: BarChart3 },
   { key: 'notifications', label: 'Notifications', path: '/admin/notifications', icon: Bell },
+  { key: 'birthday-rewards', label: 'Birthday Rewards', path: '/admin/birthday-rewards', icon: Gift },
   { key: 'settings', label: 'Settings', path: '/admin/settings', icon: SettingsIcon },
 ];
 

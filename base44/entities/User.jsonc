@@ -24,6 +24,11 @@
     "phone": {
       "type": "string"
     },
+    "date_of_birth": {
+      "type": "string",
+      "format": "date",
+      "description": "Customer date of birth (YYYY-MM-DD). Used for birthday rewards."
+    },
     "avatar_url": {
       "type": "string"
     },

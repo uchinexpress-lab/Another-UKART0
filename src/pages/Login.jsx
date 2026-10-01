@@ -74,7 +74,7 @@ export default function Login() {
       subtitle="Fresh groceries are just a few taps away."
     >
       {error && (
-        <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-sm">
+        <div className="mb-4 p-3 rounded-xl bg-destructive/10 text-destructive text-sm">
           {error}
         </div>
       )}
@@ -100,10 +100,10 @@ export default function Login() {
 
       <div className="relative mb-4">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-200" />
+          <div className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs">
-          <span className="bg-white px-3 text-gray-400 uppercase tracking-wide">
+          <span className="bg-background px-3 text-muted-foreground uppercase tracking-wide">
             or
           </span>
         </div>
@@ -113,7 +113,7 @@ export default function Login() {
         <div>
           <Label className="mb-1.5 block">Email Address</Label>
           <div className="relative">
-            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               type="email"
               placeholder="you@example.com"
@@ -129,13 +129,13 @@ export default function Login() {
             <Label>Password</Label>
             <Link
               to="/forgot-password"
-              className="text-xs text-[#2E7D32] font-medium hover:underline"
+              className="text-xs text-primary font-medium hover:underline"
             >
               Forgot Password?
             </Link>
           </div>
           <div className="relative">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               type={showPwd ? "text" : "password"}
               placeholder="••••••••"
@@ -147,7 +147,7 @@ export default function Login() {
             <button
               type="button"
               onClick={() => setShowPwd((v) => !v)}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
               aria-label="Toggle password"
             >
               {showPwd ? (
@@ -176,11 +176,11 @@ export default function Login() {
         </Button>
       </form>
 
-      <p className="text-center text-sm text-gray-600 mt-6">
+      <p className="text-center text-sm text-muted-foreground mt-6">
         Don't have an account?{" "}
         <Link
           to="/register"
-          className="text-[#2E7D32] font-semibold hover:underline"
+          className="text-primary font-semibold hover:underline"
         >
           Create Account
         </Link>
@@ -188,7 +188,7 @@ export default function Login() {
 
       <button
         onClick={handleGuest}
-        className="w-full mt-3 flex items-center justify-center gap-1 text-sm font-medium text-gray-500 hover:text-[#2E7D32] transition-colors"
+        className="w-full mt-3 flex items-center justify-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
       >
         Continue as Guest <ChevronRight className="w-4 h-4" />
       </button>

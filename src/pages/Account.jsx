@@ -5,6 +5,7 @@ import {
   Phone,
   Mail,
   Camera,
+  Calendar,
   Loader2,
   KeyRound,
   Save,
@@ -16,25 +17,36 @@ import { Label } from '@/components/ui/label';
 import { Image } from '@/components/ui/image';
 import { toast } from '@/components/ui/use-toast';
 import OrderHistory from '@/components/account/OrderHistory';
+import BirthdayReward from '@/components/account/BirthdayReward';
 
 export default function Account() {
   const [user, setUser] = useState(null);
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [dobLocked, setDobLocked] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
-    base44.auth
-      .me()
-      .then((u) => {
+    (async () => {
+      try {
+        const u = await base44.auth.me();
         setUser(u);
         setFullName(u?.full_name || '');
         setPhone(u?.phone || '');
         setEmail(u?.email || '');
-      })
-      .catch(() => {});
+        setDateOfBirth(u?.date_of_birth || '');
+        // Lock DOB if a birthday reward exists
+        try {
+          const rewards = await base44.entities.BirthdayReward.filter({}, { limit: 1 });
+          if (rewards.items && rewards.items.length > 0) {
+            setDobLocked(true);
+          }
+        } catch {}
+      } catch {}
+    })();
   }, []);
 
   const onPickPhoto = async (e) => {
@@ -66,6 +78,7 @@ export default function Account() {
       const u = await base44.auth.updateMe({
         full_name: fullName.trim(),
         phone: phone.trim(),
+        date_of_birth: dateOfBirth || undefined,
       });
       setUser(u);
       toast({ title: 'Profile updated' });
@@ -177,8 +190,30 @@ export default function Account() {
               />
             </div>
           </div>
+          <div>
+            <Label className="mb-1.5 block">Date of Birth</Label>
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                type="date"
+                value={dateOfBirth}
+                onChange={(e) => setDateOfBirth(e.target.value)}
+                disabled={dobLocked}
+                className="pl-10 h-12 rounded-xl"
+                max={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+            <p className="text-[11px] text-gray-400 mt-1">
+              {dobLocked
+                ? '🔒 Date of birth cannot be changed after a birthday reward has been issued.'
+                : 'Used to celebrate your birthday with a special Ukart reward. 🎁'}
+            </p>
+          </div>
         </div>
       </div>
+
+      {/* Birthday Reward */}
+      <BirthdayReward />
 
       {/* Order history */}
       <div>

@@ -1,0 +1,97 @@
+{
+  "name": "BirthdayReward",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "description": "User account id of the customer"
+    },
+    "customer_email": {
+      "type": "string",
+      "description": "Customer email (for RLS)"
+    },
+    "customer_name": {
+      "type": "string"
+    },
+    "date_of_birth": {
+      "type": "string",
+      "description": "Customer DOB at time of reward creation"
+    },
+    "birthday_year": {
+      "type": "number",
+      "description": "Calendar year the reward was issued for"
+    },
+    "voucher_id": {
+      "type": "string",
+      "description": "Linked Voucher record id"
+    },
+    "voucher_code": {
+      "type": "string"
+    },
+    "voucher_amount": {
+      "type": "number",
+      "default": 2000
+    },
+    "expiry_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "created",
+        "sent",
+        "redeemed",
+        "expired"
+      ],
+      "default": "created"
+    },
+    "sent_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "redeemed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "is_test": {
+      "type": "boolean",
+      "default": false,
+      "description": "Test reward \u2014 not a real customer birthday reward"
+    }
+  },
+  "required": [
+    "customer_id",
+    "customer_email",
+    "birthday_year"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.customer_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

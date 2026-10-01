@@ -90,7 +90,9 @@ export default function Checkout() {
   }, []);
 
   const voucherDiscount = voucher
-    ? Math.round((total * (voucher.discount_percent || 0)) / 100)
+    ? voucher.discount_type === 'fixed_amount'
+      ? Math.min(voucher.discount_amount || 0, total)
+      : Math.round((total * (voucher.discount_percent || 0)) / 100)
     : 0;
   const appliedDiscount = Math.min(referralDiscount + voucherDiscount, total);
   const grandTotal = total - appliedDiscount + deliveryFee;
@@ -101,6 +103,7 @@ export default function Checkout() {
     setVoucherError('');
     if (!voucherCode.trim()) return;
     try {
+      const me = await base44.auth.me();
       const found = await base44.entities.Voucher.filter({
         code: voucherCode.trim().toUpperCase(),
         active: true,
@@ -112,6 +115,14 @@ export default function Checkout() {
       const v = found[0];
       if (v.max_uses && (v.uses || 0) >= v.max_uses) {
         setVoucherError('This voucher has reached its usage limit');
+        return;
+      }
+      if (v.assigned_to_email && v.assigned_to_email !== me?.email) {
+        setVoucherError('This voucher is not available for your account');
+        return;
+      }
+      if (v.expiry_date && new Date(v.expiry_date) < new Date()) {
+        setVoucherError('This voucher has expired');
         return;
       }
       setVoucher(v);
@@ -376,7 +387,7 @@ export default function Checkout() {
             {voucher ? (
               <div className="flex items-center justify-between bg-primary/10 rounded-xl px-3 py-2.5">
                 <span className="text-sm font-semibold text-[#2E7D32]">
-                  {voucher.code} ({voucher.discount_percent}% off)
+                  {voucher.code} ({voucher.discount_type === 'fixed_amount' ? `₦${(voucher.discount_amount || 0).toLocaleString()} off` : `${voucher.discount_percent}% off`})
                 </span>
                 <button
                   onClick={() => {

@@ -21,6 +21,7 @@ const StaffCustomers = lazy(() => import('@/pages/staff/StaffCustomers'));
 const StaffReports = lazy(() => import('@/pages/staff/StaffReports'));
 const StaffNotifications = lazy(() => import('@/pages/staff/StaffNotifications'));
 const StaffSettings = lazy(() => import('@/pages/staff/StaffSettings'));
+const StaffBirthdayRewards = lazy(() => import('@/pages/staff/StaffBirthdayRewards'));
 const AdminSettings = lazy(() => import('@/pages/AdminSettings'));
 // Legacy admin pages — full management UIs rendered inside the StaffLayout
 const AdminProductEdit = lazy(() => import('@/pages/AdminProductEdit'));
@@ -149,6 +150,7 @@ export default function StaffApp({ dashboardOnly = false }) {
           <Route path="reports" element={<StaffReports />} />
           <Route path="notifications" element={<StaffNotifications />} />
           <Route path="settings" element={<StaffSettings />} />
+          <Route path="birthday-rewards" element={<StaffBirthdayRewards />} />
           <Route path="settings/notifications" element={<AdminSettings />} />
         </Route>
       </Routes>

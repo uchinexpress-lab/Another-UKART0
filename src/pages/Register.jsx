@@ -11,6 +11,7 @@ import {
   User,
   Phone,
   Gift,
+  Calendar,
   Loader2,
   ArrowRight,
   Eye,
@@ -26,6 +27,7 @@ export default function Register() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [referralCode, setReferralCode] = useState("");
@@ -39,6 +41,7 @@ export default function Register() {
   const returnTo =
     new URLSearchParams(window.location.search).get("returnTo") || "/";
   const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
+  const todayStr = new Date().toISOString().split("T")[0];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,6 +61,17 @@ export default function Register() {
     if (phone && !/^\+?[0-9\s-]{7,}$/.test(phone)) {
       setError("Enter a valid phone number");
       return;
+    }
+    if (dateOfBirth) {
+      const dob = new Date(dateOfBirth);
+      if (isNaN(dob.getTime())) {
+        setError("Enter a valid date of birth");
+        return;
+      }
+      if (dob > new Date()) {
+        setError("Date of birth cannot be in the future");
+        return;
+      }
     }
     setLoading(true);
     try {
@@ -82,6 +96,7 @@ export default function Register() {
       try {
         await base44.auth.updateMe({
           phone,
+          date_of_birth: dateOfBirth || undefined,
           referral_code: referralCode || undefined,
         });
       } catch {}
@@ -138,7 +153,7 @@ export default function Register() {
         subtitle={`We sent a code to ${email}`}
       >
         {error && (
-          <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-sm">
+          <div className="mb-4 p-3 rounded-xl bg-destructive/10 text-destructive text-sm">
             {error}
           </div>
         )}
@@ -174,11 +189,11 @@ export default function Register() {
             "Verify"
           )}
         </Button>
-        <p className="text-center text-sm text-gray-500 mt-4">
+        <p className="text-center text-sm text-muted-foreground mt-4">
           Didn't receive the code?{" "}
           <button
             onClick={handleResend}
-            className="text-[#2E7D32] font-medium hover:underline"
+            className="text-primary font-medium hover:underline"
           >
             Resend
           </button>
@@ -194,7 +209,7 @@ export default function Register() {
       subtitle="Let's get you shopping."
     >
       {error && (
-        <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-sm">
+        <div className="mb-4 p-3 rounded-xl bg-destructive/10 text-destructive text-sm">
           {error}
         </div>
       )}
@@ -210,10 +225,10 @@ export default function Register() {
 
       <div className="relative mb-4">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-200" />
+          <div className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs">
-          <span className="bg-white px-3 text-gray-400 uppercase tracking-wide">
+          <span className="bg-background px-3 text-muted-foreground uppercase tracking-wide">
             or
           </span>
         </div>
@@ -224,7 +239,7 @@ export default function Register() {
           <div>
             <Label className="mb-1.5 block">First Name</Label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Adaeze"
                 value={firstName}
@@ -248,7 +263,7 @@ export default function Register() {
         <div>
           <Label className="mb-1.5 block">Email Address</Label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               type="email"
               placeholder="you@example.com"
@@ -262,7 +277,7 @@ export default function Register() {
         <div>
           <Label className="mb-1.5 block">Phone Number</Label>
           <div className="relative">
-            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               type="tel"
               placeholder="e.g. 0803 123 4567"
@@ -273,9 +288,25 @@ export default function Register() {
           </div>
         </div>
         <div>
+          <Label className="mb-1.5 block">Date of Birth</Label>
+          <div className="relative">
+            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              type="date"
+              value={dateOfBirth}
+              onChange={(e) => setDateOfBirth(e.target.value)}
+              className="pl-10 h-12 rounded-xl"
+              max={todayStr}
+            />
+          </div>
+          <p className="text-[11px] text-muted-foreground mt-1">
+            Used to celebrate your birthday with a special Ukart reward. 🎁
+          </p>
+        </div>
+        <div>
           <Label className="mb-1.5 block">Password</Label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               type={showPwd ? "text" : "password"}
               placeholder="••••••••"
@@ -287,7 +318,7 @@ export default function Register() {
             <button
               type="button"
               onClick={() => setShowPwd((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               aria-label="Toggle password"
             >
               {showPwd ? (
@@ -301,7 +332,7 @@ export default function Register() {
         <div>
           <Label className="mb-1.5 block">Confirm Password</Label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               type="password"
               placeholder="••••••••"
@@ -315,7 +346,7 @@ export default function Register() {
         <div>
           <Label className="mb-1.5 block">Referral Code (optional)</Label>
           <div className="relative">
-            <Gift className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Gift className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Enter code if you have one"
               value={referralCode}
@@ -329,18 +360,18 @@ export default function Register() {
             id="terms"
             checked={agree}
             onCheckedChange={setAgree}
-            className="mt-0.5 data-[state=checked]:bg-[#2E7D32] data-[state=checked]:border-[#2E7D32]"
+            className="mt-0.5 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
           />
           <Label
             htmlFor="terms"
-            className="text-xs text-gray-500 leading-relaxed"
+            className="text-xs text-muted-foreground leading-relaxed"
           >
             I agree to the{" "}
-            <span className="text-[#2E7D32] font-medium">
+            <span className="text-primary font-medium">
               Terms & Conditions
             </span>{" "}
             and{" "}
-            <span className="text-[#2E7D32] font-medium">Privacy Policy</span>.
+            <span className="text-primary font-medium">Privacy Policy</span>.
           </Label>
         </div>
         <Button
@@ -361,9 +392,9 @@ export default function Register() {
         </Button>
       </form>
 
-      <p className="text-center text-sm text-gray-600 mt-6">
+      <p className="text-center text-sm text-muted-foreground mt-6">
         Already have an account?{" "}
-        <Link to="/login" className="text-[#2E7D32] font-semibold hover:underline">
+        <Link to="/login" className="text-primary font-semibold hover:underline">
           Log in
         </Link>
       </p>

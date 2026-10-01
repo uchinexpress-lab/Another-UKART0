@@ -44,13 +44,13 @@ export default function ResetPassword() {
         footer={
           <Link
             to="/forgot-password"
-            className="text-sm text-[#2E7D32] font-medium hover:underline"
+            className="text-sm text-primary font-medium hover:underline"
           >
             Request a new link
           </Link>
         }
       >
-        <p className="text-sm text-gray-600 text-center leading-relaxed">
+        <p className="text-sm text-muted-foreground text-center leading-relaxed">
           The link you used appears to be incomplete. Please request a new
           password reset email.
         </p>
@@ -66,7 +66,7 @@ export default function ResetPassword() {
       subtitle="Enter your new password below"
     >
       {error && (
-        <div className="mb-4 p-3 rounded-xl bg-red-50 text-red-600 text-sm">
+        <div className="mb-4 p-3 rounded-xl bg-destructive/10 text-destructive text-sm">
           {error}
         </div>
       )}
@@ -74,7 +74,7 @@ export default function ResetPassword() {
         <div>
           <Label className="mb-1.5 block">New Password</Label>
           <div className="relative">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               type="password"
               autoComplete="new-password"
@@ -90,7 +90,7 @@ export default function ResetPassword() {
         <div>
           <Label className="mb-1.5 block">Confirm Password</Label>
           <div className="relative">
-            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               type="password"
               autoComplete="new-password"
