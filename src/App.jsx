@@ -69,17 +69,17 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Rider app — completely separate from the customer experience.
-  // Rendered before the user_not_registered check so riders who haven't
-  // completed customer onboarding can still use the rider app.
-  if (isRiderPath) {
-    return <RiderApp />;
-  }
-
-  // Staff Admin app — separate operations dashboard at /staff/*
-  // Shares the same entities and backend as the customer app.
-  if (isStaffPath) {
-    return <StaffApp />;
+  // Integrated operations sections are explicitly registered in this app.
+  // Keep them outside the customer layout and onboarding guards.
+  if (isRiderPath || isStaffPath) {
+    return (
+      <Routes>
+        <Route path="/admin" element={<StaffApp />} />
+        <Route path="/admin/*" element={<StaffApp />} />
+        <Route path="/rider" element={<RiderApp />} />
+        <Route path="/rider/*" element={<RiderApp />} />
+      </Routes>
+    );
   }
 
   // Prevent riders from accessing customer shopping / admin pages.

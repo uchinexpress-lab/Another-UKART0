@@ -1,7 +1,7 @@
 import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
-import { isStaffRole } from '@/lib/staffRoles';
+import { isStaffRole, canAccessPage } from '@/lib/staffRoles';
 
 const StaffLogin = lazy(() => import('@/pages/staff/StaffLogin'));
 const StaffLayout = lazy(() => import('@/components/staff/StaffLayout'));
@@ -20,6 +20,7 @@ const StaffCustomers = lazy(() => import('@/pages/staff/StaffCustomers'));
 const StaffReports = lazy(() => import('@/pages/staff/StaffReports'));
 const StaffNotifications = lazy(() => import('@/pages/staff/StaffNotifications'));
 const StaffSettings = lazy(() => import('@/pages/staff/StaffSettings'));
+const AdminSettings = lazy(() => import('@/pages/AdminSettings'));
 // Legacy admin pages — full management UIs rendered inside the StaffLayout
 const AdminProductEdit = lazy(() => import('@/pages/AdminProductEdit'));
 const AdminMealKitEdit = lazy(() => import('@/pages/AdminMealKitEdit'));
@@ -69,8 +70,9 @@ export default function StaffApp() {
     );
   }
 
-  if (!user) return <Navigate to="/admin/login?returnTo=/admin" replace />;
-  if (!isStaffRole(user.role)) return <StaffNotAuthorized />;
+  if (!user) return <Navigate to={`/admin/login?returnTo=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+  const section = location.pathname.split('/')[2] || 'dashboard';
+  if (!isStaffRole(user.role) || !canAccessPage(user.role, section)) return <StaffNotAuthorized />;
 
   return (
     <Suspense fallback={<StaffLoading />}>
@@ -99,6 +101,7 @@ export default function StaffApp() {
           <Route path="/admin/reports" element={<StaffReports />} />
           <Route path="/admin/notifications" element={<StaffNotifications />} />
           <Route path="/admin/settings" element={<StaffSettings />} />
+          <Route path="/admin/settings/notifications" element={<AdminSettings />} />
         </Route>
       </Routes>
     </Suspense>

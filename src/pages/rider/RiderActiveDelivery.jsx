@@ -9,7 +9,10 @@ import OtpVerificationSheet from '@/components/delivery/OtpVerificationSheet';
 
 const STATUS_FLOW = {
   assigned: { label: 'New Assignment', color: 'bg-blue-50 text-blue-700', next: 'accept', nextLabel: 'Accept Delivery' },
-  accepted: { label: 'Accepted', color: 'bg-indigo-50 text-indigo-700', next: 'start', nextLabel: 'Start Delivery' },
+  accepted: { label: 'Accepted', color: 'bg-indigo-50 text-indigo-700', next: 'pickup', nextLabel: 'Pick Up Order' },
+  preparing: { label: 'Preparing', color: 'bg-amber-50 text-amber-700', next: null, nextLabel: null },
+  ready_for_pickup: { label: 'Ready for Pickup', color: 'bg-cyan-50 text-cyan-700', next: 'pickup', nextLabel: 'Pick Up Order' },
+  picked_up: { label: 'Picked Up', color: 'bg-purple-50 text-purple-700', next: 'start', nextLabel: 'Start Delivery' },
   on_the_way: { label: 'On the Way', color: 'bg-green-50 text-green-700', next: 'arriving_soon', nextLabel: 'Mark Arriving Soon' },
   arriving_soon: { label: 'Arriving Soon', color: 'bg-orange-50 text-orange-700', next: 'arrived', nextLabel: 'Mark Arrived' },
   arrived: { label: 'Arrived', color: 'bg-teal-50 text-teal-700', next: null, nextLabel: null },
@@ -17,8 +20,9 @@ const STATUS_FLOW = {
   cancelled: { label: 'Cancelled', color: 'bg-red-50 text-red-600', next: null, nextLabel: null },
 };
 
-export default function RiderActiveDelivery() {
-  const { id } = useParams();
+export default function RiderActiveDelivery({ deliveryId }) {
+  const { id: routeId } = useParams();
+  const id = deliveryId || routeId;
   const navigate = useNavigate();
   const [delivery, setDelivery] = useState(null);
   const [loading, setLoading] = useState(true);

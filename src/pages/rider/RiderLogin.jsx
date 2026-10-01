@@ -51,7 +51,7 @@ export default function RiderLogin() {
         setError('Your rider account is not active.');
         return;
       }
-      navigate('/rider/home');
+      window.location.href = '/rider/home';
     } catch (err) {
       setError('Invalid email or password. Please try again.');
     } finally {

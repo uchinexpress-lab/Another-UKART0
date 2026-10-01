@@ -29,11 +29,8 @@ export default function RiderProfile() {
   const toggleOnline = async () => {
     setToggling(true);
     try {
-      const updated = await base44.entities.Rider.update(rider.id, {
-        is_online: !rider.is_online,
-        is_available: !rider.is_online,
-      });
-      setRider(updated);
+      const { data } = await base44.functions.invoke('updateRiderAccount', { action: 'availability', online: !rider.is_online });
+      setRider(data.rider);
     } catch (e) {
       console.error(e);
     } finally {
@@ -111,6 +108,7 @@ export default function RiderProfile() {
           </div>
           <button
             onClick={toggleOnline}
+            aria-label="Toggle availability"
             disabled={toggling}
             className={`relative w-14 h-8 rounded-full transition-colors ${rider.is_online ? 'bg-[#2E7D32]' : 'bg-gray-300'}`}
           >

@@ -11,6 +11,9 @@ const RiderPending = lazy(() => import('@/pages/rider/RiderPending'));
 const RiderHome = lazy(() => import('@/pages/rider/RiderHome'));
 const RiderActiveDelivery = lazy(() => import('@/pages/rider/RiderActiveDelivery'));
 const RiderProfile = lazy(() => import('@/pages/rider/RiderProfile'));
+const RiderDeliveries = lazy(() => import('@/pages/rider/RiderDeliveries'));
+const RiderCurrentDelivery = lazy(() => import('@/pages/rider/RiderCurrentDelivery'));
+const RiderSettings = lazy(() => import('@/pages/rider/RiderSettings'));
 
 const RiderFallback = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-[#1B4332]">
@@ -61,14 +64,17 @@ export default function RiderApp() {
 
           {/* Protected rider routes — requires approved rider profile */}
           <Route element={<RiderGuard />}>
+            <Route path="/rider" element={<RiderLayout><RiderHome /></RiderLayout>} />
             <Route path="/rider/home" element={<RiderLayout><RiderHome /></RiderLayout>} />
+            <Route path="/rider/deliveries" element={<RiderLayout><RiderDeliveries /></RiderLayout>} />
+            <Route path="/rider/active-delivery" element={<RiderLayout><RiderCurrentDelivery /></RiderLayout>} />
+            <Route path="/rider/settings" element={<RiderLayout><RiderSettings /></RiderLayout>} />
             <Route path="/rider/delivery/:id" element={<RiderLayout><RiderActiveDelivery /></RiderLayout>} />
             <Route path="/rider/delivery" element={<RiderLayout><RiderHome /></RiderLayout>} />
             <Route path="/rider/profile" element={<RiderLayout><RiderProfile /></RiderLayout>} />
           </Route>
 
-          {/* /rider → rider home (RiderGuard redirects to login if not authenticated) */}
-          <Route path="/rider" element={<Navigate to="/rider/home" replace />} />
+          {/* The protected /rider entry renders the existing dashboard directly. */}
           <Route path="*" element={<Navigate to="/rider/login" replace />} />
         </Routes>
       </Suspense>

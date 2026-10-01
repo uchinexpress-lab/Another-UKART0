@@ -222,6 +222,21 @@
           "user_condition": {
             "role": "admin"
           }
+        },
+        {
+          "user_condition": {
+            "role": "staff_admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "operations"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "support"
+          }
         }
       ]
     },
@@ -233,11 +248,18 @@
     "update": {
       "$or": [
         {
-          "data.rider_user_id": "{{user.id}}"
+          "user_condition": {
+            "role": "admin"
+          }
         },
         {
           "user_condition": {
-            "role": "admin"
+            "role": "staff_admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "operations"
           }
         }
       ]

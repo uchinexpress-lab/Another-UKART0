@@ -91,20 +91,59 @@
           "user_condition": {
             "role": "admin"
           }
+        },
+        {
+          "user_condition": {
+            "role": "staff_admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "operations"
+          }
         }
       ]
     },
     "create": {
-      "data.user_id": "{{user.id}}"
-    },
-    "update": {
       "$or": [
         {
-          "data.user_id": "{{user.id}}"
+          "$and": [
+            {
+              "data.user_id": "{{user.id}}"
+            },
+            {
+              "data.approval_status": "pending"
+            },
+            {
+              "data.is_online": false
+            },
+            {
+              "data.is_available": false
+            }
+          ]
         },
         {
           "user_condition": {
             "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff_admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "operations"
           }
         }
       ]

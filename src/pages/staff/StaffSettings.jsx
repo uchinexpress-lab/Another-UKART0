@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { STAFF_ROLES, getRoleLabel } from '@/lib/staffRoles';
 import { logStaffAction } from '@/lib/staffAudit';
@@ -123,6 +124,7 @@ export default function StaffSettings() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
         <p className="text-sm text-gray-500">Staff management & audit log</p>
+        <Link to="/admin/settings/notifications" className="mt-2 inline-block text-sm text-primary underline">Notification Settings & Deal Broadcasts</Link>
       </div>
 
       {/* Invite Staff */}

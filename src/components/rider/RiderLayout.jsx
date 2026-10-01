@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useOutletContext, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Home, Bike, User, LogOut } from 'lucide-react';
+import { Home, Bike, User, LogOut, Settings } from 'lucide-react';
 
 export default function RiderLayout({ children }) {
   const navigate = useNavigate();
@@ -53,8 +53,9 @@ export default function RiderLayout({ children }) {
   const pathname = location.pathname;
   const navItems = [
     { icon: Home, label: 'Home', path: '/rider/home' },
-    { icon: Bike, label: 'Delivery', path: '/rider/delivery' },
+    { icon: Bike, label: 'Deliveries', path: '/rider/deliveries' },
     { icon: User, label: 'Profile', path: '/rider/profile' },
+    { icon: Settings, label: 'Settings', path: '/rider/settings' },
   ];
 
   return (

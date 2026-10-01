@@ -17,7 +17,7 @@ import { Bike } from 'lucide-react';
  */
 export default function RiderGuard() {
   const location = useLocation();
-  const [state, setState] = useState({ loading: true, redirect: null, rider: null });
+  const [state, setState] = useState({ loading: true, redirect: null, rider: null, denied: false });
 
   useEffect(() => {
     checkAccess();
@@ -33,7 +33,7 @@ export default function RiderGuard() {
 
       const riders = await base44.entities.Rider.filter({ user_id: user.id }, { limit: 1 });
       if (!riders.items?.length) {
-        setState({ loading: false, redirect: '/rider/register', rider: null });
+        setState({ loading: false, redirect: null, rider: null, denied: true });
         return;
       }
 
@@ -72,6 +72,8 @@ export default function RiderGuard() {
   if (state.redirect) {
     return <Navigate to={state.redirect} replace state={{ from: location.pathname }} />;
   }
+
+  if (state.denied) return <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-background text-foreground p-6"><h1 className="text-xl font-bold">Rider Access Restricted</h1><p className="text-sm text-muted-foreground">An approved rider account is required.</p><a href="/" className="text-primary underline">Back to Ukart</a></div>;
 
   // Render nested routes; pass rider via outlet context for layout/pages
   return <Outlet context={{ rider: state.rider }} />;

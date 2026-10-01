@@ -70,13 +70,10 @@ export default function RiderHome() {
     if (!rider) return;
     setToggling(true);
     try {
-      const updated = await base44.entities.Rider.update(rider.id, {
-        is_online: !rider.is_online,
-        is_available: !rider.is_online && rider.approval_status === 'approved',
-      });
-      setRider(updated);
+      const { data } = await base44.functions.invoke('updateRiderAccount', { action: 'availability', online: !rider.is_online });
+      setRider(data.rider);
     } catch (e) {
-      console.error(e);
+      alert(e.message || 'Unable to change availability');
     } finally {
       setToggling(false);
     }
@@ -90,7 +87,7 @@ export default function RiderHome() {
     );
   }
 
-  const activeStatuses = ['assigned', 'accepted', 'preparing', 'ready_for_pickup', 'picked_up', 'on_the_way', 'arriving_soon'];
+  const activeStatuses = ['assigned', 'accepted', 'preparing', 'ready_for_pickup', 'picked_up', 'on_the_way', 'arriving_soon', 'arrived'];
   const activeDelivery = deliveries.find((d) => activeStatuses.includes(d.status));
   const newAssignments = deliveries.filter((d) => d.status === 'assigned');
   const completedToday = deliveries.filter((d) => {
@@ -112,6 +109,7 @@ export default function RiderHome() {
           </div>
           <button
             onClick={toggleOnline}
+            aria-label="Toggle availability"
             disabled={toggling}
             className={`relative w-14 h-8 rounded-full transition-colors ${rider?.is_online ? 'bg-[#2E7D32]' : 'bg-gray-300'}`}
           >
