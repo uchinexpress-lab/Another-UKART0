@@ -1,0 +1,96 @@
+{
+  "name": "DeliveryAuditLog",
+  "type": "object",
+  "properties": {
+    "delivery_id": {
+      "type": "string",
+      "description": "Linked Delivery record id"
+    },
+    "order_id": {
+      "type": "string"
+    },
+    "order_number": {
+      "type": "string"
+    },
+    "customer_email": {
+      "type": "string",
+      "description": "Customer email (for RLS \u2014 customer sees customer_visible events)"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "assigned",
+        "accepted",
+        "picked_up",
+        "started",
+        "arriving_soon",
+        "arrived",
+        "otp_generated",
+        "otp_resent",
+        "otp_verified",
+        "otp_failed",
+        "otp_locked",
+        "delivered",
+        "cancelled",
+        "admin_override"
+      ]
+    },
+    "message": {
+      "type": "string"
+    },
+    "actor_type": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "rider",
+        "customer",
+        "system"
+      ],
+      "default": "system"
+    },
+    "actor_id": {
+      "type": "string"
+    },
+    "actor_name": {
+      "type": "string"
+    },
+    "customer_visible": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "delivery_id",
+    "event_type",
+    "message"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.customer_email": "{{user.email}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

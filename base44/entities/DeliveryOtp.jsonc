@@ -1,0 +1,113 @@
+{
+  "name": "DeliveryOtp",
+  "type": "object",
+  "properties": {
+    "delivery_id": {
+      "type": "string",
+      "description": "Linked Delivery record id"
+    },
+    "order_id": {
+      "type": "string"
+    },
+    "order_number": {
+      "type": "string"
+    },
+    "rider_id": {
+      "type": "string"
+    },
+    "rider_user_id": {
+      "type": "string",
+      "description": "Rider's User account id"
+    },
+    "customer_email": {
+      "type": "string"
+    },
+    "customer_phone": {
+      "type": "string"
+    },
+    "code_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of the OTP code \u2014 never store plaintext"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "verified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "attempt_count": {
+      "type": "number",
+      "default": 0
+    },
+    "max_attempts": {
+      "type": "number",
+      "default": 5
+    },
+    "locked_until": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "invalidated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Invalidated by a resend or successful verification"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "send_email_status": {
+      "type": "string",
+      "enum": [
+        "sent",
+        "failed",
+        "not_configured",
+        "skipped"
+      ],
+      "default": "skipped"
+    },
+    "send_sms_status": {
+      "type": "string",
+      "enum": [
+        "sent",
+        "failed",
+        "not_configured",
+        "skipped"
+      ],
+      "default": "skipped"
+    }
+  },
+  "required": [
+    "delivery_id",
+    "code_hash",
+    "expires_at"
+  ],
+  "rls": {
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

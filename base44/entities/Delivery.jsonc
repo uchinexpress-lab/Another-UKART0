@@ -69,6 +69,8 @@
         "picked_up",
         "on_the_way",
         "arriving_soon",
+        "arrived",
+        "otp_verified",
         "delivered",
         "cancelled"
       ],
@@ -130,7 +132,67 @@
       "type": "string",
       "format": "date-time"
     },
+    "arrived_at": {
+      "type": "string",
+      "format": "date-time"
+    },
     "delivered_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "otp_active": {
+      "type": "boolean",
+      "default": false,
+      "description": "An OTP is pending verification"
+    },
+    "otp_attempts": {
+      "type": "number",
+      "default": 0
+    },
+    "otp_max_attempts": {
+      "type": "number",
+      "default": 5
+    },
+    "otp_locked_until": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "otp_verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "otp_verified_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "otp_send_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "email_sent",
+        "sms_sent",
+        "both_sent",
+        "failed"
+      ],
+      "default": "pending"
+    },
+    "otp_last_sent_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "override_reason": {
+      "type": "string"
+    },
+    "override_note": {
+      "type": "string"
+    },
+    "override_admin_id": {
+      "type": "string"
+    },
+    "override_admin_name": {
+      "type": "string"
+    },
+    "override_at": {
       "type": "string",
       "format": "date-time"
     },
