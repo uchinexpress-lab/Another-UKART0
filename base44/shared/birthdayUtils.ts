@@ -30,10 +30,12 @@ export function getEndOfLagosDay(): string {
 }
 
 export function generateVoucherCode(year: number, isTest = false): string {
-  const random = Math.random().toString(36).substring(2, 8).toUpperCase();
-  return isTest
-    ? `UKART-BDAY-TEST-${year}-${random}`
-    : `UKART-BDAY-${year}-${random}`;
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no confusing chars (O, 0, I, 1)
+  let code = "";
+  for (let i = 0; i < 5; i++) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return isTest ? `T${code}` : code;
 }
 
 /**
