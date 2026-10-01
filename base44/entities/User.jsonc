@@ -6,7 +6,11 @@
       "enum": [
         "admin",
         "user",
-        "rider"
+        "rider",
+        "staff_admin",
+        "operations",
+        "content",
+        "support"
       ]
     },
     "phone": {

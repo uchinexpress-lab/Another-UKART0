@@ -12,11 +12,20 @@
       "type": "string",
       "enum": [
         "user",
-        "admin"
-      ]
+        "admin",
+        "staff"
+      ],
+      "default": "user"
+    },
+    "sender_name": {
+      "type": "string"
     },
     "body": {
       "type": "string"
+    },
+    "internal": {
+      "type": "boolean",
+      "default": false
     }
   },
   "required": [
@@ -28,11 +37,35 @@
     "read": {
       "$or": [
         {
-          "data.ticket_owner_id": "{{user.id}}"
+          "$and": [
+            {
+              "data.ticket_owner_id": "{{user.id}}"
+            },
+            {
+              "data.internal": {
+                "$ne": true
+              }
+            }
+          ]
         },
         {
           "user_condition": {
             "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff_admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "operations"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "support"
           }
         }
       ]
@@ -45,6 +78,21 @@
         {
           "user_condition": {
             "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff_admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "operations"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "support"
           }
         }
       ]

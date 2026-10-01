@@ -12,7 +12,19 @@
         "delivery",
         "payment",
         "account",
-        "other"
+        "other",
+        "order_issue",
+        "missing_item",
+        "wrong_item",
+        "damaged_item",
+        "late_delivery",
+        "delivery_problem",
+        "payment_issue",
+        "refund_request",
+        "cancellation_request",
+        "product_issue",
+        "rider_issue",
+        "general_question"
       ],
       "default": "other"
     },
@@ -20,9 +32,24 @@
       "type": "string",
       "enum": [
         "open",
-        "closed"
+        "closed",
+        "new",
+        "in_progress",
+        "waiting_customer",
+        "waiting_internal",
+        "resolved"
       ],
       "default": "open"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "urgent"
+      ],
+      "default": "medium"
     },
     "user_email": {
       "type": "string"
@@ -30,7 +57,32 @@
     "user_name": {
       "type": "string"
     },
+    "customer_phone": {
+      "type": "string"
+    },
+    "order_id": {
+      "type": "string"
+    },
+    "order_number": {
+      "type": "string"
+    },
+    "assigned_staff_id": {
+      "type": "string"
+    },
+    "assigned_staff_name": {
+      "type": "string"
+    },
+    "assigned_rider_id": {
+      "type": "string"
+    },
+    "assigned_rider_name": {
+      "type": "string"
+    },
     "last_message_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "resolved_at": {
       "type": "string",
       "format": "date-time"
     },
@@ -41,6 +93,9 @@
         "auto_closed_inactivity"
       ],
       "default": "manual"
+    },
+    "internal_notes": {
+      "type": "string"
     }
   },
   "required": [
@@ -56,6 +111,21 @@
           "user_condition": {
             "role": "admin"
           }
+        },
+        {
+          "user_condition": {
+            "role": "staff_admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "operations"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "support"
+          }
         }
       ]
     },
@@ -68,6 +138,21 @@
         {
           "user_condition": {
             "role": "admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "staff_admin"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "operations"
+          }
+        },
+        {
+          "user_condition": {
+            "role": "support"
           }
         }
       ]

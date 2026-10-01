@@ -60,6 +60,7 @@ const SettingsPage = lazy(() => import('@/pages/Settings'));
 const Account = lazy(() => import('@/pages/Account'));
 const Onboarding = lazy(() => import('@/pages/Onboarding'));
 import RiderApp from '@/RiderApp';
+import StaffApp from '@/StaffApp';
 const LiveOrderTracking = lazy(() => import('@/pages/LiveOrderTracking'));
 const AdminRiders = lazy(() => import('@/pages/AdminRiders'));
 const AdminLiveDeliveries = lazy(() => import('@/pages/AdminLiveDeliveries'));
@@ -69,6 +70,7 @@ const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, user } = useAuth();
   const location = useLocation();
   const isRiderPath = location.pathname.startsWith('/rider');
+  const isStaffPath = location.pathname.startsWith('/staff');
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
@@ -83,6 +85,12 @@ const AuthenticatedApp = () => {
   // completed customer onboarding can still use the rider app.
   if (isRiderPath) {
     return <RiderApp />;
+  }
+
+  // Staff Admin app — separate operations dashboard at /staff/*
+  // Shares the same entities and backend as the customer app.
+  if (isStaffPath) {
+    return <StaffApp />;
   }
 
   // Prevent riders from accessing customer shopping / admin pages.
@@ -169,6 +177,7 @@ function AppShell() {
   const [showSplash, setShowSplash] = useState(true);
   const location = useLocation();
   const isRiderPath = location.pathname.startsWith('/rider');
+  const isStaffPath = location.pathname.startsWith('/staff');
   useEffect(() => {
     const ref = new URLSearchParams(window.location.search).get('ref');
     if (ref) {
@@ -193,7 +202,7 @@ function AppShell() {
     <>
       <AuthenticatedApp />
       <AnimatePresence>
-        {showSplash && (
+        {showSplash && !isStaffPath && (
           isRiderPath ? <RiderSplash onDone={() => setShowSplash(false)} /> : <Splash onDone={() => setShowSplash(false)} />
         )}
       </AnimatePresence>
