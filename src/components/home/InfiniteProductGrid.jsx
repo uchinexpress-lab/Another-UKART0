@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import ProductCard from '@/components/product/ProductCard';
 
 const BATCH_SIZE = 10;
 
 export default function InfiniteProductGrid({ products }) {
-  const navigate = useNavigate();
 
   const [visible, setVisible] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -64,8 +62,7 @@ export default function InfiniteProductGrid({ products }) {
       <div className="grid grid-cols-3 gap-2">
         {visible.map((p, idx) => (
           <ProductCard key={`${p.id}-${idx}`} product={p} animated={false}
-            showOriginalPrice={false} showDiscount={false} respectComingSoon={false}
-            onImageClick={() => navigate(`/category/${p.category_ids?.[0] || ''}`)} />
+            showOriginalPrice={false} showDiscount={false} respectComingSoon={false} />
         ))}
       </div>
       <div ref={sentinelRef} className="h-8 flex items-center justify-center py-2">
