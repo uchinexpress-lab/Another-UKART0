@@ -17,6 +17,7 @@ import RiderSplash from '@/components/rider/RiderSplash';
 import BrowseGuard from '@/components/BrowseGuard';
 import GuestGate from '@/components/GuestGate';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { StaffThemeProvider } from '@/lib/staffTheme.jsx';
 const Admin = lazy(() => import('@/pages/Admin'));
 import { AnimatePresence } from 'framer-motion';
 import { ThemeProvider } from 'next-themes';
@@ -75,6 +76,7 @@ const AuthenticatedApp = () => {
   // page is an explicit route; subpages use relative routes under the wildcard.
   if (isRiderPath) return <RiderApp />;
   if (isStaffPath) return (
+    <StaffThemeProvider>
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading Admin...</div>}>
       <Routes>
         <Route path="/admin/login" element={<StaffApp />} />
@@ -84,6 +86,7 @@ const AuthenticatedApp = () => {
         </Route>
       </Routes>
     </Suspense>
+    </StaffThemeProvider>
   );
 
   // Prevent riders from accessing customer shopping / admin pages.

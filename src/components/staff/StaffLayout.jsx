@@ -8,6 +8,7 @@ import {
   Package, FolderTree, UtensilsCrossed, Image as ImageIcon, Upload, Users,
   BarChart3, Bell, Gift, Settings as SettingsIcon, Search, Menu, LogOut, X,
 } from 'lucide-react';
+import StaffThemeToggle from '@/components/staff/StaffThemeToggle';
 
 const NAV_ITEMS = [
   { key: 'dashboard', label: 'Dashboard', path: '/admin', icon: LayoutDashboard },
@@ -142,6 +143,7 @@ export default function StaffLayout({ children }) {
             </div>
           </div>
           <div className="flex items-center gap-1">
+            <StaffThemeToggle />
             <Link
               to="/admin/notifications"
               className="p-2 rounded-lg hover:bg-gray-100 text-gray-600"
