@@ -8,6 +8,7 @@ import {
   DEFAULT_PICKUP_LAT,
   DEFAULT_PICKUP_LNG,
   DEFAULT_PICKUP_ADDRESS,
+  logDeliveryEvent,
 } from "../../shared/deliveryUtils.ts";
 
 export default async function (req: Request): Promise<Response> {
@@ -92,6 +93,19 @@ export default async function (req: Request): Promise<Response> {
       });
       await admin.entities.Order.update(orderId, { status: ORDER_STATUS_MAP["assigned"] });
 
+      await logDeliveryEvent(admin, {
+        delivery_id: delivery.id,
+        order_id: orderId,
+        order_number: order.order_number,
+        customer_email: order.customer_email,
+        event_type: "assigned",
+        message: `Order assigned to ${rider.name}`,
+        actor_type: "admin",
+        actor_id: user.id,
+        actor_name: user.full_name || user.email,
+        customer_visible: true,
+      });
+
       return Response.json({ delivery: { id: delivery.id } });
     }
 
@@ -111,6 +125,18 @@ export default async function (req: Request): Promise<Response> {
       await admin.entities.Delivery.update(deliveryId, { status: "accepted" });
       await admin.entities.Order.update(delivery.order_id, {
         status: ORDER_STATUS_MAP["accepted"],
+      });
+      await logDeliveryEvent(admin, {
+        delivery_id: deliveryId,
+        order_id: delivery.order_id,
+        order_number: delivery.order_number,
+        customer_email: delivery.customer_email,
+        event_type: "accepted",
+        message: "Rider accepted delivery",
+        actor_type: "rider",
+        actor_id: user.id,
+        actor_name: delivery.rider_name,
+        customer_visible: true,
       });
       return Response.json({ ok: true, status: "accepted" });
     }
@@ -141,6 +167,19 @@ export default async function (req: Request): Promise<Response> {
       });
       await admin.entities.Order.update(delivery.order_id, {
         status: "on_the_way",
+      });
+
+      await logDeliveryEvent(admin, {
+        delivery_id: deliveryId,
+        order_id: delivery.order_id,
+        order_number: delivery.order_number,
+        customer_email: delivery.customer_email,
+        event_type: "started",
+        message: "Rider started delivery — order is on the way",
+        actor_type: "rider",
+        actor_id: user.id,
+        actor_name: delivery.rider_name,
+        customer_visible: true,
       });
 
       // Notify customer via email
@@ -175,6 +214,19 @@ export default async function (req: Request): Promise<Response> {
         estimated_minutes: Math.min(remainingMin, 5),
       });
 
+      await logDeliveryEvent(admin, {
+        delivery_id: deliveryId,
+        order_id: delivery.order_id,
+        order_number: delivery.order_number,
+        customer_email: delivery.customer_email,
+        event_type: "arriving_soon",
+        message: "Rider is arriving soon",
+        actor_type: "rider",
+        actor_id: user.id,
+        actor_name: delivery.rider_name,
+        customer_visible: true,
+      });
+
       if (delivery.customer_email) {
         try {
           await base44.integrations.Core.SendEmail({
@@ -190,8 +242,58 @@ export default async function (req: Request): Promise<Response> {
       return Response.json({ ok: true, status: "arriving_soon" });
     }
 
-    // ── COMPLETE ──
+    // ── ARRIVED ──
+    if (action === "arrived") {
+      const now = new Date();
+      await admin.entities.Delivery.update(deliveryId, {
+        status: "arrived",
+        arrived_at: now.toISOString(),
+        eta_status: "arrived",
+        estimated_minutes: 0,
+      });
+      await admin.entities.Order.update(delivery.order_id, {
+        status: "on_the_way",
+      });
+
+      await logDeliveryEvent(admin, {
+        delivery_id: deliveryId,
+        order_id: delivery.order_id,
+        order_number: delivery.order_number,
+        customer_email: delivery.customer_email,
+        event_type: "arrived",
+        message: "Rider has arrived at the delivery address",
+        actor_type: "rider",
+        actor_id: user.id,
+        actor_name: delivery.rider_name,
+        customer_visible: true,
+      });
+
+      // Notify customer: rider has arrived
+      if (delivery.customer_email) {
+        try {
+          await base44.integrations.Core.SendEmail({
+            to: delivery.customer_email,
+            subject: `🛵 Your Ukart rider has arrived!`,
+            body: `<div style="font-family:sans-serif;max-width:400px;margin:0 auto;padding:20px;">
+              <h2 style="color:#1B4332;">Your rider has arrived!</h2>
+              <p>Hi ${delivery.customer_name || "Customer"},</p>
+              <p>Your Ukart rider is at your delivery address for Order <strong>#${delivery.order_number}</strong>.</p>
+              <p>Please provide the delivery verification code to your rider to confirm that you received your order.</p>
+              <p style="font-size:12px;color:#999;">A verification code has been sent to your phone/email.</p>
+            </div>`,
+          });
+        } catch (e) {
+          console.error("Arrived notification failed:", e);
+        }
+      }
+
+      return Response.json({ ok: true, status: "arrived" });
+    }
+
+    // ── COMPLETE (admin emergency only — riders use OTP verification) ──
     if (action === "complete") {
+      if (user.role !== "admin")
+        return Response.json({ error: "Delivery must be completed via OTP verification" }, { status: 403 });
       const now = new Date();
       await admin.entities.Delivery.update(deliveryId, {
         status: "delivered",
@@ -237,6 +339,19 @@ export default async function (req: Request): Promise<Response> {
         status: "cancelled",
         latest_lat: null,
         latest_lng: null,
+      });
+
+      await logDeliveryEvent(admin, {
+        delivery_id: deliveryId,
+        order_id: delivery.order_id,
+        order_number: delivery.order_number,
+        customer_email: delivery.customer_email,
+        event_type: "cancelled",
+        message: "Delivery cancelled",
+        actor_type: isRider ? "rider" : "admin",
+        actor_id: user.id,
+        actor_name: isRider ? delivery.rider_name : (user.full_name || user.email),
+        customer_visible: true,
       });
 
       if (delivery.rider_id) {

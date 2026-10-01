@@ -1,6 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Loader2, Bike, X, CheckCircle2, Phone, Star } from 'lucide-react';
+import { Loader2, Bike, X, CheckCircle2, Phone, Star, MapPin, Bike as Motorcycle } from 'lucide-react';
+
+const VEHICLE_LABELS = {
+  motorcycle: 'Motorcycle',
+  bicycle: 'Bicycle',
+  car: 'Car',
+  scooter: 'Scooter',
+  van: 'Van',
+};
 
 export default function AssignRiderSheet({ order, open, onClose, onAssigned }) {
   const [riders, setRiders] = useState([]);
@@ -99,12 +107,29 @@ export default function AssignRiderSheet({ order, open, onClose, onAssigned }) {
                       <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-400" />
                       {r.rating?.toFixed(1)} · {r.completed_deliveries || 0} deliveries
                     </p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      {r.phone && (
+                        <span className="text-[10px] text-gray-400 flex items-center gap-0.5">
+                          <Phone className="w-2.5 h-2.5" /> {r.phone}
+                        </span>
+                      )}
+                      {r.vehicle_type && (
+                        <span className="text-[10px] text-gray-400 flex items-center gap-0.5">
+                          <Motorcycle className="w-2.5 h-2.5" /> {VEHICLE_LABELS[r.vehicle_type] || r.vehicle_type}
+                        </span>
+                      )}
+                    </div>
+                    {r.current_delivery_id && (
+                      <p className="text-[10px] text-orange-500 flex items-center gap-0.5 mt-0.5">
+                        <MapPin className="w-2.5 h-2.5" /> On active delivery
+                      </p>
+                    )}
                   </div>
-                  <div className="text-right">
+                  <div className="text-right flex-shrink-0">
                     {canAssign ? (
                       <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Available</span>
                     ) : r.current_delivery_id ? (
-                      <span className="text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">On Delivery</span>
+                      <span className="text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">Busy</span>
                     ) : !r.is_online ? (
                       <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">Offline</span>
                     ) : null}

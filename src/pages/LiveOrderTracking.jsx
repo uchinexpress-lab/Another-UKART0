@@ -3,10 +3,12 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import {
   ArrowLeft, MapPin, Phone, Package, Bike, Loader2, CheckCircle2,
-  Star, Zap, Navigation,
+  Star, Zap, Navigation, ShieldCheck, RefreshCw, Mail, MessageSquare,
 } from 'lucide-react';
 import LiveMap from '@/components/delivery/LiveMap';
 import ETACountdown from '@/components/delivery/ETACountdown';
+import DeliveryAuditTimeline from '@/components/delivery/DeliveryAuditTimeline';
+import { CUSTOMER_STATUS_MAP } from '@/lib/deliveryStatus';
 
 export default function LiveOrderTracking() {
   const { id } = useParams();
@@ -14,6 +16,8 @@ export default function LiveOrderTracking() {
   const [delivery, setDelivery] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdateAgo, setLastUpdateAgo] = useState('');
+  const [resending, setResending] = useState(false);
+  const [resendMsg, setResendMsg] = useState('');
 
   const loadDelivery = useCallback(async () => {
     try {
@@ -64,19 +68,33 @@ export default function LiveOrderTracking() {
   }
 
   const isActive = ['on_the_way', 'arriving_soon', 'picked_up'].includes(delivery.status);
+  const isArrived = delivery.status === 'arrived';
   const isDelivered = delivery.status === 'delivered';
   const isTest = delivery.is_test_mode;
+  const customerLabel = CUSTOMER_STATUS_MAP[delivery.status] || 'Processing';
 
-  const statusMessages = {
-    assigned: 'Your order is being prepared',
-    accepted: 'Your order is being prepared',
-    preparing: 'Your Ukart order is being prepared.',
-    ready_for_pickup: 'Your order is ready for pickup.',
-    picked_up: 'Your rider has picked up your order.',
-    on_the_way: 'Your order is on the way',
-    arriving_soon: 'Your rider is almost here',
-    delivered: 'Order Delivered',
-    cancelled: 'Delivery cancelled',
+  const handleResendOtp = async () => {
+    setResending(true);
+    setResendMsg('');
+    try {
+      const res = await base44.functions.invoke('resendDeliveryOtp', {
+        deliveryId: delivery.id,
+        requestedBy: 'customer',
+      });
+      if (res.ok) {
+        setResendMsg('A new verification code has been sent to your phone/email.');
+        loadDelivery();
+      }
+    } catch (e) {
+      const msg = e.message || 'Failed to resend';
+      if (msg.includes('wait') || msg.includes('rate')) {
+        setResendMsg(msg);
+      } else {
+        setResendMsg('Failed to resend code. Please try again.');
+      }
+    } finally {
+      setResending(false);
+    }
   };
 
   return (
@@ -100,19 +118,60 @@ export default function LiveOrderTracking() {
       {/* Status card */}
       <div className="bg-[#2E7D32] rounded-2xl p-4 text-white">
         <div className="flex items-center gap-2 mb-1">
-          <Bike className="w-5 h-5" />
+          {isArrived ? <ShieldCheck className="w-5 h-5" /> : <Bike className="w-5 h-5" />}
           <span className="text-sm font-bold">
-            {isDelivered ? 'Order Delivered' : statusMessages[delivery.status] || 'Processing'}
+            {isDelivered ? 'Order Delivered' : isArrived ? 'Your rider has arrived!' : customerLabel}
           </span>
         </div>
         <p className="text-xs text-green-100/70">
           {isDelivered
             ? 'Your order has been delivered. Enjoy!'
+            : isArrived
+            ? 'Please provide the delivery verification code to your rider.'
             : isActive
-            ? 'Your order is being delivered'
+            ? `${delivery.rider_name || 'Your rider'} is delivering your order`
             : 'We are getting your order ready'}
         </p>
       </div>
+
+      {/* Arrived — OTP info for customer */}
+      {isArrived && (
+        <div className="bg-blue-50 rounded-2xl border border-blue-200 p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-blue-600 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-bold text-blue-800">Delivery Verification Code Sent</p>
+              <p className="text-xs text-blue-600 mt-0.5">
+                A verification code has been sent to your phone/email. Give it to your rider to confirm delivery.
+              </p>
+            </div>
+          </div>
+          {/* Send status indicators */}
+          {delivery.otp_send_status && (
+            <div className="flex items-center gap-3 text-xs">
+              {['email_sent', 'both_sent'].includes(delivery.otp_send_status) && (
+                <span className="flex items-center gap-1 text-green-700"><Mail className="w-3.5 h-3.5" /> Code sent via email</span>
+              )}
+              {['sms_sent', 'both_sent'].includes(delivery.otp_send_status) && (
+                <span className="flex items-center gap-1 text-green-700"><MessageSquare className="w-3.5 h-3.5" /> Code sent via SMS</span>
+              )}
+              {delivery.otp_send_status === 'failed' && (
+                <span className="flex items-center gap-1 text-red-600"><Mail className="w-3.5 h-3.5" /> Failed to send — tap resend</span>
+              )}
+            </div>
+          )}
+          {/* Resend button */}
+          {resendMsg && <p className="text-xs text-gray-600">{resendMsg}</p>}
+          <button
+            onClick={handleResendOtp}
+            disabled={resending}
+            className="w-full h-10 rounded-xl bg-white border border-blue-300 text-blue-700 text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-50"
+          >
+            {resending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+            Resend Code
+          </button>
+        </div>
+      )}
 
       {/* Live map */}
       <div>
@@ -206,6 +265,12 @@ export default function LiveOrderTracking() {
           </Link>
         </div>
       )}
+
+      {/* Activity timeline */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-4">
+        <h3 className="text-xs font-semibold text-gray-500 uppercase mb-3">Delivery Activity</h3>
+        <DeliveryAuditTimeline deliveryId={delivery.id} customerView />
+      </div>
     </div>
   );
 }

@@ -3,14 +3,16 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import {
   ArrowLeft, MapPin, Phone, Navigation, Clock, CheckCircle2, Loader2,
-  Package, User, AlertCircle, Bike, Zap,
+  Package, User, AlertCircle, Bike, Zap, MapPinOff,
 } from 'lucide-react';
+import OtpVerificationSheet from '@/components/delivery/OtpVerificationSheet';
 
 const STATUS_FLOW = {
   assigned: { label: 'New Assignment', color: 'bg-blue-50 text-blue-700', next: 'accept', nextLabel: 'Accept Delivery' },
   accepted: { label: 'Accepted', color: 'bg-indigo-50 text-indigo-700', next: 'start', nextLabel: 'Start Delivery' },
   on_the_way: { label: 'On the Way', color: 'bg-green-50 text-green-700', next: 'arriving_soon', nextLabel: 'Mark Arriving Soon' },
-  arriving_soon: { label: 'Arriving Soon', color: 'bg-orange-50 text-orange-700', next: 'complete', nextLabel: 'Complete Delivery' },
+  arriving_soon: { label: 'Arriving Soon', color: 'bg-orange-50 text-orange-700', next: 'arrived', nextLabel: 'Mark Arrived' },
+  arrived: { label: 'Arrived', color: 'bg-teal-50 text-teal-700', next: null, nextLabel: null },
   delivered: { label: 'Delivered', color: 'bg-gray-100 text-gray-600', next: null, nextLabel: null },
   cancelled: { label: 'Cancelled', color: 'bg-red-50 text-red-600', next: null, nextLabel: null },
 };
@@ -21,7 +23,6 @@ export default function RiderActiveDelivery() {
   const [delivery, setDelivery] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-  const [showCompleteConfirm, setShowCompleteConfirm] = useState(false);
   const [locationStatus, setLocationStatus] = useState('idle');
   const watchIdRef = useRef(null);
 
@@ -45,7 +46,7 @@ export default function RiderActiveDelivery() {
     };
   }, [loadDelivery]);
 
-  // Start GPS tracking when delivery is on_the_way
+  // Start GPS tracking when delivery is on_the_way or arriving_soon (stop when arrived)
   useEffect(() => {
     if (delivery?.status === 'on_the_way' || delivery?.status === 'arriving_soon') {
       startTracking();
@@ -100,9 +101,8 @@ export default function RiderActiveDelivery() {
     }
   };
 
-  const handleComplete = async () => {
-    setShowCompleteConfirm(false);
-    await handleAction('complete');
+  const handleVerified = (res) => {
+    loadDelivery();
     stopTracking();
   };
 
@@ -142,6 +142,8 @@ export default function RiderActiveDelivery() {
 
   const statusInfo = STATUS_FLOW[delivery.status] || STATUS_FLOW.assigned;
   const isActive = ['on_the_way', 'arriving_soon', 'picked_up'].includes(delivery.status);
+  const isArrived = delivery.status === 'arrived';
+  const isDelivered = delivery.status === 'delivered';
 
   return (
     <div className="px-4 py-4 pb-8 space-y-4">
@@ -259,18 +261,26 @@ export default function RiderActiveDelivery() {
         </div>
       )}
 
+      {/* OTP Verification (when arrived) */}
+      {isArrived && (
+        <OtpVerificationSheet delivery={delivery} onVerified={handleVerified} />
+      )}
+
+      {/* Delivered state */}
+      {isDelivered && (
+        <div className="bg-green-50 rounded-2xl border border-green-200 p-6 text-center">
+          <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-2" />
+          <p className="text-sm font-bold text-green-700">Delivery Completed</p>
+          <p className="text-xs text-green-600 mt-1">Order has been verified and delivered.</p>
+        </div>
+      )}
+
       {/* Action buttons */}
       <div className="space-y-2.5">
         {/* Primary action */}
-        {statusInfo.next && (
+        {statusInfo.next && !isArrived && (
           <button
-            onClick={() => {
-              if (statusInfo.next === 'complete') {
-                setShowCompleteConfirm(true);
-              } else {
-                handleAction(statusInfo.next);
-              }
-            }}
+            onClick={() => handleAction(statusInfo.next)}
             disabled={actionLoading}
             className="w-full h-14 rounded-2xl bg-[#2E7D32] text-white font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50"
           >
@@ -297,8 +307,8 @@ export default function RiderActiveDelivery() {
           </div>
         )}
 
-        {/* Cancel (only for non-delivered/cancelled) */}
-        {!['delivered', 'cancelled'].includes(delivery.status) && (
+        {/* Cancel (only for non-delivered/cancelled/arrived) */}
+        {!['delivered', 'cancelled', 'arrived'].includes(delivery.status) && (
           <button
             onClick={() => {
               if (confirm('Cancel this delivery?')) handleAction('cancel');
@@ -309,37 +319,6 @@ export default function RiderActiveDelivery() {
           </button>
         )}
       </div>
-
-      {/* Complete confirmation */}
-      {showCompleteConfirm && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-6" onClick={() => setShowCompleteConfirm(false)}>
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
-            <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-3">
-              <CheckCircle2 className="w-6 h-6 text-green-600" />
-            </div>
-            <h3 className="text-lg font-bold text-gray-900 text-center mb-1">Complete Delivery?</h3>
-            <p className="text-sm text-gray-500 text-center mb-5">
-              Confirm that you have delivered the order to the customer.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowCompleteConfirm(false)}
-                className="flex-1 h-12 rounded-xl border border-gray-200 text-gray-700 font-bold text-sm"
-              >
-                Not Yet
-              </button>
-              <button
-                onClick={handleComplete}
-                disabled={actionLoading}
-                className="flex-1 h-12 rounded-xl bg-[#2E7D32] text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                Confirm
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -2,10 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
 import {
   Loader2, Bike, MapPin, Clock, Package, Phone, Zap, Truck,
+  ShieldCheck, ShieldAlert, Lock, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import LiveMap from '@/components/delivery/LiveMap';
+import DeliveryAuditTimeline from '@/components/delivery/DeliveryAuditTimeline';
+import AdminOverrideSheet from '@/components/admin/AdminOverrideSheet';
 
-const ACTIVE_STATUSES = ['assigned', 'accepted', 'preparing', 'ready_for_pickup', 'picked_up', 'on_the_way', 'arriving_soon'];
+const ACTIVE_STATUSES = ['assigned', 'accepted', 'preparing', 'ready_for_pickup', 'picked_up', 'on_the_way', 'arriving_soon', 'arrived'];
 
 const STATUS_LABELS = {
   assigned: 'Assigned',
@@ -15,9 +18,26 @@ const STATUS_LABELS = {
   picked_up: 'Picked Up',
   on_the_way: 'On the Way',
   arriving_soon: 'Arriving Soon',
+  arrived: 'Arrived',
+  otp_verified: 'OTP Verified',
   delivered: 'Delivered',
   cancelled: 'Cancelled',
   pending: 'Pending',
+};
+
+const STATUS_COLORS = {
+  assigned: 'bg-blue-50 text-blue-700',
+  accepted: 'bg-indigo-50 text-indigo-700',
+  preparing: 'bg-amber-50 text-amber-700',
+  ready_for_pickup: 'bg-cyan-50 text-cyan-700',
+  picked_up: 'bg-purple-50 text-purple-700',
+  on_the_way: 'bg-green-50 text-green-700',
+  arriving_soon: 'bg-orange-50 text-orange-700',
+  arrived: 'bg-teal-50 text-teal-700',
+  otp_verified: 'bg-green-100 text-green-700',
+  delivered: 'bg-gray-100 text-gray-600',
+  cancelled: 'bg-red-50 text-red-600',
+  pending: 'bg-gray-100 text-gray-500',
 };
 
 function timeAgo(d) {
@@ -33,6 +53,8 @@ export default function AdminLiveDeliveries() {
   const [riders, setRiders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
+  const [showTimeline, setShowTimeline] = useState(null);
+  const [overrideDelivery, setOverrideDelivery] = useState(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -182,8 +204,8 @@ export default function AdminLiveDeliveries() {
                     <span className="text-sm font-bold text-gray-900">#{d.order_number}</span>
                     {d.is_test_mode && <Zap className="w-3 h-3 text-amber-500" />}
                   </div>
-                  <span className="text-[10px] bg-green-50 text-green-700 px-1.5 py-0.5 rounded-full font-semibold">
-                    {STATUS_LABELS[d.status]}
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${STATUS_COLORS[d.status] || 'bg-gray-100 text-gray-600'}`}>
+                    {STATUS_LABELS[d.status] || d.status}
                   </span>
                 </div>
                 <div className="grid grid-cols-2 gap-1 text-xs text-gray-500">
@@ -194,11 +216,49 @@ export default function AdminLiveDeliveries() {
                 </div>
 
                 {selected?.id === d.id && (
-                  <div className="mt-3 pt-3 border-t border-gray-100 space-y-1.5 text-xs">
+                  <div className="mt-3 pt-3 border-t border-gray-100 space-y-2 text-xs">
                     <div className="flex justify-between"><span className="text-gray-500">Customer</span><span className="text-gray-700 font-medium">{d.customer_name} · {d.customer_phone}</span></div>
                     <div className="flex justify-between"><span className="text-gray-500">Address</span><span className="text-gray-700 font-medium text-right">{d.customer_address}</span></div>
                     <div className="flex justify-between"><span className="text-gray-500">Started</span><span className="text-gray-700 font-medium">{d.started_at ? new Date(d.started_at).toLocaleTimeString() : '—'}</span></div>
+                    {d.arrived_at && (
+                      <div className="flex justify-between"><span className="text-gray-500">Arrived</span><span className="text-gray-700 font-medium">{new Date(d.arrived_at).toLocaleTimeString()}</span></div>
+                    )}
                     <div className="flex justify-between"><span className="text-gray-500">Last Update</span><span className="text-gray-700 font-medium">{timeAgo(d.last_location_at)}</span></div>
+
+                    {/* OTP verification status */}
+                    {d.status === 'arrived' && (
+                      <div className="bg-teal-50 rounded-lg p-2.5 space-y-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
+                          <span className="font-bold text-teal-700">OTP Verification</span>
+                        </div>
+                        {d.otp_verified ? (
+                          <p className="text-teal-600">✓ Verified at {new Date(d.otp_verified_at).toLocaleTimeString()}</p>
+                        ) : d.otp_locked_until && new Date(d.otp_locked_until) > new Date() ? (
+                          <p className="text-red-600 flex items-center gap-1"><Lock className="w-3 h-3" /> Locked — too many failed attempts</p>
+                        ) : (
+                          <div className="space-y-0.5">
+                            <p className="text-teal-600">Awaiting verification code from customer</p>
+                            <p className="text-gray-500">Attempts: {d.otp_attempts || 0}/{d.otp_max_attempts || 5}</p>
+                            <p className="text-gray-500">Send: {d.otp_send_status || 'pending'}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Override record */}
+                    {d.override_reason && (
+                      <div className="bg-amber-50 rounded-lg p-2.5">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
+                          <span className="font-bold text-amber-700">Admin Override</span>
+                        </div>
+                        <p className="text-amber-700">Reason: {d.override_reason}</p>
+                        {d.override_note && <p className="text-gray-600 mt-0.5">Note: {d.override_note}</p>}
+                        <p className="text-gray-400 mt-0.5">By {d.override_admin_name} · {d.override_at ? new Date(d.override_at).toLocaleTimeString() : ''}</p>
+                      </div>
+                    )}
+
                     {d.latest_lat && d.latest_lng && (
                       <a
                         href={`https://www.google.com/maps?q=${d.latest_lat},${d.latest_lng}`}
@@ -208,6 +268,30 @@ export default function AdminLiveDeliveries() {
                         View on Google Maps →
                       </a>
                     )}
+
+                    {/* Admin override button */}
+                    {!['delivered', 'cancelled'].includes(d.status) && (
+                      <button
+                        onClick={() => setOverrideDelivery(d)}
+                        className="w-full h-9 rounded-lg bg-amber-50 border border-amber-300 text-amber-700 font-bold text-xs flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform"
+                      >
+                        <ShieldAlert className="w-3.5 h-3.5" /> Admin Override Delivery
+                      </button>
+                    )}
+
+                    {/* Audit timeline toggle */}
+                    <button
+                      onClick={() => setShowTimeline(showTimeline === d.id ? null : d.id)}
+                      className="w-full flex items-center justify-center gap-1 text-gray-500 font-semibold pt-1"
+                    >
+                      {showTimeline === d.id ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                      {showTimeline === d.id ? 'Hide' : 'Show'} Activity Timeline
+                    </button>
+                    {showTimeline === d.id && (
+                      <div className="bg-gray-50 rounded-lg p-3 mt-1">
+                        <DeliveryAuditTimeline deliveryId={d.id} />
+                      </div>
+                    )}
                   </div>
                 )}
               </button>
@@ -215,6 +299,13 @@ export default function AdminLiveDeliveries() {
           </div>
         )}
       </div>
+
+      <AdminOverrideSheet
+        delivery={overrideDelivery}
+        open={!!overrideDelivery}
+        onClose={() => setOverrideDelivery(null)}
+        onOverridden={loadData}
+      />
     </div>
   );
 }
