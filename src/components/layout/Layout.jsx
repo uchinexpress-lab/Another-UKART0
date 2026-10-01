@@ -102,7 +102,7 @@ export default function Layout() {
   return (
     <div className="min-h-screen bg-background flex flex-col relative">
       {isHome ? <TopNav /> : <BrandedHeader title={getPageTitle(pathname)} />}
-      <main className="flex-1 pb-20 max-w-md mx-auto w-full">
+      <main className={`flex-1 max-w-md mx-auto w-full ${isTab ? 'pb-20' : ''}`}>
         <Suspense fallback={Fallback}>
           {/* Tab panels — cached outlets, kept alive (hidden when inactive) */}
           {tabsToRender.map((p) => (
@@ -127,7 +127,7 @@ export default function Layout() {
         </Suspense>
       </main>
       <FloatingCart />
-      <BottomNav />
+      {isTab && <BottomNav />}
       <LocationPrompt />
     </div>
   );
