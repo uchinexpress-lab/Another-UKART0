@@ -40,6 +40,7 @@ function StatusBadge({ status }) {
 export default function OrderDetail() {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
+  const [delivery, setDelivery] = useState(null);
   const [loading, setLoading] = useState(true);
   const { addItems } = useCart();
   const navigate = useNavigate();
@@ -64,7 +65,14 @@ export default function OrderDetail() {
   useEffect(() => {
     base44.entities.Order
       .get(id)
-      .then(setOrder)
+      .then((o) => {
+        setOrder(o);
+        // Fetch delivery record for this order
+        base44.entities.Delivery
+          .filter({ order_id: id }, { limit: 1 })
+          .then((r) => setDelivery(r.items?.[0] || null))
+          .catch(() => {});
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [id]);
@@ -200,12 +208,28 @@ export default function OrderDetail() {
               );
             })}
           </div>
-          <Link
-            to={`/track?order=${order.order_number}`}
-            className="mt-3 w-full flex items-center justify-center gap-2 bg-[#2E7D32] text-white text-sm font-bold py-3 rounded-2xl"
-          >
-            <Truck className="w-4 h-4" /> Track Order
-          </Link>
+          {delivery && ['on_the_way', 'arriving_soon', 'picked_up'].includes(delivery.status) ? (
+            <Link
+              to={`/track-order/${delivery.id}`}
+              className="mt-3 w-full flex items-center justify-center gap-2 bg-[#2E7D32] text-white text-sm font-bold py-3 rounded-2xl animate-pulse"
+            >
+              <Truck className="w-4 h-4" /> Live Track Order
+            </Link>
+          ) : delivery && delivery.status === 'delivered' ? (
+            <Link
+              to={`/track-order/${delivery.id}`}
+              className="mt-3 w-full flex items-center justify-center gap-2 bg-gray-100 text-gray-600 text-sm font-bold py-3 rounded-2xl"
+            >
+              <CheckCircle2 className="w-4 h-4" /> View Delivery
+            </Link>
+          ) : (
+            <Link
+              to={`/track?order=${order.order_number}`}
+              className="mt-3 w-full flex items-center justify-center gap-2 bg-[#2E7D32] text-white text-sm font-bold py-3 rounded-2xl"
+            >
+              <Truck className="w-4 h-4" /> Track Order
+            </Link>
+          )}
         </div>
       ) : (
         <div className="bg-red-50 rounded-2xl border border-red-100 p-4 text-center">

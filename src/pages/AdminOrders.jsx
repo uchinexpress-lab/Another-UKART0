@@ -15,8 +15,10 @@ import {
   Search,
   Calendar,
   Star,
-  X } from
+  X,
+  Bike } from
 'lucide-react';
+import AssignRiderSheet from '@/components/admin/AssignRiderSheet';
 
 const STATUSES = [
 { value: 'new', label: 'Order Placed', color: 'bg-muted text-gray-700' },
@@ -36,7 +38,7 @@ function StatusBadge({ status }) {
 
 }
 
-function OrderCard({ order, onStatusChange, updatingId, highlighted, onViewCustomer }) {
+function OrderCard({ order, onStatusChange, updatingId, highlighted, onViewCustomer, onAssignRider }) {
   const [expanded, setExpanded] = useState(highlighted);
   const [review, setReview] = useState(null);
   const [reviewLoaded, setReviewLoaded] = useState(false);
@@ -151,6 +153,16 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted, onViewCusto
             </div>
           )}
 
+          {/* Assign Rider */}
+          {!['delivered', 'cancelled'].includes(order.status) && (
+            <button
+              onClick={() => onAssignRider(order)}
+              className="w-full h-10 rounded-xl bg-[#1B4332] text-white text-xs font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform mb-2"
+            >
+              <Bike className="w-3.5 h-3.5" /> Assign Rider
+            </button>
+          )}
+
           {/* Status selector */}
           <div>
             <p className="text-xs font-semibold text-gray-600 mb-1.5">Update Status</p>
@@ -193,6 +205,7 @@ export default function AdminOrders() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('');
+  const [assignOrder, setAssignOrder] = useState(null);
 
   useEffect(() => {
     base44.auth.me().then(setUser).catch(() => {});
@@ -377,11 +390,21 @@ export default function AdminOrders() {
           onStatusChange={handleStatusChange}
           updatingId={updatingId}
           highlighted={highlightOrder === order.order_number}
-          onViewCustomer={setCustomerFilter} />
+          onViewCustomer={setCustomerFilter}
+          onAssignRider={setAssignOrder} />
 
         )}
         </div>
       }
+
+      <AssignRiderSheet
+        order={assignOrder}
+        open={!!assignOrder}
+        onClose={() => setAssignOrder(null)}
+        onAssigned={loadOrders}
+      />
     </div>);
 
 }
+
+// Close bracket for OrderCard — the AssignRiderSheet is rendered by the parent.

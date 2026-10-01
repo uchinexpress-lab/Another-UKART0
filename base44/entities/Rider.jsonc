@@ -1,0 +1,118 @@
+{
+  "name": "Rider",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Linked User account id"
+    },
+    "name": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "photo": {
+      "type": "string"
+    },
+    "vehicle_type": {
+      "type": "string",
+      "enum": [
+        "motorcycle",
+        "bicycle",
+        "car",
+        "scooter",
+        "van"
+      ],
+      "default": "motorcycle"
+    },
+    "vehicle_number": {
+      "type": "string"
+    },
+    "emergency_contact": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "approval_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "suspended",
+        "inactive"
+      ],
+      "default": "pending"
+    },
+    "is_online": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_available": {
+      "type": "boolean",
+      "default": false
+    },
+    "current_delivery_id": {
+      "type": "string"
+    },
+    "completed_deliveries": {
+      "type": "number",
+      "default": 0
+    },
+    "cancelled_deliveries": {
+      "type": "number",
+      "default": 0
+    },
+    "rating": {
+      "type": "number",
+      "default": 5
+    },
+    "registered_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_id",
+    "name",
+    "phone"
+  ],
+  "rls": {
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -57,6 +57,17 @@ const About = lazy(() => import('@/pages/About'));
 const SettingsPage = lazy(() => import('@/pages/Settings'));
 const Account = lazy(() => import('@/pages/Account'));
 const Onboarding = lazy(() => import('@/pages/Onboarding'));
+const RiderLogin = lazy(() => import('@/pages/rider/RiderLogin'));
+const RiderRegister = lazy(() => import('@/pages/rider/RiderRegister'));
+const RiderPending = lazy(() => import('@/pages/rider/RiderPending'));
+const RiderHome = lazy(() => import('@/pages/rider/RiderHome'));
+const RiderActiveDelivery = lazy(() => import('@/pages/rider/RiderActiveDelivery'));
+const RiderProfile = lazy(() => import('@/pages/rider/RiderProfile'));
+const LiveOrderTracking = lazy(() => import('@/pages/LiveOrderTracking'));
+const AdminRiders = lazy(() => import('@/pages/AdminRiders'));
+const AdminLiveDeliveries = lazy(() => import('@/pages/AdminLiveDeliveries'));
+const AdminRiderProfile = lazy(() => import('@/pages/AdminRiderProfile'));
+const RiderLayout = lazy(() => import('@/components/rider/RiderLayout'));
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
@@ -85,6 +96,14 @@ const AuthenticatedApp = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          {/* Rider app — standalone, no customer layout */}
+          <Route path="/rider/login" element={<RiderLogin />} />
+          <Route path="/rider/register" element={<RiderRegister />} />
+          <Route path="/rider/pending" element={<RiderPending />} />
+          <Route path="/rider/home" element={<RiderLayout><RiderHome /></RiderLayout>} />
+          <Route path="/rider/delivery/:id" element={<RiderLayout><RiderActiveDelivery /></RiderLayout>} />
+          <Route path="/rider/delivery" element={<RiderLayout><RiderHome /></RiderLayout>} />
+          <Route path="/rider/profile" element={<RiderLayout><RiderProfile /></RiderLayout>} />
           <Route element={<BrowseGuard />}>
             <Route element={<Layout />}>
               <Route path="/" element={<Home />} />
@@ -102,8 +121,12 @@ const AuthenticatedApp = () => {
               <Route path="/profile" element={<GuestGate><Profile /></GuestGate>} />
               <Route path="/budget/:range" element={<BudgetShop />} />
               <Route path="/track" element={<OrderTracking />} />
+              <Route path="/track-order/:id" element={<LiveOrderTracking />} />
               <Route path="/admin/settings" element={<GuestGate><AdminSettings /></GuestGate>} />
               <Route path="/admin/orders" element={<GuestGate><AdminOrders /></GuestGate>} />
+              <Route path="/admin/riders" element={<GuestGate><AdminRiders /></GuestGate>} />
+              <Route path="/admin/live-deliveries" element={<GuestGate><AdminLiveDeliveries /></GuestGate>} />
+              <Route path="/admin/riders/:id" element={<GuestGate><AdminRiderProfile /></GuestGate>} />
               <Route path="/admin/products" element={<GuestGate><AdminProducts /></GuestGate>} />
               <Route path="/admin/products/new" element={<GuestGate><AdminProductEdit /></GuestGate>} />
               <Route path="/admin/products/:id" element={<GuestGate><AdminProductEdit /></GuestGate>} />

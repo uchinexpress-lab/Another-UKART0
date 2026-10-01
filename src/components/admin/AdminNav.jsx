@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Package, Boxes, ImagePlus, ClipboardList, Settings, LayoutDashboard, Home, UtensilsCrossed } from 'lucide-react';
+import { Package, Boxes, ImagePlus, ClipboardList, Settings, LayoutDashboard, Home, UtensilsCrossed, Bike, Truck } from 'lucide-react';
 
 const TABS = [
   { to: '/admin/products', label: 'Products', icon: Package },
@@ -10,6 +10,8 @@ const TABS = [
   { to: '/admin/banners', label: 'Banners', icon: LayoutDashboard },
   { to: '/admin/bulk-images', label: 'Photos', icon: ImagePlus },
   { to: '/admin/orders', label: 'Orders', icon: ClipboardList },
+  { to: '/admin/riders', label: 'Riders', icon: Bike },
+  { to: '/admin/live-deliveries', label: 'Live Deliveries', icon: Truck },
   { to: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 
