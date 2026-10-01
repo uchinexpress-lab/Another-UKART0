@@ -1,5 +1,4 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.52";
-import { secrets } from "base44:runtime";
 import {
   BIRTHDAY_VOUCHER_AMOUNT,
   getLagosDateParts,
@@ -8,26 +7,26 @@ import {
   buildBirthdayEmail,
 } from "../../shared/birthdayUtils.ts";
 
-// Daily birthday reward batch. Secured: requires either an authenticated admin
-// OR the BIRTHDAY_CRON_SECRET (passed by the scheduled workflow). Anonymous HTTP
-// calls are rejected. The response returns only aggregate counts — no customer
-// emails or voucher codes are leaked.
+// Daily birthday reward batch. Secured: requires an authenticated admin. The
+// scheduled workflow runtime invokes this function with the app owner's admin
+// context, so the daily job authenticates automatically — no shared secret is
+// passed in the workflow args, keeping any secret out of source code. Anonymous
+// and non-admin HTTP calls are rejected. The response returns only aggregate
+// counts — no customer emails or voucher codes are leaked.
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Authenticate: admin user OR shared cron secret.
+    // Authenticate: require an admin user. The scheduled workflow runtime
+    // invokes this function with the app owner's admin context, so the daily
+    // job authenticates automatically without any shared secret in the
+    // workflow args. Anonymous and non-admin HTTP calls are rejected.
     let user = null;
     try {
       user = await base44.auth.me();
     } catch {}
-    const body = await req.json().catch(() => ({}));
-    const cronSecret = secrets.get("BIRTHDAY_CRON_SECRET");
-    const isCron = !!(cronSecret && body?.secret && body.secret === cronSecret);
-    if (!isCron) {
-      if (!user || user.role !== "admin") {
-        return Response.json({ error: "Forbidden" }, { status: 403 });
-      }
+    if (!user || user.role !== "admin") {
+      return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const admin = base44.asServiceRole;
