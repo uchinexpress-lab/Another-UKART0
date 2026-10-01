@@ -151,8 +151,8 @@ export default function Checkout() {
         // (product_id + variant + quantity), voucher code, and delivery details.
         const res = await base44.functions.invoke('prepareOrder', {
           items: items.map((i) => ({
-            product_id: i.id,
-            variant_label: i.details || '',
+            product_id: i.product_id || (i.id || '').split('__')[0],
+            variant_label: i.variant_label || i.details || '',
             quantity: i.quantity,
           })),
           voucherCode: voucher ? voucher.code : '',

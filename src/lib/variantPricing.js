@@ -62,6 +62,7 @@ export function buildCartItem(product, variant) {
   return {
     ...product,
     id: `${product.id}__${variant.label}`,
+    product_id: product.id,
     price: variant.price,
     original_price: variant.original_price || product.original_price,
     unit: variant.label,
