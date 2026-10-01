@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import {
   ShoppingCart, Clock, CheckCircle2, Bike, Truck, AlertTriangle,
 } from 'lucide-react';
+import SalesAnalytics from '@/components/staff/SalesAnalytics';
 
 function StatCard({ icon: Icon, label, value, color, link }) {
   const content = (
@@ -88,6 +89,8 @@ export default function StaffDashboard() {
         <StatCard icon={Bike} label="Available Riders" value={stats.availableRiders ?? 0} color="bg-cyan-100 text-cyan-700" link="/staff/riders" />
         <StatCard icon={AlertTriangle} label="Low Stock Products" value={stats.lowStock ?? 0} color="bg-red-100 text-red-700" link="/staff/products" />
       </div>
+
+      <SalesAnalytics />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-xl border border-gray-200 p-5">
