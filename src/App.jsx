@@ -69,18 +69,10 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Integrated operations sections are explicitly registered in this app.
-  // Keep them outside the customer layout and onboarding guards.
-  if (isRiderPath || isStaffPath) {
-    return (
-      <Routes>
-        <Route path="/admin" element={<StaffApp />} />
-        <Route path="/admin/*" element={<StaffApp />} />
-        <Route path="/rider" element={<RiderApp />} />
-        <Route path="/rider/*" element={<RiderApp />} />
-      </Routes>
-    );
-  }
+  // Integrated operations sections — rendered directly (each has its own
+  // internal <Routes>), kept outside the customer layout and onboarding guards.
+  if (isRiderPath) return <RiderApp />;
+  if (isStaffPath) return <StaffApp />;
 
   // Prevent riders from accessing customer shopping / admin pages.
   // Riders are redirected to their dashboard.
