@@ -75,7 +75,7 @@ export default function RiderLayout({ children }) {
         {children}
       </main>
 
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-gray-200 flex items-center justify-around py-2 z-30">
+      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-gray-200 flex items-center justify-around pt-2 pb-[calc(env(safe-area-inset-bottom)+8px)] z-30">
         {navItems.map((item) => {
           const active = pathname.startsWith(item.path);
           return (

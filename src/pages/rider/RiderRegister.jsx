@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Bike, Loader2, Camera, Upload } from 'lucide-react';
+import SheetSelect from '@/components/SheetSelect';
 
 export default function RiderRegister() {
   const navigate = useNavigate();
@@ -185,17 +186,20 @@ export default function RiderRegister() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Vehicle Type</label>
-                <select
+                <SheetSelect
                   value={form.vehicleType}
-                  onChange={(e) => set('vehicleType', e.target.value)}
-                  className="w-full h-12 px-3 rounded-xl border border-gray-200 outline-none focus:border-[#2E7D32] bg-white"
-                >
-                  <option value="motorcycle">Motorcycle</option>
-                  <option value="bicycle">Bicycle</option>
-                  <option value="scooter">Scooter</option>
-                  <option value="car">Car</option>
-                  <option value="van">Van</option>
-                </select>
+                  onChange={(v) => set('vehicleType', v)}
+                  options={[
+                    { value: 'motorcycle', label: 'Motorcycle' },
+                    { value: 'bicycle', label: 'Bicycle' },
+                    { value: 'scooter', label: 'Scooter' },
+                    { value: 'car', label: 'Car' },
+                    { value: 'van', label: 'Van' },
+                  ]}
+                  placeholder="Select vehicle"
+                  title="Vehicle Type"
+                  triggerClassName="w-full h-12 flex items-center justify-between px-3 rounded-xl border border-gray-200 bg-white text-sm"
+                />
               </div>
               <div>
                 <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Vehicle Number</label>

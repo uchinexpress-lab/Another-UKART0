@@ -9,6 +9,7 @@ import CookingStepsEditor from '@/components/admin/CookingStepsEditor';
 import OptionalItemsEditor from '@/components/admin/OptionalItemsEditor';
 import MealKitPreview from '@/components/admin/MealKitPreview';
 import { useToast } from '@/components/ui/use-toast';
+import SheetSelect from '@/components/SheetSelect';
 
 const SERVES_OPTIONS = ['2 servings', '3 servings', '4 servings', '4–6 servings', '6 servings', 'Custom'];
 
@@ -145,10 +146,13 @@ export default function AdminMealKitEdit() {
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="text-xs font-semibold text-foreground mb-1.5 block">Serving Size</label>
-              <select value={serves} onChange={(e) => setServes(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-input bg-background text-sm">
-                <option value="">Select...</option>
-                {SERVES_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
-              </select>
+              <SheetSelect
+                value={serves}
+                onChange={setServes}
+                options={[{ value: '', label: 'Select...' }, ...SERVES_OPTIONS.map(o => ({ value: o, label: o }))]}
+                title="Serving Size"
+                triggerClassName="w-full px-3 py-2.5 rounded-xl border border-input bg-background text-sm flex items-center justify-between"
+              />
             </div>
             {serves === 'Custom' && <Input label="Custom Serving" value={customServes} onChange={setCustomServes} placeholder="e.g. 8 servings" />}
           </div>

@@ -42,7 +42,7 @@ export function Toaster() {
             {action}
             <button
               onClick={() => dismiss(id)}
-              className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center active:scale-90 transition ${
+              className={`shrink-0 w-11 h-11 rounded-full flex items-center justify-center active:scale-90 transition ${
                 variant === "destructive"
                   ? "text-white/70 hover:text-white hover:bg-white/10"
                   : "text-gray-400 hover:text-gray-700 hover:bg-black/5"

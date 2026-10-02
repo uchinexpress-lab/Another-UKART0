@@ -7,6 +7,7 @@ import AdminNav from '@/components/admin/AdminNav';
 import ImageGallery from '@/components/admin/ImageGallery';
 import VariantEditor, { computeStatus } from '@/components/admin/VariantEditor';
 import OptionalItemsEditor from '@/components/admin/OptionalItemsEditor';
+import SheetSelect from '@/components/SheetSelect';
 
 const PRODUCT_TYPES = [
   { value: 'grocery', label: 'Grocery Product' },
@@ -178,17 +179,24 @@ export default function AdminProductEdit() {
         </div>
         <div>
           <label className="text-xs font-medium text-muted-foreground">Product type</label>
-          <select value={form.product_type} onChange={(e) => set({ product_type: e.target.value })} className={inputCls}>
-            {PRODUCT_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-          </select>
+          <SheetSelect
+            value={form.product_type}
+            onChange={(v) => set({ product_type: v })}
+            options={PRODUCT_TYPES}
+            title="Product type"
+            triggerClassName="w-full flex items-center justify-between text-sm border border-gray-200 rounded-lg px-3 py-2.5 bg-card"
+          />
         </div>
         <div>
           <label className="text-xs font-medium text-muted-foreground">Category</label>
           <div className="flex gap-2">
-            <select value={form.category_id} onChange={(e) => set({ category_id: e.target.value })} className={inputCls}>
-              <option value="">Select category…</option>
-              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
+            <SheetSelect
+              value={form.category_id}
+              onChange={(v) => set({ category_id: v })}
+              options={[{ value: '', label: 'Select category…' }, ...categories.map((c) => ({ value: c.id, label: c.name }))]}
+              title="Category"
+              triggerClassName="w-full flex items-center justify-between text-sm border border-gray-200 rounded-lg px-3 py-2.5 bg-card"
+            />
             <button onClick={() => setShowNewCat((s) => !s)} className="px-3 rounded-lg bg-muted text-foreground shrink-0"><Plus className="w-4 h-4" /></button>
           </div>
           {showNewCat && (
@@ -232,11 +240,17 @@ export default function AdminProductEdit() {
         </div>
         <div>
           <label className="text-xs font-medium text-muted-foreground">Stock status</label>
-          <select value={form.stock_status} onChange={(e) => set({ stock_status: e.target.value })} className={inputCls}>
-            <option value="in_stock">In Stock</option>
-            <option value="low_stock">Low Stock</option>
-            <option value="out_of_stock">Out of Stock</option>
-          </select>
+          <SheetSelect
+            value={form.stock_status}
+            onChange={(v) => set({ stock_status: v })}
+            options={[
+              { value: 'in_stock', label: 'In Stock' },
+              { value: 'low_stock', label: 'Low Stock' },
+              { value: 'out_of_stock', label: 'Out of Stock' },
+            ]}
+            title="Stock status"
+            triggerClassName="w-full flex items-center justify-between text-sm border border-gray-200 rounded-lg px-3 py-2.5 bg-card"
+          />
         </div>
         <button
           onClick={() => set({ is_hidden: !form.is_hidden })}

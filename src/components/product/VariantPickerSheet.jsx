@@ -71,7 +71,7 @@ export default function VariantPickerSheet({ product, open, onOpenChange, onAdd 
           </div>
           <button
             onClick={() => !addingId && onOpenChange(false)}
-            className="w-7 h-7 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center active:scale-90 transition-transform flex-shrink-0"
+            className="w-11 h-11 rounded-full bg-black/5 dark:bg-white/10 flex items-center justify-center active:scale-90 transition-transform flex-shrink-0"
           >
             <X className="w-3.5 h-3.5 text-gray-500 dark:text-zinc-400" />
           </button>

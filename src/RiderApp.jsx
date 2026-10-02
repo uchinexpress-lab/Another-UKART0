@@ -1,6 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import RiderSplash from '@/components/rider/RiderSplash';
 import RiderGuard from '@/components/rider/RiderGuard';
 import RiderLayout from '@/components/rider/RiderLayout';
@@ -33,6 +33,7 @@ const RiderFallback = () => (
  */
 export default function RiderApp() {
   const [showSplash, setShowSplash] = useState(true);
+  const location = useLocation();
 
   useEffect(() => {
     // Apply Rider app identity: title, manifest, theme color.
@@ -56,7 +57,15 @@ export default function RiderApp() {
   return (
     <>
       <Suspense fallback={<RiderFallback />}>
-        <Routes>
+        <AnimatePresence mode="wait">
+        <motion.div
+          key={location.pathname}
+          initial={{ opacity: 0, x: 30 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -30 }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
+        >
+        <Routes location={location}>
           {/* Public rider routes — no auth required */}
           <Route path="/rider/login" element={<RiderLogin />} />
           <Route path="/rider/register" element={<RiderRegister />} />
@@ -77,6 +86,8 @@ export default function RiderApp() {
           {/* The protected /rider entry renders the existing dashboard directly. */}
           <Route path="*" element={<Navigate to="/rider/login" replace />} />
         </Routes>
+        </motion.div>
+        </AnimatePresence>
       </Suspense>
 
       <AnimatePresence>
