@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccessPage } from '@/lib/staffRoles';
 import { RefreshCw, Loader2, Edit } from 'lucide-react';
+import SheetSelect from '@/components/SheetSelect';
 
 const LOCATIONS = [
   { value: 'home', label: 'Home' },
@@ -64,16 +65,13 @@ export default function StaffBanners() {
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 p-4 flex gap-3">
-        <select
+        <SheetSelect
           value={locationFilter}
-          onChange={(e) => setLocationFilter(e.target.value)}
-          className="h-9 text-sm rounded-lg border border-gray-200 px-3 outline-none focus:border-[#2E7D32]"
-        >
-          <option value="all">All Locations</option>
-          {LOCATIONS.map((l) => (
-            <option key={l.value} value={l.value}>{l.label}</option>
-          ))}
-        </select>
+          onChange={setLocationFilter}
+          title="Location"
+          triggerClassName="h-9 flex items-center justify-between text-sm rounded-lg border border-gray-200 px-3 bg-white"
+          options={[{ value: 'all', label: 'All Locations' }, ...LOCATIONS]}
+        />
         <button onClick={loadBanners} className="p-2 rounded-lg hover:bg-gray-100">
           <RefreshCw className="w-4 h-4 text-gray-600" />
         </button>

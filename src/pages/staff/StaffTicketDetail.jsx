@@ -7,6 +7,7 @@ import {
   ArrowLeft, Loader2, Mail, Phone, Send, StickyNote, User,
   Package, Clock,
 } from 'lucide-react';
+import SheetSelect from '@/components/SheetSelect';
 
 const STATUS_OPTIONS = [
   { value: 'new', label: 'New' },
@@ -317,29 +318,23 @@ export default function StaffTicketDetail() {
             <h3 className="text-xs font-semibold text-gray-500 uppercase">Ticket Actions</h3>
             <div>
               <label className="text-xs font-semibold text-gray-600 mb-1 block">Status</label>
-              <select
+              <SheetSelect
                 value={ticket.status}
-                onChange={(e) => updateField('status', e.target.value)}
-                disabled={updating}
-                className="w-full h-9 text-sm rounded-lg border border-gray-200 px-3 outline-none focus:border-[#2E7D32]"
-              >
-                {STATUS_OPTIONS.map((s) => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
-                ))}
-              </select>
+                onChange={(v) => updateField('status', v)}
+                title="Status"
+                triggerClassName="w-full h-9 flex items-center justify-between text-sm rounded-lg border border-gray-200 px-3 bg-white"
+                options={STATUS_OPTIONS}
+              />
             </div>
             <div>
               <label className="text-xs font-semibold text-gray-600 mb-1 block">Priority</label>
-              <select
+              <SheetSelect
                 value={ticket.priority || 'medium'}
-                onChange={(e) => updateField('priority', e.target.value)}
-                disabled={updating}
-                className="w-full h-9 text-sm rounded-lg border border-gray-200 px-3 outline-none focus:border-[#2E7D32]"
-              >
-                {PRIORITY_OPTIONS.map((s) => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
-                ))}
-              </select>
+                onChange={(v) => updateField('priority', v)}
+                title="Priority"
+                triggerClassName="w-full h-9 flex items-center justify-between text-sm rounded-lg border border-gray-200 px-3 bg-white"
+                options={PRIORITY_OPTIONS}
+              />
             </div>
             <div>
               <label className="text-xs font-semibold text-gray-600 mb-1 block">Assigned Staff</label>

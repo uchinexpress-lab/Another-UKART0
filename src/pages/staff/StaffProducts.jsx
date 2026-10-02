@@ -7,6 +7,7 @@ import { canAccessPage } from '@/lib/staffRoles';
 import {
   Search, RefreshCw, Loader2, Plus, Edit, Eye, EyeOff,
 } from 'lucide-react';
+import SheetSelect from '@/components/SheetSelect';
 
 export default function StaffProducts() {
   const { user } = useAuth();
@@ -84,16 +85,18 @@ export default function StaffProducts() {
             className="w-full pl-9 pr-3 h-9 text-sm rounded-lg border border-gray-200 outline-none focus:border-[#2E7D32]"
           />
         </div>
-        <select
+        <SheetSelect
           value={stockFilter}
-          onChange={(e) => setStockFilter(e.target.value)}
-          className="h-9 text-sm rounded-lg border border-gray-200 px-3 outline-none focus:border-[#2E7D32]"
-        >
-          <option value="all">All Stock Status</option>
-          <option value="in_stock">In Stock</option>
-          <option value="low_stock">Low Stock</option>
-          <option value="out_of_stock">Out of Stock</option>
-        </select>
+          onChange={setStockFilter}
+          title="Stock status"
+          triggerClassName="h-9 flex items-center justify-between text-sm rounded-lg border border-gray-200 px-3 bg-white"
+          options={[
+            { value: 'all', label: 'All Stock Status' },
+            { value: 'in_stock', label: 'In Stock' },
+            { value: 'low_stock', label: 'Low Stock' },
+            { value: 'out_of_stock', label: 'Out of Stock' },
+          ]}
+        />
         <button onClick={loadProducts} className="p-2 rounded-lg hover:bg-gray-100">
           <RefreshCw className="w-4 h-4 text-gray-600" />
         </button>

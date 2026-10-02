@@ -1,5 +1,6 @@
 import React from 'react';
 import { Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
+import SheetSelect from '@/components/SheetSelect';
 
 export const UNIT_OPTIONS = [
   'kg', 'g', 'mg', 'lb', 'oz', 'ml', 'litre', 'cl', 'gallon',
@@ -91,14 +92,13 @@ export default function VariantEditor({ variants, onChange }) {
               </div>
               <div>
                 <label className="text-[10px] font-medium text-muted-foreground">Unit</label>
-                <select
+                <SheetSelect
                   value={isCustom ? 'custom' : v.unit}
-                  onChange={(e) => update(i, { unit: e.target.value === 'custom' ? '' : e.target.value })}
-                  className="w-full text-sm border border-gray-200 rounded-lg px-2 py-2 outline-none focus:border-[#2E7D32] bg-card"
-                >
-                  {UNIT_OPTIONS.map((u) => <option key={u} value={u}>{u}</option>)}
-                  <option value="custom">custom…</option>
-                </select>
+                  onChange={(val) => update(i, { unit: val === 'custom' ? '' : val })}
+                  title="Unit"
+                  triggerClassName="w-full text-sm flex items-center justify-between border border-gray-200 rounded-lg px-2 py-2 bg-card"
+                  options={[...UNIT_OPTIONS.map((u) => ({ value: u, label: u })), { value: 'custom', label: 'custom…' }]}
+                />
               </div>
             </div>
 
@@ -157,15 +157,13 @@ export default function VariantEditor({ variants, onChange }) {
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${STATUS_BADGE[v.stock_status]}`}>
                 {STATUS_LABEL[v.stock_status]}
               </span>
-              <select
+              <SheetSelect
                 value={v.stock_status}
-                onChange={(e) => update(i, { stock_status: e.target.value })}
-                className="text-[11px] border border-gray-200 rounded-lg px-2 py-1 outline-none bg-card"
-              >
-                <option value="in_stock">In Stock</option>
-                <option value="low_stock">Low Stock</option>
-                <option value="out_of_stock">Out of Stock</option>
-              </select>
+                onChange={(val) => update(i, { stock_status: val })}
+                title="Stock status"
+                triggerClassName="text-[11px] flex items-center justify-between border border-gray-200 rounded-lg px-2 py-1 bg-card"
+                options={[{ value: 'in_stock', label: 'In Stock' }, { value: 'low_stock', label: 'Low Stock' }, { value: 'out_of_stock', label: 'Out of Stock' }]}
+              />
             </div>
           </div>
         );

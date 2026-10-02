@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, Package, ClipboardList, Heart, User } from 'lucide-react';
+import { useTabNav, getTabForPath } from '@/context/TabNavContext';
 
 const navItems = [
   { to: '/', icon: Home, label: 'Home' },
@@ -13,15 +14,17 @@ const navItems = [
 export default function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { getTabRoute } = useTabNav();
   const pathname = location.pathname;
 
   const handleTap = (e, to) => {
     e.preventDefault();
-    if (pathname === to) {
-      // Already on the tab root — reset nested view state (scroll to top)
+    const target = getTabRoute(to);
+    if (pathname === target) {
+      // Already on the tab's current route — scroll to top
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      navigate(to);
+      navigate(target);
     }
   };
 
@@ -32,7 +35,7 @@ export default function BottomNav() {
     >
       <div className="mx-4 w-full max-w-md flex items-center justify-around h-14 bg-white rounded-2xl shadow-lg shadow-black/5 border border-gray-100 px-1">
         {navItems.map(({ to, icon: Icon, label }) => {
-          const active = pathname === to;
+          const active = getTabForPath(pathname) === to;
           return (
             <Link
               key={to}

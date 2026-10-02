@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { logStaffAction } from '@/lib/staffAudit';
 import { Search, RefreshCw, Loader2, Plus, AlertCircle } from 'lucide-react';
+import SheetSelect from '@/components/SheetSelect';
 
 const TICKET_STATUSES = [
   { value: 'all', label: 'All Statuses' },
@@ -165,18 +166,9 @@ export default function StaffTickets() {
             className="w-full pl-9 pr-3 h-9 text-sm rounded-lg border border-gray-200 outline-none focus:border-[#2E7D32]"
           />
         </div>
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}
-          className="h-9 text-sm rounded-lg border border-gray-200 px-3 outline-none focus:border-[#2E7D32]">
-          {TICKET_STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-        </select>
-        <select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)}
-          className="h-9 text-sm rounded-lg border border-gray-200 px-3 outline-none focus:border-[#2E7D32]">
-          {PRIORITIES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-        </select>
-        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}
-          className="h-9 text-sm rounded-lg border border-gray-200 px-3 outline-none focus:border-[#2E7D32]">
-          {CATEGORIES.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-        </select>
+        <SheetSelect value={statusFilter} onChange={setStatusFilter} title="Status" triggerClassName="h-9 flex items-center justify-between text-sm rounded-lg border border-gray-200 px-3 bg-white" options={TICKET_STATUSES} />
+        <SheetSelect value={priorityFilter} onChange={setPriorityFilter} title="Priority" triggerClassName="h-9 flex items-center justify-between text-sm rounded-lg border border-gray-200 px-3 bg-white" options={PRIORITIES} />
+        <SheetSelect value={categoryFilter} onChange={setCategoryFilter} title="Category" triggerClassName="h-9 flex items-center justify-between text-sm rounded-lg border border-gray-200 px-3 bg-white" options={CATEGORIES} />
       </div>
 
       {/* Table */}
@@ -317,19 +309,8 @@ function CreateTicketModal({ onClose, onCreated }) {
               className="w-full h-10 px-3 text-sm rounded-lg border border-gray-200 outline-none focus:border-[#2E7D32]" />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}
-              className="h-10 px-3 text-sm rounded-lg border border-gray-200 outline-none focus:border-[#2E7D32]">
-              {CATEGORIES.filter((c) => c.value !== 'all').map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
-              ))}
-            </select>
-            <select value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })}
-              className="h-10 px-3 text-sm rounded-lg border border-gray-200 outline-none focus:border-[#2E7D32]">
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="urgent">Urgent</option>
-            </select>
+            <SheetSelect value={form.category} onChange={(v) => setForm({ ...form, category: v })} title="Category" triggerClassName="h-10 flex items-center justify-between text-sm rounded-lg border border-gray-200 px-3 bg-white" options={CATEGORIES.filter((c) => c.value !== 'all')} />
+            <SheetSelect value={form.priority} onChange={(v) => setForm({ ...form, priority: v })} title="Priority" triggerClassName="h-10 flex items-center justify-between text-sm rounded-lg border border-gray-200 px-3 bg-white" options={[{ value: 'low', label: 'Low' }, { value: 'medium', label: 'Medium' }, { value: 'high', label: 'High' }, { value: 'urgent', label: 'Urgent' }]} />
           </div>
           <textarea required placeholder="Initial message / description" value={form.body}
             onChange={(e) => setForm({ ...form, body: e.target.value })} rows={4}

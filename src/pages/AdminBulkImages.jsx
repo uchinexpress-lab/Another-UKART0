@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import AdminNav from '@/components/admin/AdminNav';
+import SheetSelect from '@/components/SheetSelect';
 
 const inputCls = 'w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 outline-none focus:border-[#2E7D32] bg-card';
 
@@ -108,10 +109,7 @@ export default function AdminBulkImages() {
               <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Filter by filename…" className={`${inputCls} pl-8`} />
             </div>
             {selected.length > 0 && (
-              <select onChange={(e) => e.target.value && bulkAssignProduct(e.target.value)} className={`${inputCls} w-40`} defaultValue="">
-                <option value="">Bulk assign…</option>
-                {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-              </select>
+              <SheetSelect onChange={(v) => v && bulkAssignProduct(v)} placeholder="Bulk assign…" title="Bulk assign product" triggerClassName={`${inputCls} w-40`} options={products.map((p) => ({ value: p.id, label: p.name }))} />
             )}
             <button onClick={applyAssignments} disabled={busy} className="px-3 rounded-lg bg-[#2E7D32] text-white text-xs font-bold flex items-center gap-1.5 shrink-0 disabled:opacity-50">
               <Link2 className="w-3.5 h-3.5" /> Apply
@@ -132,14 +130,8 @@ export default function AdminBulkImages() {
                   </div>
                   <div className="flex-1 min-w-0 space-y-1.5">
                     <div className="text-xs font-semibold text-foreground truncate">{u.filename}</div>
-                    <select value={u.productId} onChange={(e) => updateRow(realIndex, { productId: e.target.value })} className={inputCls}>
-                      <option value="">Assign to product…</option>
-                      {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-                    </select>
-                    <select value={u.categoryId} onChange={(e) => updateRow(realIndex, { categoryId: e.target.value })} className={inputCls}>
-                      <option value="">Category (optional)…</option>
-                      {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
+                    <SheetSelect value={u.productId || ''} onChange={(v) => updateRow(realIndex, { productId: v })} placeholder="Assign to product…" title="Assign product" triggerClassName={inputCls} options={products.map((p) => ({ value: p.id, label: p.name }))} />
+                    <SheetSelect value={u.categoryId || ''} onChange={(v) => updateRow(realIndex, { categoryId: v })} placeholder="Category (optional)…" title="Category" triggerClassName={inputCls} options={categories.map((c) => ({ value: c.id, label: c.name }))} />
                   </div>
                   <button onClick={() => removeRow(realIndex)} className="w-7 h-7 rounded-md bg-red-50 flex items-center justify-center shrink-0"><Trash2 className="w-3.5 h-3.5 text-red-500" /></button>
                 </div>

@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { toast } from '@/components/ui/use-toast';
 import AdminNav from '@/components/admin/AdminNav';
+import SheetSelect from '@/components/SheetSelect';
 import StatCard from '@/components/admin/StatCard';
 
 const STATUS = {
@@ -158,28 +159,10 @@ export default function AdminProducts() {
           />
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <select value={catFilter} onChange={(e) => setCatFilter(e.target.value)} className="text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none bg-card">
-            <option value="all">All categories</option>
-            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-          <select value={availFilter} onChange={(e) => setAvailFilter(e.target.value)} className="text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none bg-card">
-            <option value="all">All availability</option>
-            <option value="in_stock">In Stock</option>
-            <option value="low_stock">Low Stock</option>
-            <option value="out_of_stock">Out of Stock</option>
-          </select>
-          <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none bg-card">
-            <option value="all">All types</option>
-            <option value="grocery">Grocery</option>
-            <option value="meal_kit">Meal Kit</option>
-            <option value="package">Package</option>
-          </select>
-          <select value={sort} onChange={(e) => setSort(e.target.value)} className="text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none bg-card">
-            <option value="newest">Newest first</option>
-            <option value="oldest">Oldest first</option>
-            <option value="price">Price (low→high)</option>
-            <option value="name">Name (A→Z)</option>
-          </select>
+          <SheetSelect value={catFilter} onChange={setCatFilter} title="Category" triggerClassName="text-sm flex items-center justify-between border border-gray-200 rounded-xl px-3 py-2.5 bg-card" options={[{ value: 'all', label: 'All categories' }, ...categories.map((c) => ({ value: c.id, label: c.name }))]} />
+          <SheetSelect value={availFilter} onChange={setAvailFilter} title="Availability" triggerClassName="text-sm flex items-center justify-between border border-gray-200 rounded-xl px-3 py-2.5 bg-card" options={[{ value: 'all', label: 'All availability' }, { value: 'in_stock', label: 'In Stock' }, { value: 'low_stock', label: 'Low Stock' }, { value: 'out_of_stock', label: 'Out of Stock' }]} />
+          <SheetSelect value={typeFilter} onChange={setTypeFilter} title="Type" triggerClassName="text-sm flex items-center justify-between border border-gray-200 rounded-xl px-3 py-2.5 bg-card" options={[{ value: 'all', label: 'All types' }, { value: 'grocery', label: 'Grocery' }, { value: 'meal_kit', label: 'Meal Kit' }, { value: 'package', label: 'Package' }]} />
+          <SheetSelect value={sort} onChange={setSort} title="Sort by" triggerClassName="text-sm flex items-center justify-between border border-gray-200 rounded-xl px-3 py-2.5 bg-card" options={[{ value: 'newest', label: 'Newest first' }, { value: 'oldest', label: 'Oldest first' }, { value: 'price', label: 'Price (low→high)' }, { value: 'name', label: 'Name (A→Z)' }]} />
         </div>
       </div>
 

@@ -7,6 +7,7 @@ import { logStaffAction } from '@/lib/staffAudit';
 import {
   Loader2, UserPlus, Shield, Mail, RefreshCw, Trash2, AlertCircle,
 } from 'lucide-react';
+import SheetSelect from '@/components/SheetSelect';
 
 export default function StaffSettings() {
   const { user } = useAuth();
@@ -161,15 +162,13 @@ export default function StaffSettings() {
             placeholder="staff@example.com"
             className="flex-1 min-w-[200px] h-10 px-3 text-sm rounded-lg border border-gray-200 outline-none focus:border-[#2E7D32]"
           />
-          <select
+          <SheetSelect
             value={inviteRole}
-            onChange={(e) => setInviteRole(e.target.value)}
-            className="h-10 text-sm rounded-lg border border-gray-200 px-3 outline-none focus:border-[#2E7D32]"
-          >
-            {STAFF_ROLE_OPTIONS.map((r) => (
-              <option key={r.value} value={r.value}>{r.label}</option>
-            ))}
-          </select>
+            onChange={setInviteRole}
+            title="Staff role"
+            triggerClassName="h-10 flex items-center justify-between text-sm rounded-lg border border-gray-200 px-3 bg-white"
+            options={STAFF_ROLE_OPTIONS}
+          />
           <button
             type="submit"
             disabled={inviting}
@@ -236,27 +235,23 @@ export default function StaffSettings() {
                         ) : !s.staffRole ? (
                           <div className="flex items-center gap-2">
                             <span className="text-xs text-amber-600 font-medium">Unassigned</span>
-                            <select
+                            <SheetSelect
                               value=""
-                              onChange={(e) => changeRole(s, e.target.value)}
-                              className="text-xs rounded border border-gray-200 px-2 py-1 outline-none focus:border-[#2E7D32]"
-                            >
-                              <option value="" disabled>Assign role…</option>
-                              {STAFF_ROLE_OPTIONS.filter((r) => r.value !== 'super_admin').map((r) => (
-                                <option key={r.value} value={r.value}>{r.label}</option>
-                              ))}
-                            </select>
+                              onChange={(v) => changeRole(s, v)}
+                              title="Assign role"
+                              placeholder="Assign role…"
+                              triggerClassName="text-xs flex items-center justify-between rounded border border-gray-200 px-2 py-1 bg-white"
+                              options={STAFF_ROLE_OPTIONS.filter((r) => r.value !== 'super_admin')}
+                            />
                           </div>
                         ) : (
-                          <select
+                          <SheetSelect
                             value={s.staffRole}
-                            onChange={(e) => changeRole(s, e.target.value)}
-                            className="text-xs rounded border border-gray-200 px-2 py-1 outline-none focus:border-[#2E7D32]"
-                          >
-                            {STAFF_ROLE_OPTIONS.filter((r) => r.value !== 'super_admin').map((r) => (
-                              <option key={r.value} value={r.value}>{r.label}</option>
-                            ))}
-                          </select>
+                            onChange={(v) => changeRole(s, v)}
+                            title="Staff role"
+                            triggerClassName="text-xs flex items-center justify-between rounded border border-gray-200 px-2 py-1 bg-white"
+                            options={STAFF_ROLE_OPTIONS.filter((r) => r.value !== 'super_admin')}
+                          />
                         )}
                       </td>
                       <td className="px-4 py-3">

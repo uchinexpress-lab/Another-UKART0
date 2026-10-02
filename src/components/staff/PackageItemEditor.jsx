@@ -2,6 +2,7 @@ import React from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { Plus, Trash2, Upload, X, GripVertical, ImageIcon } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import SheetSelect from '@/components/SheetSelect';
 
 export default function PackageItemEditor({ items, onChange, products }) {
   const add = () => {
@@ -127,16 +128,14 @@ export default function PackageItemEditor({ items, onChange, products }) {
                               placeholder="Unit"
                               className="w-20 px-2 py-1.5 rounded-lg border border-input bg-background text-xs"
                             />
-                            <select
+                            <SheetSelect
                               value={item.product_id || ''}
-                              onChange={(e) => linkProduct(idx, e.target.value)}
-                              className="flex-1 px-2 py-1.5 rounded-lg border border-input bg-background text-xs"
-                            >
-                              <option value="">Link to product (optional)</option>
-                              {products.map((p) => (
-                                <option key={p.id} value={p.id}>{p.name}</option>
-                              ))}
-                            </select>
+                              onChange={(v) => linkProduct(idx, v)}
+                              placeholder="Link to product (optional)"
+                              title="Link product"
+                              triggerClassName="flex-1 px-2 py-1.5 flex items-center justify-between rounded-lg border border-input bg-background text-xs"
+                              options={products.map((p) => ({ value: p.id, label: p.name }))}
+                            />
                           </div>
                           <input
                             type="text"

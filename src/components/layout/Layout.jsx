@@ -6,6 +6,7 @@ import BrandedHeader from './BrandedHeader';
 import FloatingCart from './FloatingCart';
 import BottomNav from './BottomNav';
 import LocationPrompt from '@/components/LocationPrompt';
+import { TabNavProvider } from '@/context/TabNavContext';
 
 const TAB_ROUTES = ['/', '/packages', '/order', '/wishlist', '/profile'];
 
@@ -69,6 +70,7 @@ export default function Layout() {
     isTab && !cachedTabs.includes(pathname) ? [...cachedTabs, pathname] : cachedTabs;
 
   return (
+    <TabNavProvider>
     <div className="min-h-screen bg-background flex flex-col relative">
       {isHome ? <TopNav /> : <BrandedHeader title={getPageTitle(pathname)} />}
       <main className={`flex-1 max-w-md mx-auto w-full ${isTab ? 'pb-20' : ''}`}>
@@ -99,5 +101,6 @@ export default function Layout() {
       {isTab && <BottomNav />}
       <LocationPrompt />
     </div>
+    </TabNavProvider>
   );
 }

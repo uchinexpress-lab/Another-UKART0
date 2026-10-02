@@ -9,6 +9,7 @@ import {
   FlaskConical,
   X,
 } from 'lucide-react';
+import SheetSelect from '@/components/SheetSelect';
 
 const STATUS_BADGE = {
   created: 'bg-blue-100 text-blue-700',
@@ -195,18 +196,20 @@ export default function StaffBirthdayRewards() {
             className="w-full pl-9 pr-3 h-9 text-sm rounded-lg border border-gray-200 bg-white outline-none focus:border-[#2E7D32]"
           />
         </div>
-        <select
+        <SheetSelect
           value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="h-9 px-3 text-sm rounded-lg border border-gray-200 bg-white outline-none focus:border-[#2E7D32]"
-        >
-          <option value="all">All rewards</option>
-          <option value="today">Today's birthdays</option>
-          <option value="this_month">This month's birthdays</option>
-          <option value="available">Voucher available</option>
-          <option value="redeemed">Voucher redeemed</option>
-          <option value="expired">Voucher expired</option>
-        </select>
+          onChange={setFilter}
+          title="Filter rewards"
+          triggerClassName="h-9 flex items-center justify-between text-sm rounded-lg border border-gray-200 px-3 bg-white"
+          options={[
+            { value: 'all', label: 'All rewards' },
+            { value: 'today', label: "Today's birthdays" },
+            { value: 'this_month', label: "This month's birthdays" },
+            { value: 'available', label: 'Voucher available' },
+            { value: 'redeemed', label: 'Voucher redeemed' },
+            { value: 'expired', label: 'Voucher expired' },
+          ]}
+        />
       </div>
 
       {/* Table */}

@@ -8,6 +8,7 @@ import BannerImageEditor from '@/components/admin/BannerImageEditor';
 import PackageItemEditor from '@/components/staff/PackageItemEditor';
 import PackagePreview from '@/components/staff/PackagePreview';
 import { useToast } from '@/components/ui/use-toast';
+import SheetSelect from '@/components/SheetSelect';
 
 const BADGE_OPTIONS = ['Best Value', 'Popular', 'New', 'Family Favourite', 'Save More'];
 const GROUP_OPTIONS = [
@@ -341,13 +342,13 @@ function SelectField({ label, value, onChange, options }) {
   return (
     <div>
       <label className="text-xs font-semibold text-foreground mb-1.5 block">{label}</label>
-      <select
+      <SheetSelect
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2.5 rounded-xl border border-input bg-background text-sm"
-      >
-        {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-      </select>
+        onChange={onChange}
+        title={label}
+        options={options}
+        triggerClassName="w-full px-3 py-2.5 flex items-center justify-between rounded-xl border border-input bg-background text-sm"
+      />
     </div>
   );
 }

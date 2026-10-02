@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { logStaffAction } from '@/lib/staffAudit';
 import { canAccessPage } from '@/lib/staffRoles';
 import { RefreshCw, Loader2, Search, Bike, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import SheetSelect from '@/components/SheetSelect';
 
 const VEHICLE_LABELS = {
   motorcycle: 'Motorcycle',
@@ -87,17 +88,19 @@ export default function StaffRiders() {
             className="w-full pl-9 pr-3 h-9 text-sm rounded-lg border border-gray-200 outline-none focus:border-[#2E7D32]"
           />
         </div>
-        <select
+        <SheetSelect
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="h-9 text-sm rounded-lg border border-gray-200 px-3 outline-none focus:border-[#2E7D32]"
-        >
-          <option value="all">All Approval Statuses</option>
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="suspended">Suspended</option>
-          <option value="inactive">Inactive</option>
-        </select>
+          onChange={setStatusFilter}
+          title="Approval status"
+          triggerClassName="h-9 flex items-center justify-between text-sm rounded-lg border border-gray-200 px-3 bg-white"
+          options={[
+            { value: 'all', label: 'All Approval Statuses' },
+            { value: 'pending', label: 'Pending' },
+            { value: 'approved', label: 'Approved' },
+            { value: 'suspended', label: 'Suspended' },
+            { value: 'inactive', label: 'Inactive' },
+          ]}
+        />
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">

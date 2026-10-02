@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, Upload, X } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import SheetSelect from '@/components/SheetSelect';
 
 export default function OptionalItemsEditor({ items, onChange, products }) {
   const [newItem, setNewItem] = useState({ name: '', product_id: '', price: 0, active: true });
@@ -43,10 +44,7 @@ export default function OptionalItemsEditor({ items, onChange, products }) {
             <button onClick={() => remove(idx)} className="text-red-400 hover:text-red-600"><Trash2 className="w-4 h-4" /></button>
           </div>
           <div className="flex items-center gap-2 pl-12">
-            <select value={item.product_id || ''} onChange={(e) => update(idx, 'product_id', e.target.value)} className="flex-1 px-2 py-1.5 rounded-lg border border-input bg-background text-xs">
-              <option value="">Link to product (optional)</option>
-              {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-            </select>
+            <SheetSelect value={item.product_id || ''} onChange={(v) => update(idx, 'product_id', v)} placeholder="Link to product (optional)" title="Link product" triggerClassName="flex-1 px-2 py-1.5 flex items-center justify-between rounded-lg border border-input bg-background text-xs" options={products.map((p) => ({ value: p.id, label: p.name }))} />
             <input type="number" value={item.price || 0} onChange={(e) => update(idx, 'price', parseFloat(e.target.value) || 0)} placeholder="Price" className="w-20 px-2 py-1.5 rounded-lg border border-input bg-background text-xs" />
             <button onClick={() => update(idx, 'active', !item.active)} className={`w-9 h-5 rounded-full transition-colors relative flex-shrink-0 ${item.active ? 'bg-[#2E7D32]' : 'bg-gray-300'}`}>
               <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-transform ${item.active ? 'translate-x-4' : 'translate-x-0.5'}`} />

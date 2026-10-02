@@ -10,6 +10,7 @@ import {
   Search, ChevronDown, ChevronUp, Bike, RefreshCw, Loader2,
   Mail, Phone, MapPin,
 } from 'lucide-react';
+import SheetSelect from '@/components/SheetSelect';
 
 const STATUSES = [
   { value: 'new', label: 'Order Placed' },
@@ -105,26 +106,25 @@ export default function StaffOrders() {
             className="w-full pl-9 pr-3 h-9 text-sm rounded-lg border border-gray-200 outline-none focus:border-[#2E7D32]"
           />
         </div>
-        <select
+        <SheetSelect
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="h-9 text-sm rounded-lg border border-gray-200 px-3 outline-none focus:border-[#2E7D32]"
-        >
-          <option value="all">All Statuses</option>
-          {STATUSES.map((s) => (
-            <option key={s.value} value={s.value}>{s.label}</option>
-          ))}
-        </select>
-        <select
+          onChange={setStatusFilter}
+          title="Order status"
+          triggerClassName="h-9 flex items-center justify-between text-sm rounded-lg border border-gray-200 px-3 bg-white"
+          options={[{ value: 'all', label: 'All Statuses' }, ...STATUSES]}
+        />
+        <SheetSelect
           value={paymentFilter}
-          onChange={(e) => setPaymentFilter(e.target.value)}
-          className="h-9 text-sm rounded-lg border border-gray-200 px-3 outline-none focus:border-[#2E7D32]"
-        >
-          <option value="all">All Payments</option>
-          <option value="Paid">Paid</option>
-          <option value="Pending">Pending</option>
-          <option value="Failed">Failed</option>
-        </select>
+          onChange={setPaymentFilter}
+          title="Payment status"
+          triggerClassName="h-9 flex items-center justify-between text-sm rounded-lg border border-gray-200 px-3 bg-white"
+          options={[
+            { value: 'all', label: 'All Payments' },
+            { value: 'Paid', label: 'Paid' },
+            { value: 'Pending', label: 'Pending' },
+            { value: 'Failed', label: 'Failed' },
+          ]}
+        />
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
