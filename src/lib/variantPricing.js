@@ -56,18 +56,38 @@ export function getEffectivePrice(product) {
   return Math.min(...active.map((v) => v.price));
 }
 
-/** Builds the cart item object for a selected variant (or returns the product as-is). */
-export function buildCartItem(product, variant) {
-  if (!variant) return product;
+/** Builds the cart item object for a selected variant (with optional add-ons). */
+export function buildCartItem(product, variant, addons = []) {
+  const addonSuffix = addons.length > 0 ? `__a_${addons.map((a) => a.id).sort().join('-')}` : '';
+  const addonsTotal = addons.reduce((sum, a) => sum + (a.price || 0), 0);
+  if (!variant) {
+    return {
+      ...product,
+      id: `${product.id}${addonSuffix}`,
+      product_id: product.id,
+      addons,
+      addons_total: addonsTotal,
+    };
+  }
   return {
     ...product,
-    id: `${product.id}__${variant.label}`,
+    id: `${product.id}__${variant.label}${addonSuffix}`,
     product_id: product.id,
     price: variant.price,
     original_price: variant.original_price || product.original_price,
     unit: variant.label,
     variant_label: variant.label,
+    addons,
+    addons_total: addonsTotal,
   };
+}
+
+/** Returns the active add-ons for a product (sorted by display_order). */
+export function getActiveAddons(product) {
+  if (!product?.addons || !Array.isArray(product.addons)) return [];
+  return product.addons
+    .filter((a) => a && a.active !== false)
+    .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
 }
 
 /** Returns the variant to use for a single-variant product, or null. */

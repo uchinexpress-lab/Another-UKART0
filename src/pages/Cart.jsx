@@ -6,7 +6,7 @@ import { Trash2, Minus, Plus, ShoppingBag, ArrowRight } from 'lucide-react';
 export default function Cart() {
   const { items, updateQuantity, removeItem, total } = useCart();
   const navigate = useNavigate();
-  const deliveryFee = total > 0 ? (total > 30000 ? 0 : 1500) : 0;
+  const deliveryFee = total > 0 ? 1500 : 0;
 
   if (items.length === 0) {
     return (
@@ -36,8 +36,17 @@ export default function Cart() {
               {item.details && (
                 <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{item.details}</p>
               )}
+              {item.addons && item.addons.length > 0 && (
+                <div className="mt-0.5 space-y-0.5">
+                  {item.addons.map((a, i) => (
+                    <p key={i} className="text-[11px] text-muted-foreground">
+                      + {a.name} {a.price === 0 ? 'Free' : `₦${a.price.toLocaleString()}`}
+                    </p>
+                  ))}
+                </div>
+              )}
               <div className="text-sm font-bold text-[#2E7D32]">
-                ₦{(item.price * item.quantity).toLocaleString()}
+                ₦{((item.price + (item.addons_total || 0)) * item.quantity).toLocaleString()}
               </div>
             </div>
             <div className="flex items-center gap-1.5">
@@ -73,9 +82,7 @@ export default function Cart() {
             {deliveryFee === 0 ? 'FREE' : `₦${deliveryFee.toLocaleString()}`}
           </span>
         </div>
-        {deliveryFee === 0 && (
-          <p className="text-xs text-[#2E7D32] font-medium">🎉 You qualified for free delivery!</p>
-        )}
+
         <div className="flex justify-between pt-2 border-t border-border">
           <span className="font-bold">Total</span>
           <span className="font-bold text-[#2E7D32] text-lg">

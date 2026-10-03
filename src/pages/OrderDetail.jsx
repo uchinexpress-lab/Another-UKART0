@@ -54,6 +54,8 @@ export default function OrderDetail() {
         price: it.price || 0,
         quantity: it.quantity || 1,
         unit: it.unit || '',
+        addons: it.addons || [],
+        addons_total: it.addons_total || 0,
       }))
       .filter((it) => it.id);
     if (cartItems.length === 0) {
@@ -117,12 +119,23 @@ export default function OrderDetail() {
         <h3 className="text-xs font-semibold text-muted-foreground uppercase mb-3">Items</h3>
         <div className="space-y-2">
           {order.items?.map((it, i) => (
-            <div key={i} className="flex items-center justify-between text-sm">
-              <span className="text-gray-700">
-                {it.quantity}× {it.name}
-              </span>
-              <span className="font-medium text-foreground">
-                ₦{((it.price || 0) * (it.quantity || 1)).toLocaleString()}
+            <div key={i} className="flex items-start justify-between text-sm">
+              <div className="min-w-0">
+                <span className="text-gray-700">
+                  {it.quantity}× {it.name}
+                </span>
+                {it.addons && it.addons.length > 0 && (
+                  <div className="mt-0.5 space-y-0.5">
+                    {it.addons.map((a, j) => (
+                      <p key={j} className="text-[11px] text-muted-foreground">
+                        + {a.name} {a.price === 0 ? 'Free' : `₦${a.price.toLocaleString()}`}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <span className="font-medium text-foreground shrink-0 ml-2">
+                ₦{(((it.price || 0) + (it.addons_total || 0)) * (it.quantity || 1)).toLocaleString()}
               </span>
             </div>
           ))}
@@ -136,12 +149,20 @@ export default function OrderDetail() {
             <span>Delivery fee</span>
             <span>₦{(order.delivery_fee || 0).toLocaleString()}</span>
           </div>
-          {discount > 0 && (
+          {order.first_order_discount > 0 && (
             <div className="flex justify-between text-[#2E7D32] font-medium">
               <span className="flex items-center gap-1">
-                <Tag className="w-3.5 h-3.5" /> Referral discount
+                <Tag className="w-3.5 h-3.5" /> First order discount
               </span>
-              <span>−₦{discount.toLocaleString()}</span>
+              <span>−₦{order.first_order_discount.toLocaleString()}</span>
+            </div>
+          )}
+          {(discount - (order.first_order_discount || 0)) > 0 && (
+            <div className="flex justify-between text-[#2E7D32] font-medium">
+              <span className="flex items-center gap-1">
+                <Tag className="w-3.5 h-3.5" /> {order.voucher_code ? `Voucher (${order.voucher_code})` : 'Referral discount'}
+              </span>
+              <span>−₦{(discount - (order.first_order_discount || 0)).toLocaleString()}</span>
             </div>
           )}
           <div className="flex justify-between font-bold text-foreground pt-1">

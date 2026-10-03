@@ -4,7 +4,7 @@ import ProductCardSurface from '@/components/product/ProductCardSurface';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import VariantPickerSheet from '@/components/product/VariantPickerSheet';
-import { getDisplayPrice, getActiveVariants, getSingleVariant, buildCartItem } from '@/lib/variantPricing';
+import { getDisplayPrice, getActiveVariants, getSingleVariant, getActiveAddons, buildCartItem } from '@/lib/variantPricing';
 
 export default function ProductCard({ product, onImageClick, showOriginalPrice = true, showDiscount = true, respectComingSoon = true, animated = true }) {
   const { addItem } = useCart();
@@ -23,7 +23,8 @@ export default function ProductCard({ product, onImageClick, showOriginalPrice =
 
   const handleAdd = () => {
     if (comingSoon) return;
-    if (activeVariants.length > 1) {
+    const hasAddons = getActiveAddons(product).length > 0;
+    if (activeVariants.length > 1 || hasAddons) {
       setSheetOpen(true);
     } else if (singleVariant) {
       addItem(buildCartItem(product, singleVariant));
@@ -47,7 +48,7 @@ export default function ProductCard({ product, onImageClick, showOriginalPrice =
         product={product}
         open={sheetOpen}
         onOpenChange={setSheetOpen}
-        onAdd={(variant) => addItem(buildCartItem(product, variant))}
+        onAdd={(variant, addons) => addItem(buildCartItem(product, variant, addons))}
       />
     </motion.div>
   );

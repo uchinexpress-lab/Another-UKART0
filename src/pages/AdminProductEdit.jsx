@@ -7,6 +7,7 @@ import AdminNav from '@/components/admin/AdminNav';
 import ImageGallery from '@/components/admin/ImageGallery';
 import VariantEditor, { computeStatus } from '@/components/admin/VariantEditor';
 import OptionalItemsEditor from '@/components/admin/OptionalItemsEditor';
+import AddonsEditor from '@/components/admin/AddonsEditor';
 import SheetSelect from '@/components/SheetSelect';
 
 const PRODUCT_TYPES = [
@@ -45,6 +46,7 @@ export default function AdminProductEdit() {
     prep_time: '',
     cooking_instructions: '',
     optional_items: [],
+    addons: [],
     is_best_seller: false,
     is_weekly_deal: false,
   });
@@ -72,6 +74,7 @@ export default function AdminProductEdit() {
           prep_time: p.prep_time || '',
           cooking_instructions: p.cooking_instructions || '',
           optional_items: p.optional_items || [],
+          addons: p.addons || [],
           is_best_seller: p.is_best_seller || false,
           is_weekly_deal: p.is_weekly_deal || false,
         });
@@ -127,6 +130,7 @@ export default function AdminProductEdit() {
         prep_time: form.prep_time,
         cooking_instructions: form.cooking_instructions,
         optional_items: form.optional_items,
+        addons: form.addons,
         is_best_seller: form.is_best_seller,
         is_weekly_deal: form.is_weekly_deal,
         unit,
@@ -290,6 +294,13 @@ export default function AdminProductEdit() {
           </section>
         </>
       )}
+
+      {/* Add-ons / Services */}
+      <section className="bg-card rounded-2xl border border-border p-4 mb-4">
+        <h2 className="text-sm font-bold text-foreground mb-1">Add-ons / Services</h2>
+        <p className="text-xs text-muted-foreground mb-3">Custom preparation services customers can add (cut, slice, grind, etc.). Price ₦0 for free add-ons.</p>
+        <AddonsEditor addons={form.addons} onChange={(addons) => set({ addons })} />
+      </section>
 
       {/* Badges */}
       <section className="bg-card rounded-2xl border border-border p-4 mb-4 space-y-2">

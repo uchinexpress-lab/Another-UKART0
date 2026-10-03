@@ -11,7 +11,6 @@ const REWARD_AMOUNT = 1000;
 export default function Checkout() {
   const { items, total, clearCart } = useCart();
   const navigate = useNavigate();
-  const deliveryFee = total > 0 ? (total > 30000 ? 0 : 1500) : 0;
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
@@ -26,6 +25,8 @@ export default function Checkout() {
   const [step, setStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState('Pay Online');
   const [createdOrderId, setCreatedOrderId] = useState(null);
+  const [promoSettings, setPromoSettings] = useState(null);
+  const [isFirstOrder, setIsFirstOrder] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -58,8 +59,22 @@ export default function Checkout() {
   useEffect(() => {
     (async () => {
       try {
+        const promoRes = await base44.entities.PromotionSetting.filter({}, { limit: 1 });
+        setPromoSettings(promoRes.items?.[0] || null);
+      } catch {}
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
         const me = await base44.auth.me();
         if (!me?.email) return;
+        const paidOrders = await base44.entities.Order.filter({
+          customer_email: me.email,
+          payment_status: 'Paid',
+        });
+        setIsFirstOrder(!paidOrders || paidOrders.length === 0);
         const prev = await base44.entities.Order.filter(
           { customer_email: me.email },
           '-created_date',
@@ -90,12 +105,19 @@ export default function Checkout() {
     })();
   }, []);
 
+  const firstOrderEligible = isFirstOrder && promoSettings?.first_order_enabled !== false;
+  const firstOrderDiscount = firstOrderEligible ? (promoSettings?.first_order_discount || 500) : 0;
+  const firstOrderFreeDelivery = firstOrderEligible
+    && promoSettings?.first_order_free_delivery_enabled !== false
+    && total >= (promoSettings?.free_delivery_threshold || 30000);
+
   const voucherDiscount = voucher
     ? voucher.discount_type === 'fixed_amount'
       ? Math.min(voucher.discount_amount || 0, total)
       : Math.round((total * (voucher.discount_percent || 0)) / 100)
     : 0;
-  const appliedDiscount = Math.min(referralDiscount + voucherDiscount, total);
+  const appliedDiscount = Math.min(referralDiscount + voucherDiscount + firstOrderDiscount, total);
+  const deliveryFee = total > 0 ? (firstOrderFreeDelivery ? 0 : 1500) : 0;
   const grandTotal = total - appliedDiscount + deliveryFee;
 
   const canPlace = name.trim() && phone.trim() && address.trim() && landmark.trim() && !placing;
@@ -154,6 +176,7 @@ export default function Checkout() {
             product_id: i.product_id || (i.id || '').split('__')[0],
             variant_label: i.variant_label || i.details || '',
             quantity: i.quantity,
+            addon_ids: (i.addons || []).map((a) => a.id),
           })),
           voucherCode: voucher ? voucher.code : '',
           customer_name: name,
@@ -243,6 +266,16 @@ export default function Checkout() {
             ₦{grandTotal.toLocaleString()}
           </span>
         </div>
+        {firstOrderDiscount > 0 && (
+          <div className="flex items-center gap-1.5 text-xs text-[#2E7D32] font-medium mb-2">
+            <Tag className="w-3.5 h-3.5" /> First order −₦{firstOrderDiscount.toLocaleString()} applied
+          </div>
+        )}
+        {firstOrderFreeDelivery && (
+          <div className="flex items-center gap-1.5 text-xs text-[#2E7D32] font-medium mb-2">
+            <Tag className="w-3.5 h-3.5" /> First order free delivery applied
+          </div>
+        )}
         {referralDiscount > 0 && (
           <div className="flex items-center gap-1.5 text-xs text-[#2E7D32] font-medium mb-2">
             <Tag className="w-3.5 h-3.5" /> Referral reward −₦{Math.min(referralDiscount, total).toLocaleString()} applied
@@ -411,10 +444,16 @@ export default function Checkout() {
               <span className="text-muted-foreground">Delivery fee</span>
               <span className="text-foreground font-medium">{deliveryFee === 0 ? 'Free' : `₦${deliveryFee.toLocaleString()}`}</span>
             </div>
-            {appliedDiscount > 0 && (
+            {firstOrderDiscount > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">First Order Discount</span>
+                <span className="text-[#2E7D32] font-semibold">−₦{firstOrderDiscount.toLocaleString()}</span>
+              </div>
+            )}
+            {(referralDiscount + voucherDiscount) > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Discount {voucher ? `(${voucher.code})` : ''}</span>
-                <span className="text-[#2E7D32] font-semibold">−₦{appliedDiscount.toLocaleString()}</span>
+                <span className="text-[#2E7D32] font-semibold">−₦{(referralDiscount + voucherDiscount).toLocaleString()}</span>
               </div>
             )}
             <div className="border-t border-border pt-2 flex justify-between">

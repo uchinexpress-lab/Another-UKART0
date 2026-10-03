@@ -33,6 +33,28 @@
           },
           "unit": {
             "type": "string"
+          },
+          "addons": {
+            "type": "array",
+            "description": "Selected preparation add-ons (server-calculated prices)",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "price": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "addons_total": {
+            "type": "number",
+            "description": "Sum of add-on prices for this line item (server-calculated)"
           }
         }
       }
@@ -146,6 +168,21 @@
         "referrer"
       ],
       "description": "Whether the customer was the referred user or the referrer for the applied reward"
+    },
+    "is_first_order": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this order received the first-order promotion discount"
+    },
+    "first_order_discount": {
+      "type": "number",
+      "default": 0,
+      "description": "First-order discount amount applied to this order"
+    },
+    "first_order_free_delivery": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether free delivery was applied via the first-order promotion"
     }
   },
   "required": [

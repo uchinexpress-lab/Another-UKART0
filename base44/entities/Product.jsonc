@@ -144,6 +144,36 @@
         }
       }
     },
+    "addons": {
+      "type": "array",
+      "description": "Custom preparation services (cut, slice, grind, etc.) that customers can add to this product",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique add-on identifier"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "default": 0
+          },
+          "active": {
+            "type": "boolean",
+            "default": true
+          },
+          "display_order": {
+            "type": "number"
+          }
+        }
+      }
+    },
     "is_best_seller": {
       "type": "boolean"
     },
