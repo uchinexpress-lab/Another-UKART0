@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft, MapPin, Navigation, Phone, User, Loader2, ShoppingBag, Tag, History, X, CreditCard, Lock, ChevronRight } from 'lucide-react';
+import { ArrowLeft, MapPin, Navigation, Phone, User, Loader2, ShoppingBag, Tag, History, X, CreditCard, Lock, ChevronRight, Truck } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { getServiceFee } from '@/lib/fees';
+import { getDeliveryFee, DELIVERY_ZONES } from '@/lib/delivery';
 
 const REWARD_AMOUNT = 1000;
 
@@ -15,6 +16,7 @@ export default function Checkout() {
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [landmark, setLandmark] = useState('');
+  const [zone, setZone] = useState('island');
   const [placing, setPlacing] = useState(false);
   const [referralDiscount, setReferralDiscount] = useState(0);
   const [rewardRef, setRewardRef] = useState(null);
@@ -107,9 +109,6 @@ export default function Checkout() {
 
   const firstOrderEligible = isFirstOrder && promoSettings?.first_order_enabled !== false;
   const firstOrderDiscount = firstOrderEligible ? (promoSettings?.first_order_discount || 500) : 0;
-  const firstOrderFreeDelivery = firstOrderEligible
-    && promoSettings?.first_order_free_delivery_enabled !== false
-    && total >= (promoSettings?.free_delivery_threshold || 30000);
 
   const voucherDiscount = voucher
     ? voucher.discount_type === 'fixed_amount'
@@ -117,7 +116,8 @@ export default function Checkout() {
       : Math.round((total * (voucher.discount_percent || 0)) / 100)
     : 0;
   const appliedDiscount = Math.min(referralDiscount + voucherDiscount + firstOrderDiscount, total);
-  const deliveryFee = total > 0 ? (firstOrderFreeDelivery ? 0 : 1500) : 0;
+  const deliveryFee = getDeliveryFee({ subtotal: total, zone, isFirstOrder });
+  const splashFirstDelivery = isFirstOrder && total >= 4900;
   const serviceFee = getServiceFee(total);
   const grandTotal = total - appliedDiscount + deliveryFee + serviceFee;
 
@@ -184,6 +184,7 @@ export default function Checkout() {
           customer_phone: phone,
           customer_address: address,
           landmark,
+          delivery_zone: zone,
         });
         orderId = res.data?.orderId;
         if (!orderId) {
@@ -277,11 +278,6 @@ export default function Checkout() {
             <Tag className="w-3.5 h-3.5" /> First order −₦{firstOrderDiscount.toLocaleString()} applied
           </div>
         )}
-        {firstOrderFreeDelivery && (
-          <div className="flex items-center gap-1.5 text-xs text-retail font-medium mb-2">
-            <Tag className="w-3.5 h-3.5" /> First order free delivery applied
-          </div>
-        )}
         {referralDiscount > 0 && (
           <div className="flex items-center gap-1.5 text-xs text-retail font-medium mb-2">
             <Tag className="w-3.5 h-3.5" /> Referral reward −₦{Math.min(referralDiscount, total).toLocaleString()} applied
@@ -326,6 +322,30 @@ export default function Checkout() {
               </div>
             </div>
           )}
+
+          <div className="uk-card p-4 mb-4">
+            <label className={labelClass}>
+              <Truck className="w-3.5 h-3.5" /> Delivery area
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              {DELIVERY_ZONES.map((z) => (
+                <button
+                  key={z.key}
+                  onClick={() => setZone(z.key)}
+                  className={`h-11 rounded-xl text-[12px] font-bold border transition-colors ${
+                    zone === z.key
+                      ? 'bg-secondary border-retail text-retail'
+                      : 'bg-card border-border text-muted-foreground'
+                  }`}
+                >
+                  {z.label}
+                </button>
+              ))}
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-2">
+              Lagos Island ₦3,000 · Outside ₦5,000 for orders from ₦10,000
+            </p>
+          </div>
 
           <div className="uk-card p-4 space-y-4">
             <div>
@@ -447,7 +467,9 @@ export default function Checkout() {
               <span className="text-foreground font-medium">₦{total.toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Delivery fee</span>
+              <span className="text-muted-foreground">
+                Delivery fee <span className="text-[10px]">{splashFirstDelivery ? '(65% off)' : '(50% off)'}</span>
+              </span>
               <span className="text-foreground font-medium">{deliveryFee === 0 ? 'Free' : `₦${deliveryFee.toLocaleString()}`}</span>
             </div>
             <div className="flex justify-between text-sm">

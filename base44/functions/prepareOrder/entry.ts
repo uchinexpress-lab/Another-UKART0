@@ -40,6 +40,7 @@ export default async function (req: Request): Promise<Response> {
       customer_phone,
       customer_address,
       landmark,
+      delivery_zone,
     } = body;
 
     if (!Array.isArray(items) || items.length === 0) {
@@ -164,23 +165,21 @@ export default async function (req: Request): Promise<Response> {
 
     // --- First-order promotion calculations ---
     let firstOrderDiscount = 0;
-    let firstOrderFreeDelivery = false;
 
     if (isFirstOrder && firstOrderEnabled) {
       firstOrderDiscount = Math.min(firstOrderDiscountAmount, subtotal);
-      if (
-        firstOrderFreeDeliveryEnabled &&
-        subtotal >= freeDeliveryThreshold
-      ) {
-        firstOrderFreeDelivery = true;
-      }
     }
 
     // --- Delivery fee ---
-    // Free delivery at the threshold applies ONLY to first orders.
-    // Returning customers always pay the normal delivery fee.
+    // Base: Lagos Island is ₦3,000 and any order under ₦10,000 is ₦3,000
+    // everywhere; every other order is ₦5,000.
+    // Splash discount: 65% off a new customer's first delivery (orders from
+    // ₦4,900), 50% off every delivery after that. Mirrors src/lib/delivery.js.
+    const zone = delivery_zone === "mainland" ? "mainland" : "island";
+    const baseDelivery = zone === "mainland" && subtotal >= 10000 ? 5000 : 3000;
+    const splashFirst = isFirstOrder && subtotal >= 4900;
     const delivery_fee = subtotal > 0
-      ? (firstOrderFreeDelivery ? 0 : DELIVERY_FEE)
+      ? Math.round(baseDelivery * (splashFirst ? 0.35 : 0.5))
       : 0;
 
     // --- Voucher validation (check only — do NOT increment) ---
@@ -268,6 +267,7 @@ export default async function (req: Request): Promise<Response> {
       customer_email: user.email,
       customer_address,
       landmark,
+      delivery_zone: zone,
       status: "awaiting_payment",
       payment_method: "Pay Online",
       payment_status: "Pending",
@@ -275,7 +275,6 @@ export default async function (req: Request): Promise<Response> {
       referral_type,
       is_first_order: isFirstOrder && firstOrderDiscount > 0,
       first_order_discount: firstOrderDiscount,
-      first_order_free_delivery: firstOrderFreeDelivery,
     });
 
     // --- Transition the referred user's pending referral → first_order_placed ---
@@ -305,7 +304,7 @@ export default async function (req: Request): Promise<Response> {
       voucher_id,
       is_first_order: isFirstOrder && firstOrderDiscount > 0,
       first_order_discount: firstOrderDiscount,
-      first_order_free_delivery: firstOrderFreeDelivery,
+      delivery_zone: zone,
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

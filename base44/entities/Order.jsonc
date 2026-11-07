@@ -95,6 +95,15 @@
     "landmark": {
       "type": "string"
     },
+    "delivery_zone": {
+      "type": "string",
+      "enum": [
+        "island",
+        "mainland"
+      ],
+      "default": "island",
+      "description": "Delivery area used to price the delivery fee"
+    },
     "payment_method": {
       "type": "string",
       "default": "Pay Online"
