@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 
-const HIDDEN_ON = ["/cart", "/order", "/checkout"];
+const HIDDEN_ON = ["/cart", "/order", "/checkout", "/package/"];
 const POS_KEY = "ukart_cart_fab_pos";
 const WIDTH = 56;
 const HEIGHT = 86; // button + price pill

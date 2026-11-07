@@ -4,8 +4,9 @@ import { X, Clock, Users, ChefHat } from 'lucide-react';
 export default function MealKitPreview({ kit, onClose }) {
   const formatNaira = (n) => `₦${(n || 0).toLocaleString()}`;
   const items = kit.items || [];
-  const steps = kit.cooking_steps || [];
   const optionalItems = (kit.optional_items || []).filter(i => i.active);
+  const sizes = (kit.sizes || []).filter(s => s.available !== false && s.label);
+  const addons = (kit.addons || []).filter(a => a.active !== false && a.name);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -64,18 +65,26 @@ export default function MealKitPreview({ kit, onClose }) {
               </div>
             </div>
           )}
-          {steps.length > 0 && (
+          {sizes.length > 0 && (
             <div>
-              <h4 className="text-sm font-bold text-foreground mb-2">Cooking Instructions</h4>
-              <div className="space-y-3">
-                {steps.map((step, idx) => (
-                  <div key={idx} className="flex gap-2.5">
-                    <span className="w-6 h-6 rounded-full bg-[#2E7D32] text-white text-xs font-bold flex items-center justify-center flex-shrink-0">{step.step || idx + 1}</span>
-                    <div className="flex-1">
-                      {step.title && <p className="text-xs font-bold text-foreground">{step.title}</p>}
-                      {step.text && <p className="text-xs text-muted-foreground mt-0.5">{step.text}</p>}
-                      {step.image && <img src={step.image} alt="" className="w-full h-24 rounded-lg object-contain mt-1.5 bg-gray-50" />}
-                    </div>
+              <h4 className="text-sm font-bold text-foreground mb-2">Sizes</h4>
+              <div className="flex flex-wrap gap-2">
+                {sizes.map((size, idx) => (
+                  <span key={idx} className="px-3 py-1.5 rounded-full bg-muted text-xs font-semibold text-foreground">
+                    {size.label} · {size.serves ? `${size.serves} · ` : ''}{formatNaira(size.price)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {addons.length > 0 && (
+            <div>
+              <h4 className="text-sm font-bold text-foreground mb-2">Add-ons</h4>
+              <div className="space-y-1.5">
+                {addons.map((addon, idx) => (
+                  <div key={idx} className="flex items-center justify-between text-xs">
+                    <span>{addon.name}</span>
+                    {addon.price > 0 && <span className="text-[#2E7D32] font-semibold">{formatNaira(addon.price)}</span>}
                   </div>
                 ))}
               </div>

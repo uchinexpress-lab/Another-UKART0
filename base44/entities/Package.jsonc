@@ -67,6 +67,31 @@
     "serves": {
       "type": "string"
     },
+    "sizes": {
+      "type": "array",
+      "description": "Optional size options for a meal kit (e.g. Small, Family). Selecting a size can change the price and servings.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "description": "Size name shown to customers (e.g. Small, Family)"
+          },
+          "serves": {
+            "type": "string",
+            "description": "Servings for this size (e.g. 2 servings)"
+          },
+          "price": {
+            "type": "number",
+            "description": "Price for this size in naira"
+          },
+          "available": {
+            "type": "boolean",
+            "default": true
+          }
+        }
+      }
+    },
     "stock_status": {
       "type": "string",
       "enum": [
@@ -186,15 +211,28 @@
       "items": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string"
+          },
           "name": {
+            "type": "string"
+          },
+          "description": {
             "type": "string"
           },
           "price": {
             "type": "number"
           },
+          "active": {
+            "type": "boolean",
+            "default": true
+          },
           "available": {
             "type": "boolean",
             "default": true
+          },
+          "display_order": {
+            "type": "number"
           }
         }
       }

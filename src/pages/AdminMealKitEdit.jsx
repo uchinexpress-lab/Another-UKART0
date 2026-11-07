@@ -5,7 +5,8 @@ import { base44 } from '@/api/base44Client';
 import AdminNav from '@/components/admin/AdminNav';
 import BannerImageEditor from '@/components/admin/BannerImageEditor';
 import IngredientsEditor from '@/components/admin/IngredientsEditor';
-import CookingStepsEditor from '@/components/admin/CookingStepsEditor';
+import SizesEditor from '@/components/admin/SizesEditor';
+import AddonsEditor from '@/components/admin/AddonsEditor';
 import OptionalItemsEditor from '@/components/admin/OptionalItemsEditor';
 import MealKitPreview from '@/components/admin/MealKitPreview';
 import { useToast } from '@/components/ui/use-toast';
@@ -39,7 +40,8 @@ export default function AdminMealKitEdit() {
   const [image, setImage] = useState('');
   const [imageSettings, setImageSettings] = useState({ zoom: 1, pos_x: 50, pos_y: 50, fit_mode: 'contain' });
   const [items, setItems] = useState([]);
-  const [cookingSteps, setCookingSteps] = useState([]);
+  const [sizes, setSizes] = useState([]);
+  const [addons, setAddons] = useState([]);
   const [optionalItems, setOptionalItems] = useState([]);
 
   useEffect(() => {
@@ -63,7 +65,8 @@ export default function AdminMealKitEdit() {
         fit_mode: pkg.image_fit_mode || 'contain',
       });
       setItems(pkg.items || []);
-      setCookingSteps(pkg.cooking_steps || []);
+      setSizes(pkg.sizes || []);
+      setAddons(pkg.addons || []);
       setOptionalItems(pkg.optional_items || []);
       setLoading(false);
     });
@@ -98,7 +101,8 @@ export default function AdminMealKitEdit() {
       image_pos_y: imageSettings.pos_y,
       image_fit_mode: imageSettings.fit_mode,
       items,
-      cooking_steps: cookingSteps,
+      sizes,
+      addons,
       optional_items: optionalItems,
     };
     try {
@@ -120,7 +124,7 @@ export default function AdminMealKitEdit() {
   const previewKit = {
     name, description, total_price: totalPrice, original_total: originalTotal,
     serves: serves === 'Custom' ? customServes : serves, prep_time: prepTime,
-    image, items, cooking_steps: cookingSteps, optional_items: optionalItems,
+    image, items, sizes, addons, optional_items: optionalItems,
   };
 
   const bgSize = imageSettings.zoom > 1
@@ -203,8 +207,12 @@ export default function AdminMealKitEdit() {
           <OptionalItemsEditor items={optionalItems} onChange={setOptionalItems} products={allProducts} />
         </Section>
 
-        <Section title="Cooking Instructions">
-          <CookingStepsEditor steps={cookingSteps} onChange={setCookingSteps} />
+        <Section title="Sizes (optional)">
+          <SizesEditor sizes={sizes} onChange={setSizes} />
+        </Section>
+
+        <Section title="Add-ons (optional)">
+          <AddonsEditor addons={addons} onChange={setAddons} />
         </Section>
       </div>
 

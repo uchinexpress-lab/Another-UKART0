@@ -4,7 +4,6 @@ import {
   Heart,
   Users,
   Clock,
-  ChefHat,
   Check,
   ChevronRight,
   ShoppingBag,
@@ -15,7 +14,9 @@ import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useMealKit } from '@/context/MealKitContext';
 import ProteinOptionCard from './ProteinOptionCard';
-import CookingInstructionsSheet from './CookingInstructionsSheet';
+import MealKitIngredients from './MealKitIngredients';
+import MealKitSizes from './MealKitSizes';
+import MealKitAddons from './MealKitAddons';
 
 const STOCK_CONFIG = {
   in_stock: {
@@ -49,7 +50,8 @@ export default function MealKitDetail({ pkg }) {
 
   const [selectedProteins, setSelectedProteins] = useState({});
   const [optCategories, setOptCategories] = useState([]);
-  const [showInstructions, setShowInstructions] = useState(false);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedAddons, setSelectedAddons] = useState({});
 
   const selections = getSelections(pkg.id);
   const wished = isWishlisted(pkg.id);
@@ -86,8 +88,20 @@ export default function MealKitDetail({ pkg }) {
     0
   );
 
-  const basePrice = pkg.total_price || pkg.starting_price || 0;
-  const total = basePrice + proteinsTotal + categoryAddOnsTotal;
+  const chosenSize = selectedSize != null ? (pkg.sizes || [])[selectedSize] : null;
+  const kitAddons = pkg.addons || [];
+  const addOnsTotal = kitAddons.reduce(
+    (sum, addon, index) =>
+      selectedAddons[index] && addon.active !== false && addon.available !== false
+        ? sum + (addon.price || 0)
+        : sum,
+    0
+  );
+
+  const basePrice = (chosenSize?.price ?? pkg.total_price) || pkg.starting_price || 0;
+  const total = basePrice + proteinsTotal + categoryAddOnsTotal + addOnsTotal;
+  const extrasTotal = proteinsTotal + categoryAddOnsTotal + addOnsTotal;
+  const servesLabel = chosenSize?.serves || pkg.serves || 'Serves 4–6';
   const prepTime = pkg.prep_time || pkg.delivery_time || '25–40 mins';
 
   const handleAddToCart = () => {
@@ -95,26 +109,31 @@ export default function MealKitDetail({ pkg }) {
     const chosenProteins = proteins
       .filter((p) => p.available !== false && selectedProteins[p.name])
       .map((p) => p.name);
+    const chosenAddons = kitAddons
+      .filter((a, index) => selectedAddons[index] && a.active !== false && a.available !== false)
+      .map((a) => a.name);
     const addOnDetails = [
       ...chosenProteins,
       ...selections.map(
         (s) => `${s.name} (${s.quantity}${s.unit ? ' ' + s.unit : ''})`
       ),
+      ...chosenAddons,
     ];
     addItem({
-      id: `mealkit-${pkg.id}`,
-      name: pkg.name,
+      id: `mealkit-${pkg.id}${chosenSize ? `-${chosenSize.label}` : ''}`,
+      name: chosenSize ? `${pkg.name} — ${chosenSize.label}` : pkg.name,
       price: total,
       image: pkg.image,
-      unit: pkg.serves || 'Meal Kit',
+      unit: chosenSize?.serves || pkg.serves || 'Meal Kit',
       details: addOnDetails.length ? `Add-ons: ${addOnDetails.join(', ')}` : '',
     });
     clearSelections(pkg.id);
+    setSelectedAddons({});
     navigate('/cart');
   };
 
   return (
-    <div className="pb-40 bg-[#FAFAFA] min-h-screen">
+    <div className="pb-48 bg-[#FAFAFA] min-h-screen">
       {/* Hero — blurred background with availability ribbon across the middle */}
       <div className="relative w-full h-56 overflow-hidden">
         {pkg.image ? (
@@ -183,7 +202,7 @@ export default function MealKitDetail({ pkg }) {
         <div className="flex items-center gap-3 mt-4 flex-wrap">
           <span className="flex items-center gap-1.5 text-xs font-medium text-gray-600">
             <Users className="w-3.5 h-3.5 text-gray-400" />
-            {pkg.serves || 'Serves 4–6'}
+            {servesLabel}
           </span>
           <span className="w-px h-3 bg-gray-200" />
           <span className="flex items-center gap-1.5 text-xs font-medium text-gray-600">
@@ -209,6 +228,22 @@ export default function MealKitDetail({ pkg }) {
           )}
         </div>
       </div>
+
+      <MealKitSizes
+        sizes={pkg.sizes}
+        selectedIndex={selectedSize}
+        onSelect={setSelectedSize}
+      />
+
+      <MealKitIngredients items={pkg.items} />
+
+      <MealKitAddons
+        addons={pkg.addons}
+        selected={selectedAddons}
+        onToggle={(index) =>
+          setSelectedAddons((prev) => ({ ...prev, [index]: !prev[index] }))
+        }
+      />
 
       {/* Add Optional Items — protein cards */}
       {proteins.length > 0 && (
@@ -298,68 +333,37 @@ export default function MealKitDetail({ pkg }) {
         </div>
       )}
 
-      {/* Cooking guide */}
-      {pkg.cooking_instructions && (
-        <div className="px-3 mt-6">
-          <button
-            onClick={() => setShowInstructions(true)}
-            className="w-full flex items-center justify-center gap-2 bg-white rounded-2xl border border-gray-100 py-3.5 text-sm font-semibold text-[#2E7D32] active:scale-[0.99] transition-transform"
-          >
-            <ChefHat className="w-4 h-4" /> View Cooking Guide
-          </button>
-        </div>
-      )}
-
-      {/* Sticky bottom CTA */}
-      <div className="fixed bottom-16 left-0 right-0 max-w-md mx-auto px-3 py-3 bg-white/95 backdrop-blur border-t border-gray-100 z-30">
-        {kitAvailable ? (
-          <>
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <span className="text-[11px] text-gray-400 block leading-none mb-0.5">
-                  Total
-                </span>
-                <span className="text-xl font-bold text-[#2E7D32]">
-                  ₦{total.toLocaleString()}
-                </span>
-              </div>
-              {(proteinsTotal > 0 || categoryAddOnsTotal > 0) && (
-                <span className="text-[11px] text-gray-400 text-right leading-tight">
-                  Kit ₦{basePrice.toLocaleString()}
-                  {proteinsTotal > 0 && (
-                    <>
-                      <br />+ Proteins ₦{proteinsTotal.toLocaleString()}
-                    </>
-                  )}
-                  {categoryAddOnsTotal > 0 && (
-                    <>
-                      <br />+ Add-ons ₦{categoryAddOnsTotal.toLocaleString()}
-                    </>
-                  )}
-                </span>
-              )}
-            </div>
+      {/* Floating bottom CTA — compact, clear of the bottom nav and page content */}
+      <div
+        className="fixed left-0 right-0 z-30 max-w-md mx-auto px-3"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom) + 84px)' }}
+      >
+        <div className="flex items-center gap-3 bg-white rounded-2xl border border-gray-100 shadow-lg px-3 py-2.5">
+          <div className="min-w-0 pl-1">
+            <span className="text-[10px] text-gray-400 block leading-none mb-1">Total</span>
+            <span className="text-lg font-bold text-[#2E7D32] leading-none block">
+              ₦{total.toLocaleString()}
+            </span>
+          </div>
+          {kitAvailable ? (
             <button
               onClick={handleAddToCart}
-              className="w-full h-12 rounded-2xl bg-[#2E7D32] text-white font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+              className="flex-1 h-11 rounded-xl bg-[#2E7D32] text-white font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
             >
               <ShoppingBag className="w-4 h-4" /> Add to Cart
             </button>
-          </>
-        ) : (
-          <button
-            disabled
-            className="w-full h-12 rounded-2xl bg-gray-200 text-gray-400 font-bold text-sm flex items-center justify-center cursor-not-allowed"
-          >
-            Currently Unavailable
-          </button>
+          ) : (
+            <div className="flex-1 h-11 rounded-xl bg-gray-200 text-gray-400 font-bold text-sm flex items-center justify-center">
+              Currently Unavailable
+            </div>
+          )}
+        </div>
+        {extrasTotal > 0 && (
+          <p className="text-[10px] text-gray-500 text-center mt-1">
+            ₦{basePrice.toLocaleString()} kit + ₦{extrasTotal.toLocaleString()} extras
+          </p>
         )}
       </div>
-
-      <CookingInstructionsSheet
-        open={showInstructions}
-        onOpenChange={setShowInstructions}
-      />
     </div>
   );
 }
