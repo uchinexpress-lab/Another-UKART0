@@ -45,8 +45,8 @@ export default function BudgetShop() {
   if (!budget) return <div className="p-8 text-center text-muted-foreground">Invalid budget range</div>;
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold text-foreground mb-1 mt-2">💚 {budget.label}</h1>
+    <div className="uk-page">
+      <h1 className="uk-title mb-1 mt-2">💚 {budget.label}</h1>
       <p className="text-sm text-muted-foreground mb-4">Everything within your budget</p>
 
       {packages.length > 0 && (

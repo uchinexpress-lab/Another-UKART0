@@ -30,12 +30,14 @@ export default function Offers() {
 
   return (
     <PullToRefresh onRefresh={loadOffers}>
-    <div className="p-4">
+    <div className="uk-page">
       <div className="flex items-center gap-2 mb-1">
-        <Tag className="w-5 h-5 text-[#2E7D32]" />
-        <h1 className="text-2xl font-bold text-foreground">Weekly Offers</h1>
+        <span className="w-8 h-8 rounded-full bg-retail/10 flex items-center justify-center">
+          <Tag className="w-4 h-4 text-retail" />
+        </span>
+        <h1 className="uk-title">Weekly Offers</h1>
       </div>
-      <p className="text-sm text-muted-foreground mb-4">Limited time deals on your favourites</p>
+      <p className="uk-sub mb-4">Limited time deals on your favourites</p>
       {products.length === 0 ? (
         <p className="text-muted-foreground text-center py-12">No active offers right now</p>
       ) : (

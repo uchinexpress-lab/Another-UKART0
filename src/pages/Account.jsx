@@ -131,9 +131,9 @@ export default function Account() {
     );
 
   return (
-    <div className="p-4 space-y-5">
+    <div className="uk-page space-y-5">
       {/* Profile photo */}
-      <div className="bg-card rounded-2xl border border-border p-5 flex flex-col items-center">
+      <div className="uk-card p-5 flex flex-col items-center">
         <div className="relative">
           {user.avatar_url ? (
             <Image
@@ -169,10 +169,10 @@ export default function Account() {
 
       {/* Personal information */}
       <div>
-        <h2 className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-2 px-1">
+        <h2 className="uk-section-label mb-2 px-1">
           Personal Information
         </h2>
-        <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
+        <div className="uk-card p-4 space-y-4">
           <div>
             <Label className="mb-1.5 block">Full Name</Label>
             <div className="relative">
@@ -239,7 +239,7 @@ export default function Account() {
 
       {/* Order history */}
       <div>
-        <h2 className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-2 px-1">
+        <h2 className="uk-section-label mb-2 px-1">
           Order History
         </h2>
         <OrderHistory />

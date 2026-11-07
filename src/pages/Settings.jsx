@@ -43,8 +43,8 @@ export default function Settings() {
   };
 
   return (
-    <div className="p-4 space-y-4">
-      <div className="bg-card rounded-2xl border border-border divide-y divide-gray-50">
+    <div className="uk-page space-y-4">
+      <div className="uk-card divide-y divide-border">
         <div className="p-4">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -83,24 +83,24 @@ export default function Settings() {
 
       </div>
 
-      <div className="bg-card rounded-2xl border border-border divide-y divide-gray-50">
+      <div className="uk-card divide-y divide-border overflow-hidden">
         <button
           onClick={logout}
           disabled={busy}
-          className="w-full flex items-center gap-3 p-4 active:bg-muted/50 disabled:opacity-50"
+          className="uk-row disabled:opacity-50"
         >
-          <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
-            <LogOut className="w-5 h-5 text-gray-700" />
+          <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
+            <LogOut className="w-4 h-4 text-muted-foreground" />
           </div>
           <span className="text-sm font-semibold text-foreground flex-1 text-left">Log Out</span>
-          {busy && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
+          {busy && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
         </button>
 
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <button className="w-full flex items-center gap-3 p-4 active:bg-muted/50">
-              <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
-                <Trash2 className="w-5 h-5 text-red-500" />
+            <button className="uk-row">
+              <div className="w-9 h-9 rounded-full bg-red-500/10 flex items-center justify-center">
+                <Trash2 className="w-4 h-4 text-red-500" />
               </div>
               <span className="text-sm font-semibold text-red-600 flex-1 text-left">
                 Delete Account

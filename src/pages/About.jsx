@@ -18,14 +18,14 @@ const PRIVACY = `UKART Fresh Ventures respects your privacy. This Privacy Policy
 
 export default function About() {
   return (
-    <div className="p-4 space-y-4">
+    <div className="uk-page space-y-4">
       <div className="flex flex-col items-center text-center">
         <Image
           src={LOGO_URL}
           fittingType="fit"
           className="w-32 h-32"
         />
-        <h1 className="text-2xl font-bold text-foreground mt-2">UKART</h1>
+        <h1 className="uk-title mt-2">UKART</h1>
         <p className="text-sm text-muted-foreground">No Market Wahala</p>
         <span className="mt-2 text-[11px] font-bold text-[#2E7D32] bg-primary/10 px-3 py-1 rounded-full">
           Version {APP_VERSION}

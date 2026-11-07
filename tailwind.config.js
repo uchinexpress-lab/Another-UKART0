@@ -12,7 +12,8 @@ module.exports = {
   		colors: {
   			retail: {
   				DEFAULT: 'hsl(var(--retail))',
-  				hover: 'hsl(var(--retail-hover))'
+  				hover: 'hsl(var(--retail-hover))',
+  				foreground: 'hsl(var(--retail-foreground))'
   			},
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',

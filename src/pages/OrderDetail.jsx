@@ -125,7 +125,7 @@ export default function OrderDetail() {
   const discount = order.discount || 0;
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="uk-page space-y-4">
       <div className="bg-card rounded-2xl border border-border p-4">
         <div className="flex items-center justify-between mb-1">
           <span className="font-bold text-foreground">{order.order_number}</span>

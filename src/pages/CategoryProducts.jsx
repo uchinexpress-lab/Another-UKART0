@@ -38,16 +38,16 @@ export default function CategoryProducts() {
   }
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold text-foreground mb-1">
+    <div className="uk-page">
+      <h1 className="uk-title mb-1">
         {category?.icon} {category?.name}
       </h1>
       {kitId ? (
-        <p className="text-sm font-semibold text-[#2E7D32] mb-1">
+        <p className="text-sm font-semibold text-retail mb-3">
           Choose a product to add to your meal kit
         </p>
       ) : (
-        <p className="text-sm text-muted-foreground mb-1">{products.length} products</p>
+        <p className="uk-sub mb-3">{products.length} products</p>
       )}
       {products.length === 0 ? (
         <p className="text-muted-foreground text-center py-12">

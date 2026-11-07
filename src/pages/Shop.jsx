@@ -48,11 +48,11 @@ export default function Shop() {
   }
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold text-foreground mb-1">
+    <div className="uk-page">
+      <h1 className="uk-title mb-1">
         {broad.icon} {broad.name}
       </h1>
-      <p className="text-sm text-muted-foreground mb-4">
+      <p className="uk-sub mb-4">
         {broad.example} · {products.length} products
       </p>
       {products.length === 0 ? (

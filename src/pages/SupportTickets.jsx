@@ -217,7 +217,7 @@ export default function SupportTickets() {
   // ---- New ticket view ----
   if (view === 'new') {
     return (
-      <div className="p-4 pb-10">
+      <div className="uk-page pb-10">
         <div className="flex items-center gap-2 mb-5">
           <button
             onClick={() => setSearchParams({})}
@@ -395,7 +395,7 @@ export default function SupportTickets() {
 
   // ---- List view ----
   return (
-    <div className="p-4 pb-10">
+    <div className="uk-page pb-10">
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-bold text-foreground">Support</h1>
         <button

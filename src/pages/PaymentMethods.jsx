@@ -116,7 +116,7 @@ export default function PaymentMethods() {
     );
 
   return (
-    <div className="p-4 space-y-4">
+    <div className="uk-page space-y-4">
       {cards.length === 0 ? (
         <div className="text-center py-10">
           <CreditCard className="w-12 h-12 text-gray-300 mx-auto mb-3" />

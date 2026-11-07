@@ -207,10 +207,10 @@ export default function Notifications() {
 
   return (
     <PullToRefresh onRefresh={loadData}>
-    <div className="p-4 space-y-6">
+    <div className="uk-page space-y-6">
       {/* Feed */}
       <div>
-        <h2 className="text-sm font-bold text-foreground mb-3 px-1">Recent</h2>
+        <h2 className="uk-section-label mb-3 px-1">Recent</h2>
         {feed.length === 0 ? (
           <div className="bg-card rounded-2xl border border-border p-8 text-center">
             <div className="w-14 h-14 rounded-full bg-[#2E7D32]/10 flex items-center justify-center mx-auto mb-3">
@@ -357,8 +357,8 @@ export default function Notifications() {
 
       {/* Preferences */}
       <div>
-        <h2 className="text-sm font-bold text-foreground mb-3 px-1">Preferences</h2>
-        <div className="bg-card rounded-2xl border border-border divide-y divide-gray-50">
+        <h2 className="uk-section-label mb-3 px-1">Preferences</h2>
+        <div className="uk-card divide-y divide-border">
           {ITEMS.map((item) => {
             const Icon = item.icon;
             return (
