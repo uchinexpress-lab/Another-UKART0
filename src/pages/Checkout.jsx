@@ -218,11 +218,11 @@ export default function Checkout() {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center min-h-[60vh]">
         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-          <ShoppingBag className="w-10 h-10 text-[#2E7D32]" />
+          <ShoppingBag className="w-10 h-10 text-retail" />
         </div>
         <h2 className="text-xl font-bold text-foreground mb-1">Your cart is empty</h2>
         <p className="text-sm text-muted-foreground mb-4">Add items before checking out</p>
-        <Link to="/" className="bg-[#2E7D32] text-white text-sm font-bold px-6 py-3 rounded-full">
+        <Link to="/" className="bg-retail text-white text-sm font-bold px-6 py-3 rounded-full">
           Start Shopping
         </Link>
       </div>
@@ -235,12 +235,12 @@ export default function Checkout() {
   return (
     <div className="p-4 pb-44">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="uk-title">Checkout</h1>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="uk-title">Checkout</h2>
         {step === 2 && (
           <button
             onClick={() => setStep(1)}
-            className="flex items-center gap-1 text-[12px] font-bold text-[#2E7D32]"
+            className="flex items-center gap-1 text-[12px] font-bold text-retail"
           >
             <ArrowLeft className="w-3.5 h-3.5" /> Change address
           </button>
@@ -248,14 +248,14 @@ export default function Checkout() {
       </div>
 
       {/* Step indicator */}
-      <div className="flex items-center mb-5">
-        <div className="flex items-center gap-2">
-          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold ${step >= 1 ? 'bg-[#2E7D32] text-white' : 'bg-muted text-muted-foreground'}`}>1</div>
-          <span className={`text-[12px] font-bold ${step >= 1 ? 'text-foreground' : 'text-muted-foreground'}`}>Address</span>
+      <div className="flex items-center gap-2 mb-5">
+        <div className={`flex items-center gap-1.5 h-9 px-3 rounded-full ${step >= 1 ? 'bg-secondary' : 'bg-card border border-border'}`}>
+          <span className={step >= 1 ? 'uk-step-dot uk-step-dot-active' : 'uk-step-dot'}>1</span>
+          <span className="text-[12px] font-bold text-foreground">Address</span>
         </div>
-        <div className={`flex-1 h-0.5 mx-2 rounded ${step >= 2 ? 'bg-[#2E7D32]' : 'bg-border'}`} />
-        <div className="flex items-center gap-2">
-          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold ${step >= 2 ? 'bg-[#2E7D32] text-white' : 'bg-muted text-muted-foreground'}`}>2</div>
+        <div className={`flex-1 h-px ${step >= 2 ? 'bg-retail' : 'bg-border'}`} />
+        <div className={`flex items-center gap-1.5 h-9 px-3 rounded-full ${step >= 2 ? 'bg-secondary' : 'bg-card border border-border'}`}>
+          <span className={step >= 2 ? 'uk-step-dot uk-step-dot-active' : 'uk-step-dot'}>2</span>
           <span className={`text-[12px] font-bold ${step >= 2 ? 'text-foreground' : 'text-muted-foreground'}`}>Payment</span>
         </div>
       </div>
@@ -266,27 +266,27 @@ export default function Checkout() {
           <span className="text-muted-foreground">
             {items.reduce((s, i) => s + i.quantity, 0)} items
           </span>
-          <span className="font-bold text-[#2E7D32]">
+          <span className="font-bold text-retail">
             ₦{grandTotal.toLocaleString()}
           </span>
         </div>
         {firstOrderDiscount > 0 && (
-          <div className="flex items-center gap-1.5 text-xs text-[#2E7D32] font-medium mb-2">
+          <div className="flex items-center gap-1.5 text-xs text-retail font-medium mb-2">
             <Tag className="w-3.5 h-3.5" /> First order −₦{firstOrderDiscount.toLocaleString()} applied
           </div>
         )}
         {firstOrderFreeDelivery && (
-          <div className="flex items-center gap-1.5 text-xs text-[#2E7D32] font-medium mb-2">
+          <div className="flex items-center gap-1.5 text-xs text-retail font-medium mb-2">
             <Tag className="w-3.5 h-3.5" /> First order free delivery applied
           </div>
         )}
         {referralDiscount > 0 && (
-          <div className="flex items-center gap-1.5 text-xs text-[#2E7D32] font-medium mb-2">
+          <div className="flex items-center gap-1.5 text-xs text-retail font-medium mb-2">
             <Tag className="w-3.5 h-3.5" /> Referral reward −₦{Math.min(referralDiscount, total).toLocaleString()} applied
           </div>
         )}
         {voucherDiscount > 0 && (
-          <div className="flex items-center gap-1.5 text-xs text-[#2E7D32] font-medium mb-2">
+          <div className="flex items-center gap-1.5 text-xs text-retail font-medium mb-2">
             <Tag className="w-3.5 h-3.5" /> Voucher {voucher.code} −₦{voucherDiscount.toLocaleString()} applied
           </div>
         )}
@@ -381,16 +381,16 @@ export default function Checkout() {
         <>
           <div className="uk-card p-4 mb-4">
             <p className="text-sm font-bold text-foreground mb-3">Payment Method</p>
-            <div className="flex items-center gap-3 p-3.5 rounded-xl border-2 border-[#2E7D32] bg-[#2E7D32]/5">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[#2E7D32]">
-                <CreditCard className="w-5 h-5 text-white" />
+            <div className="uk-radio-card uk-radio-card-active">
+              <div className="uk-icon-btn">
+                <CreditCard className="w-[18px] h-[18px]" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-semibold text-foreground">Pay Online</p>
-                <p className="text-xs text-muted-foreground">Pay with card, bank transfer, or USSD via Paystack</p>
+                <p className="text-[13px] font-bold text-foreground">Pay Online</p>
+                <p className="text-[11px] text-muted-foreground">Card, bank transfer or USSD via Paystack</p>
               </div>
-              <div className="w-5 h-5 rounded-full border-2 border-[#2E7D32] flex items-center justify-center">
-                <div className="w-2.5 h-2.5 rounded-full bg-[#2E7D32]" />
+              <div className="w-5 h-5 rounded-full border-2 border-retail flex items-center justify-center">
+                <div className="w-2.5 h-2.5 rounded-full bg-retail" />
               </div>
             </div>
             <div className="flex items-center gap-1.5 mt-2.5 text-[11px] text-muted-foreground">
@@ -405,7 +405,7 @@ export default function Checkout() {
             </label>
             {voucher ? (
               <div className="flex items-center justify-between bg-primary/10 rounded-xl px-3 py-2.5">
-                <span className="text-sm font-semibold text-[#2E7D32]">
+                <span className="text-sm font-semibold text-retail">
                   {voucher.code} ({voucher.discount_type === 'fixed_amount' ? `₦${(voucher.discount_amount || 0).toLocaleString()} off` : `${voucher.discount_percent}% off`})
                 </span>
                 <button
@@ -413,7 +413,7 @@ export default function Checkout() {
                     setVoucher(null);
                     setVoucherCode('');
                   }}
-                  className="text-[#2E7D32]"
+                  className="text-retail"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -428,7 +428,7 @@ export default function Checkout() {
                 />
                 <button
                   onClick={applyVoucher}
-                  className="px-4 rounded-xl bg-[#2E7D32] text-white text-sm font-semibold"
+                  className="px-4 rounded-xl bg-retail text-white text-sm font-semibold"
                 >
                   Apply
                 </button>
@@ -451,18 +451,18 @@ export default function Checkout() {
             {firstOrderDiscount > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">First Order Discount</span>
-                <span className="text-[#2E7D32] font-semibold">−₦{firstOrderDiscount.toLocaleString()}</span>
+                <span className="text-retail font-semibold">−₦{firstOrderDiscount.toLocaleString()}</span>
               </div>
             )}
             {(referralDiscount + voucherDiscount) > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Discount {voucher ? `(${voucher.code})` : ''}</span>
-                <span className="text-[#2E7D32] font-semibold">−₦{(referralDiscount + voucherDiscount).toLocaleString()}</span>
+                <span className="text-retail font-semibold">−₦{(referralDiscount + voucherDiscount).toLocaleString()}</span>
               </div>
             )}
             <div className="border-t border-border pt-2 flex justify-between">
               <span className="text-sm font-bold text-foreground">Total</span>
-              <span className="text-lg font-bold text-[#2E7D32]">₦{grandTotal.toLocaleString()}</span>
+              <span className="text-lg font-bold text-retail">₦{grandTotal.toLocaleString()}</span>
             </div>
           </div>
         </>
@@ -470,7 +470,7 @@ export default function Checkout() {
 
       {/* Bottom action bar */}
       <div
-        className="fixed left-0 right-0 max-w-md mx-auto px-4 pt-3 bg-card border-t border-border"
+        className="uk-cta"
         style={{ bottom: 0, paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
       >
         {step === 1 ? (

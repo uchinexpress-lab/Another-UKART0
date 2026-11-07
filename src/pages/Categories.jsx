@@ -8,7 +8,9 @@ export default function Categories() {
 
   return (
     <div className="uk-page">
-      <h1 className="uk-title mb-3">All Categories</h1>
+      <div className="flex items-center justify-end mb-3">
+        <span className="uk-meta-chip">{BROAD_CATEGORIES.length} categories</span>
+      </div>
       <div className="grid grid-cols-3 gap-2.5">
         {BROAD_CATEGORIES.map((cat) => (
           <button

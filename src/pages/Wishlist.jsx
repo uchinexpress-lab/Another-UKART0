@@ -26,11 +26,8 @@ export default function Wishlist() {
 
   return (
     <div className="uk-page">
-      <div className="flex items-center justify-between mb-3">
-        <h1 className="uk-title">Wishlist</h1>
-        <span className="uk-meta">
-          {items.length} saved
-        </span>
+      <div className="flex items-center justify-end mb-3">
+        <span className="uk-meta-chip">{items.length} items</span>
       </div>
       <div className="grid grid-cols-2 gap-3">
         {items.map((item) => (

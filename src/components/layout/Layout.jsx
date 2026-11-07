@@ -13,12 +13,12 @@ const TAB_ROUTES = ['/', '/packages', '/order', '/wishlist', '/profile'];
 function getPageTitle(pathname) {
   if (pathname.startsWith('/package/')) return 'Package Details';
   if (pathname.startsWith('/packages')) return 'Packages';
-  if (pathname.startsWith('/categories')) return 'Categories';
+  if (pathname.startsWith('/categories')) return 'All Categories';
   if (pathname.startsWith('/category/')) return 'Browse';
   if (pathname.startsWith('/shop/')) return 'Shop';
   if (pathname.startsWith('/search')) return 'Search';
   if (pathname.startsWith('/offers')) return 'Offers';
-  if (pathname.startsWith('/cart')) return 'Cart';
+  if (pathname.startsWith('/cart')) return 'My Cart';
   if (pathname.startsWith('/checkout')) return 'Checkout';
   if (pathname.startsWith('/wishlist')) return 'Wishlist';
   if (pathname.startsWith('/profile')) return 'Profile';

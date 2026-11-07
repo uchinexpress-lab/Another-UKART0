@@ -137,14 +137,12 @@ export default function Orders() {
   return (
     <PullToRefresh onRefresh={loadOrders}>
     <div className="uk-page">
-      <h1 className="uk-title mb-3">My Orders</h1>
-
-      <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-4 -mx-1 px-1">
+      <div className="uk-tabs mb-4">
         {TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`uk-chip ${tab === t.key ? 'uk-chip-active' : ''}`}
+            className={`uk-tab ${tab === t.key ? 'uk-tab-active' : ''}`}
           >
             {t.label}
           </button>

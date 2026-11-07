@@ -5,12 +5,13 @@ import { useCart } from '@/context/CartContext';
 
 const TAB_ROOTS = ['/packages', '/order', '/wishlist', '/profile'];
 
-export default function BrandedHeader({ title }) {
+export default function BrandedHeader({ title, right = null }) {
   const navigate = useNavigate();
   const location = useLocation();
   const isTabRoot = TAB_ROOTS.includes(location.pathname);
   const { itemCount } = useCart();
   const showCart = location.pathname.startsWith('/package/');
+  const rightSlot = right || (showCart ? 'cart' : null);
 
   const goBack = () => {
     if (window.history.length > 1) {
@@ -21,43 +22,44 @@ export default function BrandedHeader({ title }) {
   };
 
   return (
-    <header className="bg-card border-b border-border">
+    <header className="sticky top-0 z-30 bg-card border-b border-border">
       <div
-        className={`flex items-center gap-3 px-4 pb-2.5 max-w-md mx-auto w-full ${
-          isTabRoot ? 'justify-center' : ''
-        }`}
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
+        className="flex items-center gap-2 px-3 pb-2.5 max-w-md mx-auto w-full"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 10px)' }}
       >
-        {!isTabRoot && (
-          <button
-            onClick={goBack}
-            aria-label="Back"
-            className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center active:scale-90 transition-transform shrink-0"
-          >
-            <ArrowLeft className="w-5 h-5 text-[#2E7D32]" strokeWidth={2.5} />
-          </button>
-        )}
-        <h1
-          className={`text-[17px] font-bold text-foreground tracking-tight truncate ${
-            isTabRoot ? 'text-center' : 'flex-1'
-          }`}
-        >
+        <div className="w-10 shrink-0">
+          {!isTabRoot && (
+            <button
+              onClick={goBack}
+              aria-label="Back"
+              className="w-10 h-10 rounded-full flex items-center justify-center text-foreground active:scale-90 transition-transform"
+            >
+              <ArrowLeft className="w-[22px] h-[22px]" strokeWidth={2.2} />
+            </button>
+          )}
+        </div>
+
+        <h1 className="flex-1 text-[15px] font-bold text-foreground tracking-tight text-center truncate">
           {title}
         </h1>
-        {showCart && (
-          <Link
-            to="/cart"
-            aria-label="Cart"
-            className="relative w-10 h-10 rounded-full bg-secondary flex items-center justify-center active:scale-90 transition-transform shrink-0"
-          >
-            <ShoppingCart className="w-5 h-5 text-[#2E7D32]" />
-            {itemCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#EF4444] text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-card">
-                {itemCount}
-              </span>
-            )}
-          </Link>
-        )}
+
+        <div className="w-10 shrink-0 flex justify-end">
+          {rightSlot === 'cart' && (
+            <Link
+              to="/cart"
+              aria-label="Cart"
+              className="relative w-10 h-10 rounded-full bg-secondary flex items-center justify-center active:scale-90 transition-transform"
+            >
+              <ShoppingCart className="w-[18px] h-[18px] text-retail" />
+              {itemCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center ring-2 ring-card">
+                  {itemCount}
+                </span>
+              )}
+            </Link>
+          )}
+          {rightSlot !== 'cart' && rightSlot}
+        </div>
       </div>
     </header>
   );

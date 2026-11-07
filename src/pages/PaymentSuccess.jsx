@@ -100,41 +100,47 @@ export default function PaymentSuccess() {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 text-center min-h-[70vh]">
-      <div className="w-20 h-20 rounded-full bg-[#2E7D32]/10 flex items-center justify-center mb-4">
-        <CheckCircle2 className="w-12 h-12 text-[#2E7D32]" />
+    <div className="uk-success-hero min-h-[80vh] px-4 pt-10 pb-10 flex flex-col items-center text-center">
+      <div className="w-20 h-20 rounded-full bg-retail flex items-center justify-center mb-5 shadow-lg shadow-retail/20">
+        <CheckCircle2 className="w-11 h-11 text-retail-foreground" strokeWidth={2.4} />
       </div>
-      <h2 className="text-xl font-bold text-foreground mb-1">Payment Successful</h2>
-      <p className="text-sm text-muted-foreground mb-6">
-        Your order #{order.order_number} has been confirmed and is now being processed.
+      <h2 className="text-[22px] font-extrabold text-foreground mb-1.5">Order Placed!</h2>
+      <p className="text-[13px] text-muted-foreground mb-6 max-w-[280px]">
+        Your groceries are being picked and will be at your door in a flash.
       </p>
 
-      <div className="bg-card rounded-2xl border border-border p-4 mb-6 w-full max-w-sm text-left space-y-2">
-        <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Order</span>
-          <span className="font-bold text-foreground">{order.order_number}</span>
+      <div className="uk-card p-4 mb-5 w-full text-left space-y-2.5">
+        <div className="flex justify-between text-[13px]">
+          <span className="text-muted-foreground">Order ID</span>
+          <span className="font-bold text-foreground">#{order.order_number}</span>
         </div>
-        <div className="flex justify-between text-sm">
+        <div className="flex justify-between text-[13px]">
           <span className="text-muted-foreground">Amount Paid</span>
-          <span className="font-bold text-[#2E7D32]">₦{(order.total || 0).toLocaleString()}</span>
+          <span className="font-bold text-foreground">₦{(order.total || 0).toLocaleString()}</span>
         </div>
-        <div className="flex justify-between text-sm">
+        <div className="flex justify-between text-[13px]">
           <span className="text-muted-foreground">Payment</span>
-          <span className="font-medium text-foreground">
+          <span className="font-semibold text-retail">
             Confirmed{order.payment_channel ? ` · ${order.payment_channel}` : ''}
           </span>
         </div>
-        <div className="flex justify-between text-sm">
+        <div className="flex justify-between text-[13px]">
           <span className="text-muted-foreground">Status</span>
-          <span className="font-medium text-[#2E7D32]">Processing</span>
+          <span className="font-semibold text-retail">Processing</span>
         </div>
       </div>
 
-      <Link
-        to={`/orders/${order.id}`}
-        className="bg-[#2E7D32] text-white text-sm font-bold px-6 py-3 rounded-full active:scale-95 transition-transform"
-      >
-        View Order
+      <div className="flex gap-3 w-full mb-4">
+        <Link to={`/track?id=${order.id}`} className="uk-btn-outline flex-1">
+          Track
+        </Link>
+        <Link to="/" className="uk-btn flex-1">
+          Home
+        </Link>
+      </div>
+
+      <Link to="/support" className="text-[12px] font-semibold text-retail">
+        Contact Support
       </Link>
     </div>
   );
