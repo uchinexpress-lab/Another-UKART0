@@ -58,12 +58,25 @@ export default async function (req: Request): Promise<Response> {
     const freeDeliveryThreshold = promo ? Number(promo.free_delivery_threshold) || 30000 : 30000;
     const firstOrderFreeDeliveryEnabled = promo ? promo.first_order_free_delivery_enabled !== false : true;
 
-    // --- First-order eligibility: no previously paid orders ---
+    // --- First-order eligibility: no previously paid orders, and no other live
+    // order already holding the first-order discount. The discount is claimed
+    // when an order is created, so several pending orders cannot each get it. ---
     const paidOrdersRes = await admin.entities.Order.filter(
       { customer_email: user.email, payment_status: "Paid" },
       { limit: 1 }
     );
-    const isFirstOrder = !paidOrdersRes.items || paidOrdersRes.items.length === 0;
+    const firstOrderClaims = await admin.entities.Order.filter(
+      { customer_email: user.email, is_first_order: true },
+      { limit: 20 }
+    );
+    const alreadyClaimedFirstOrder = (firstOrderClaims.items || []).some(
+      (o: any) =>
+        o.status !== "cancelled" &&
+        !["Failed", "Abandoned", "Cancelled"].includes(o.payment_status)
+    );
+    const isFirstOrder =
+      (!paidOrdersRes.items || paidOrdersRes.items.length === 0) &&
+      !alreadyClaimedFirstOrder;
 
     // --- Recompute subtotal from the catalog ---
     const orderItems: any[] = [];
@@ -276,10 +289,11 @@ export default async function (req: Request): Promise<Response> {
       ? Math.round(baseDelivery * (1 - deliveryPercent / 100))
       : 0;
 
-    // --- Voucher validation (check only — do NOT increment) ---
+    // --- Voucher validation + claim ---
     let voucherDiscount = 0;
     let voucher_code = "";
     let voucher_id = "";
+    let voucher_claimed = false;
     if (voucherCode && String(voucherCode).trim()) {
       const code = String(voucherCode).trim().toUpperCase();
       const vRes = await admin.entities.Voucher.filter(
@@ -299,6 +313,21 @@ export default async function (req: Request): Promise<Response> {
       if (v.expiry_date && new Date(v.expiry_date) < new Date()) {
         return Response.json({ error: "This voucher has expired" }, { status: 400 });
       }
+      // Claim one use now, so two pending orders can never both hold the same
+      // one-time voucher. Checked after the increment (fail-closed) and
+      // released if the payment fails or is abandoned — see shared/paystackUtils.ts.
+      await admin.entities.Voucher.updateMany({ id: v.id }, { $inc: { uses: 1 } });
+      const afterClaim = await admin.entities.Voucher.get(v.id);
+      const claimedUses = Number(afterClaim?.uses) || 0;
+      if (v.max_uses && claimedUses > Number(v.max_uses)) {
+        await admin.entities.Voucher.updateMany({ id: v.id }, { $inc: { uses: -1 } });
+        return Response.json(
+          { error: "This voucher has reached its usage limit" },
+          { status: 400 }
+        );
+      }
+      voucher_claimed = true;
+
       voucherDiscount =
         v.discount_type === "fixed_amount"
           ? Math.min(Number(v.discount_amount) || 0, subtotal)
@@ -312,12 +341,30 @@ export default async function (req: Request): Promise<Response> {
     let referral_id = "";
     let referral_type = "";
 
+    // A reward may only be held by one live order, so several pending orders
+    // cannot each carry the same referral discount.
+    const referralAlreadyClaimed = async (referralId: string) => {
+      const priorUse = await admin.entities.Order.filter(
+        { referral_id: referralId },
+        { limit: 20 }
+      );
+      return (priorUse.items || []).some(
+        (o: any) =>
+          o.status !== "cancelled" &&
+          !["Failed", "Abandoned", "Cancelled"].includes(o.payment_status)
+      );
+    };
+
     // As the referred user (discount on this order if first_order_placed + not rewarded)
     const asReferred = await admin.entities.Referral.filter(
       { referred_user_id: user.id, status: "first_order_placed", referred_rewarded: false },
       { limit: 1 }
     );
-    if (asReferred.items && asReferred.items.length > 0) {
+    if (
+      asReferred.items &&
+      asReferred.items.length > 0 &&
+      !(await referralAlreadyClaimed(asReferred.items[0].id))
+    ) {
       referralDiscount = REFERRAL_REWARD_AMOUNT;
       referral_id = asReferred.items[0].id;
       referral_type = "referred";
@@ -327,7 +374,11 @@ export default async function (req: Request): Promise<Response> {
         { referrer_id: user.id, status: "first_order_placed", referrer_rewarded: false },
         { limit: 1 }
       );
-      if (asReferrer.items && asReferrer.items.length > 0) {
+      if (
+        asReferrer.items &&
+        asReferrer.items.length > 0 &&
+        !(await referralAlreadyClaimed(asReferrer.items[0].id))
+      ) {
         referralDiscount = REFERRAL_REWARD_AMOUNT;
         referral_id = asReferrer.items[0].id;
         referral_type = "referrer";
@@ -355,6 +406,8 @@ export default async function (req: Request): Promise<Response> {
       service_fee,
       discount,
       voucher_code,
+      voucher_id,
+      voucher_claimed,
       total,
       customer_name,
       customer_phone,

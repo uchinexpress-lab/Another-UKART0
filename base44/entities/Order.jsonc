@@ -77,6 +77,15 @@
     "voucher_code": {
       "type": "string"
     },
+    "voucher_id": {
+      "type": "string",
+      "description": "Linked Voucher record id whose use is claimed by this order"
+    },
+    "voucher_claimed": {
+      "type": "boolean",
+      "default": false,
+      "description": "True while this order holds a claimed use of the voucher (released if payment fails)"
+    },
     "total": {
       "type": "number"
     },

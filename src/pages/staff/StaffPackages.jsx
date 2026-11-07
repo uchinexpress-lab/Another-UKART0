@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { staffWrite } from '@/lib/staffWrite';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccessPage } from '@/lib/staffRoles';
 import PackagePreview from '@/components/staff/PackagePreview';
@@ -56,7 +57,7 @@ export default function StaffPackages() {
 
   const toggleActive = async (pkg) => {
     try {
-      await base44.entities.Package.update(pkg.id, { active: !pkg.active });
+      await staffWrite('Package', 'update', pkg.id, { active: !pkg.active });
       setPackages((prev) => prev.map((x) => (x.id === pkg.id ? { ...x, active: !x.active } : x)));
     } catch { alert('Failed to update package'); }
   };
@@ -66,7 +67,7 @@ export default function StaffPackages() {
     if (!newName?.trim()) return;
     try {
       const { id, created_date, updated_date, created_by_id, ...rest } = pkg;
-      await base44.entities.Package.create({
+      await staffWrite('Package', 'create', null, {
         ...rest,
         name: newName.trim(),
         active: false,
@@ -79,7 +80,7 @@ export default function StaffPackages() {
   const deletePkg = async (pkg) => {
     if (!confirm(`Delete "${pkg.name}"? This cannot be undone. Consider deactivating instead.`)) return;
     try {
-      await base44.entities.Package.delete(pkg.id);
+      await staffWrite('Package', 'delete', pkg.id);
       setPackages((prev) => prev.filter((x) => x.id !== pkg.id));
     } catch { alert('Failed to delete package'); }
   };
@@ -92,8 +93,8 @@ export default function StaffPackages() {
     const newOrder = other.display_order || 0;
     const otherOrder = pkg.display_order || 0;
     try {
-      await base44.entities.Package.update(pkg.id, { display_order: newOrder });
-      await base44.entities.Package.update(other.id, { display_order: otherOrder });
+      await staffWrite('Package', 'update', pkg.id, { display_order: newOrder });
+      await staffWrite('Package', 'update', other.id, { display_order: otherOrder });
       await loadPackages();
     } catch { alert('Failed to reorder'); }
   };

@@ -73,6 +73,18 @@ async function markUnpaid(base44, payment, paymentStatus, reason, tx) {
         payment_status: paymentStatus === "abandoned" ? "Abandoned" : "Failed",
         // Order status intentionally stays awaiting_payment — no fulfilment.
       });
+
+      // Give back the voucher use this order claimed at creation, so a failed
+      // or abandoned payment never consumes it.
+      if (order.voucher_id && order.voucher_claimed) {
+        await base44.asServiceRole.entities.Order.update(order.id, {
+          voucher_claimed: false,
+        });
+        await base44.asServiceRole.entities.Voucher.updateMany(
+          { id: order.voucher_id },
+          { $inc: { uses: -1 } }
+        );
+      }
     }
   } catch (e) {
     console.error("Order payment status update failed:", e);
@@ -179,24 +191,10 @@ export async function confirmPayment(base44, reference) {
   }
   await base44.asServiceRole.entities.Order.update(order.id, orderUpdate);
 
-  // 3. Finalize discounts only on successful payment — failed/abandoned
-  // payments never consume a one-time voucher or a referral reward.
-  if (order.voucher_code) {
-    try {
-      const vRes = await base44.asServiceRole.entities.Voucher.filter(
-        { code: order.voucher_code },
-        { limit: 1 }
-      );
-      const v = vRes.items && vRes.items[0];
-      if (v) {
-        await base44.asServiceRole.entities.Voucher.update(v.id, {
-          uses: (v.uses || 0) + 1,
-        });
-      }
-    } catch (e) {
-      console.error("Voucher usage increment failed:", e);
-    }
-  }
+  // 3. The voucher use was already claimed when the order was created
+  // (prepareOrder) and is released if the payment fails, so nothing is
+  // incremented here — only the referral reward is finalised.
+
   if (order.referral_id) {
     try {
       const ref = await base44.asServiceRole.entities.Referral.get(order.referral_id);

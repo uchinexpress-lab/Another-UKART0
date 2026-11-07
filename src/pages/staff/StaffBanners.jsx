@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { staffWrite } from '@/lib/staffWrite';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccessPage } from '@/lib/staffRoles';
 import { RefreshCw, Loader2, Edit } from 'lucide-react';
@@ -38,7 +39,7 @@ export default function StaffBanners() {
 
   const toggleActive = async (b) => {
     try {
-      await base44.entities.Banner.update(b.id, { active: !b.active });
+      await staffWrite('Banner', 'update', b.id, { active: !b.active });
       setBanners((prev) => prev.map((x) => (x.id === b.id ? { ...x, active: !x.active } : x)));
     } catch (e) {
       alert('Failed to update banner');

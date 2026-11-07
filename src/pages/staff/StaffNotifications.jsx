@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { staffWrite } from '@/lib/staffWrite';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccessPage } from '@/lib/staffRoles';
 import { Loader2, Save, Bell, Mail } from 'lucide-react';
@@ -21,7 +22,7 @@ export default function StaffNotifications() {
       if (res.items?.length > 0) {
         setSettings(res.items[0]);
       } else {
-        const created = await base44.entities.NotificationSetting.create({
+        const created = await staffWrite('NotificationSetting', 'create', null, {
           business_email: 'ukartfreshventures@gmail.com',
           enable_business_email: true,
           enable_customer_confirmation: true,
@@ -39,7 +40,7 @@ export default function StaffNotifications() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await base44.entities.NotificationSetting.update(settings.id, {
+      await staffWrite('NotificationSetting', 'update', settings.id, {
         business_email: settings.business_email,
         enable_business_email: settings.enable_business_email,
         enable_customer_confirmation: settings.enable_customer_confirmation,

@@ -143,29 +143,16 @@ export default function Checkout() {
     setVoucherError('');
     if (!voucherCode.trim()) return;
     try {
-      const me = await base44.auth.me();
-      const found = await base44.entities.Voucher.filter({
-        code: voucherCode.trim().toUpperCase(),
-        active: true,
+      // Validated server-side: the voucher's assigned email is a private field
+      // the browser must not be trusted with (or able to read).
+      const res = await base44.functions.invoke('validateVoucher', {
+        code: voucherCode.trim(),
       });
-      if (found.length === 0) {
-        setVoucherError('Invalid or expired voucher code');
+      if (!res.data?.valid) {
+        setVoucherError(res.data?.error || 'Invalid or expired voucher code');
         return;
       }
-      const v = found[0];
-      if (v.max_uses && (v.uses || 0) >= v.max_uses) {
-        setVoucherError('This voucher has reached its usage limit');
-        return;
-      }
-      if (v.assigned_to_email && v.assigned_to_email !== me?.email) {
-        setVoucherError('This voucher is not available for your account');
-        return;
-      }
-      if (v.expiry_date && new Date(v.expiry_date) < new Date()) {
-        setVoucherError('This voucher has expired');
-        return;
-      }
-      setVoucher(v);
+      setVoucher(res.data);
     } catch {
       setVoucherError('Could not validate voucher');
     }

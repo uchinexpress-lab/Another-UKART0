@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Eye, Upload, Loader2, Trash2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
+import { staffWrite } from '@/lib/staffWrite';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccessPage } from '@/lib/staffRoles';
 import BannerImageEditor from '@/components/admin/BannerImageEditor';
@@ -102,9 +103,9 @@ export default function StaffPackageEdit() {
     };
     try {
       if (isNew) {
-        await base44.entities.Package.create(data);
+        await staffWrite('Package', 'create', null, data);
       } else {
-        await base44.entities.Package.update(id, data);
+        await staffWrite('Package', 'update', id, data);
       }
       toast({ title: 'Package saved successfully' });
       navigate('/admin/packages');
@@ -115,7 +116,7 @@ export default function StaffPackageEdit() {
   const handleDelete = async () => {
     if (!confirm(`Delete "${form.name}"? This cannot be undone.`)) return;
     try {
-      await base44.entities.Package.delete(id);
+      await staffWrite('Package', 'delete', id);
       toast({ title: 'Package deleted' });
       navigate('/admin/packages');
     } catch { toast({ title: 'Delete failed', variant: 'destructive' }); }

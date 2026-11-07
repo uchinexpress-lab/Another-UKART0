@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { staffWrite } from '@/lib/staffWrite';
 import { useAuth } from '@/lib/AuthContext';
 import { logStaffAction } from '@/lib/staffAudit';
 import { canAccessPage } from '@/lib/staffRoles';
@@ -38,7 +39,7 @@ export default function StaffProducts() {
 
   const toggleVisibility = async (p) => {
     try {
-      await base44.entities.Product.update(p.id, { is_hidden: !p.is_hidden });
+      await staffWrite('Product', 'update', p.id, { is_hidden: !p.is_hidden });
       await logStaffAction('product_visibility_toggled', {
         entity_type: 'Product', record_id: p.id, record_name: p.name,
         new_value: p.is_hidden ? 'visible' : 'hidden',

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { staffWrite } from '@/lib/staffWrite';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccessPage } from '@/lib/staffRoles';
 import { RefreshCw, Loader2, Plus, Edit, Trash2 } from 'lucide-react';
@@ -36,7 +37,7 @@ export default function StaffCategories() {
     e.preventDefault();
     if (!newName.trim()) return;
     try {
-      await base44.entities.Category.create({
+      await staffWrite('Category', 'create', null, {
         name: newName.trim(),
         icon: newIcon.trim() || '🛒',
         display_order: categories.length + 1,
@@ -51,7 +52,7 @@ export default function StaffCategories() {
 
   const handleUpdate = async (cat) => {
     try {
-      await base44.entities.Category.update(cat.id, { name: cat.name, icon: cat.icon });
+      await staffWrite('Category', 'update', cat.id, { name: cat.name, icon: cat.icon });
       setEditing(null);
       loadCategories();
     } catch (e) {
@@ -62,7 +63,7 @@ export default function StaffCategories() {
   const handleDelete = async (cat) => {
     if (!confirm(`Delete category "${cat.name}"?`)) return;
     try {
-      await base44.entities.Category.delete(cat.id);
+      await staffWrite('Category', 'delete', cat.id);
       loadCategories();
     } catch (e) {
       alert('Failed to delete category');

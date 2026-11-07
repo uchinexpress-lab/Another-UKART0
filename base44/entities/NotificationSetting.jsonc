@@ -4,7 +4,21 @@
   "properties": {
     "business_email": {
       "type": "string",
-      "default": "ukartfreshventures@gmail.com"
+      "default": "ukartfreshventures@gmail.com",
+      "rls": {
+        "read": {
+          "$or": [
+            {
+              "created_by_id": "{{user.id}}"
+            },
+            {
+              "user_condition": {
+                "role": "admin"
+              }
+            }
+          ]
+        }
+      }
     },
     "enable_business_email": {
       "type": "boolean",
