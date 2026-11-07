@@ -7,6 +7,20 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.54";
 
 const LAGOS = { latitude: 6.5244, longitude: 3.3792 };
 
+// Areas served as "Lagos Island" — anything else is billed as outside.
+const ISLAND_AREAS = [
+  "lagos island", "victoria island", "ikoyi", "lekki", "ajah", "oniru", "ikate",
+  "banana island", "parkview", "osborne", "elegushi", "chevron", "sangotedo",
+  "abraham adesanya", "ologolo", "jakande", "igbo-efon", "badore", "agungi",
+  "ilaje", "ibeju-lekki", "awoyaya", "victoria garden city", "ikota", "maroko",
+  "obalende", "agbara-oshodi", "ajiran", "langbasa", "okun-ajah",
+];
+
+function detectZone(address: string): string {
+  const text = String(address || "").toLowerCase();
+  return ISLAND_AREAS.some((area) => text.includes(area)) ? "island" : "mainland";
+}
+
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
@@ -34,8 +48,10 @@ export default async function (req: Request): Promise<Response> {
       const comp = (type: string) =>
         (res.data?.addressComponents || []).find((c: any) => (c.types || []).includes(type))
           ?.longText || "";
+      const formattedAddress = res.data?.formattedAddress || "";
       return Response.json({
-        address: res.data?.formattedAddress || "",
+        address: formattedAddress,
+        zone: detectZone(formattedAddress),
         street: [comp("street_number"), comp("route")].filter(Boolean).join(" "),
         area: comp("sublocality_level_1") || comp("sublocality") || comp("neighborhood"),
         city: comp("locality") || comp("administrative_area_level_2"),

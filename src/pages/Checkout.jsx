@@ -11,7 +11,6 @@ import {
   getDeliveryBase,
   getDeliveryDiscountPercent,
   resolveDeliverySettings,
-  DELIVERY_ZONES,
 } from '@/lib/delivery';
 
 const REWARD_AMOUNT = 1000;
@@ -293,7 +292,7 @@ export default function Checkout() {
             {items.reduce((s, i) => s + i.quantity, 0)} items
           </span>
           <span className="font-bold text-retail">
-            ₦{grandTotal.toLocaleString()}
+            {step === 2 ? `₦${grandTotal.toLocaleString()}` : 'Fees shown at payment'}
           </span>
         </div>
         {firstOrderDiscount > 0 && (
@@ -347,27 +346,19 @@ export default function Checkout() {
           )}
 
           <div className="uk-card p-4 mb-4">
-            <label className={labelClass}>
-              <Truck className="w-3.5 h-3.5" /> Delivery area
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {DELIVERY_ZONES.map((z) => (
-                <button
-                  key={z.key}
-                  onClick={() => setZone(z.key)}
-                  className={`h-11 rounded-xl text-[12px] font-bold border transition-colors ${
-                    zone === z.key
-                      ? 'bg-secondary border-retail text-retail'
-                      : 'bg-card border-border text-muted-foreground'
-                  }`}
-                >
-                  {z.label}
-                </button>
-              ))}
+            <div className="flex items-center gap-2.5">
+              <div className="uk-icon-btn">
+                <Truck className="w-[18px] h-[18px]" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[13px] font-bold text-foreground">
+                  {zone === 'mainland' ? 'Outside Lagos Island' : 'Lagos Island'}
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  Delivery area detected from your address
+                </p>
+              </div>
             </div>
-            <p className="text-[11px] text-muted-foreground mt-2">
-              {DELIVERY_ZONES[0].label} ₦{Number(feeSettings.island_fee).toLocaleString()} · {DELIVERY_ZONES[1].label} ₦{Number(feeSettings.mainland_fee).toLocaleString()} from ₦{Number(feeSettings.mainland_threshold).toLocaleString()}
-            </p>
           </div>
 
           <div className="uk-card p-4 space-y-4">
@@ -389,6 +380,7 @@ export default function Checkout() {
               <AddressAutocomplete
                 value={address}
                 onChange={setAddress}
+                onResolved={(d) => d?.zone && setZone(d.zone)}
                 placeholder="Start typing your street or estate"
                 className={fieldClass}
               />
