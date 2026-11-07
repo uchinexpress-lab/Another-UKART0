@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useState, useEffect } from 'react';
 import { toast } from '@/components/ui/use-toast';
 
 const CartContext = createContext();
@@ -18,7 +18,7 @@ export function CartProvider({ children }) {
     localStorage.setItem('ukart_cart', JSON.stringify(items));
   }, [items]);
 
-  const addItem = (product) => {
+  const addItem = useCallback((product) => {
     setItems((prev) => {
       const existing = prev.find((i) => i.id === product.id);
       if (existing) {
@@ -29,9 +29,9 @@ export function CartProvider({ children }) {
       return [...prev, { ...product, quantity: 1 }];
     });
     toast({ title: 'Added to cart', description: product.name || 'Item added' });
-  };
+  }, []);
 
-  const addItems = (products) => {
+  const addItems = useCallback((products) => {
     setItems((prev) => {
       let next = [...prev];
       for (const product of products) {
@@ -51,25 +51,42 @@ export function CartProvider({ children }) {
       title: 'Added to cart',
       description: `${products.length} item${products.length === 1 ? '' : 's'} added`,
     });
-  };
+  }, []);
 
-  const removeItem = (id) => setItems((prev) => prev.filter((i) => i.id !== id));
+  const removeItem = useCallback((id) => {
+    setItems((prev) => prev.filter((i) => i.id !== id));
+  }, []);
 
-  const updateQuantity = (id, qty) => {
-    if (qty <= 0) return removeItem(id);
-    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, quantity: qty } : i)));
-  };
-
-  const clearCart = () => setItems([]);
-
-  const total = items.reduce((sum, i) => sum + (i.price + (i.addons_total || 0)) * i.quantity, 0);
-  const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
-
-  return (
-    <CartContext.Provider
-      value={{ items, addItem, addItems, removeItem, updateQuantity, clearCart, total, itemCount }}
-    >
-      {children}
-    </CartContext.Provider>
+  const updateQuantity = useCallback(
+    (id, qty) => {
+      if (qty <= 0) {
+        setItems((prev) => prev.filter((i) => i.id !== id));
+        return;
+      }
+      setItems((prev) => prev.map((i) => (i.id === id ? { ...i, quantity: qty } : i)));
+    },
+    []
   );
+
+  const clearCart = useCallback(() => setItems([]), []);
+
+  // Cart totals are derived once per change instead of on every render.
+  const { total, itemCount } = useMemo(() => {
+    let sum = 0;
+    let count = 0;
+    for (const i of items) {
+      sum += (i.price + (i.addons_total || 0)) * i.quantity;
+      count += i.quantity;
+    }
+    return { total: sum, itemCount: count };
+  }, [items]);
+
+  // Stable context value: consumers only re-render when the cart changes,
+  // not on every provider render (which was making every page feel sluggish).
+  const value = useMemo(
+    () => ({ items, addItem, addItems, removeItem, updateQuantity, clearCart, total, itemCount }),
+    [items, addItem, addItems, removeItem, updateQuantity, clearCart, total, itemCount]
+  );
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

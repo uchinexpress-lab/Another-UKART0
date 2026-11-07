@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { useOutlet, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import TopNav from './TopNav';
 import BrandedHeader from './BrandedHeader';
 import FloatingCart from './FloatingCart';
@@ -88,20 +88,18 @@ export default function Layout() {
               {cached.current[p]}
             </div>
           ))}
-          {/* Non-tab child screens — push navigation with slide-in-from-right */}
-          <AnimatePresence mode="wait">
-            {!isTab && (
-              <motion.div
-                key={pathname}
-                initial={{ opacity: 0, x: 24 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -24 }}
-                transition={{ duration: 0.25, ease: 'easeOut' }}
-              >
-                {outlet}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Non-tab child screens — content mounts immediately and eases in,
+              with no exit wait, so a tap never lands on a blank frame */}
+          {!isTab && (
+            <motion.div
+              key={pathname}
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+            >
+              {outlet}
+            </motion.div>
+          )}
         </Suspense>
       </main>
       <FloatingCart />

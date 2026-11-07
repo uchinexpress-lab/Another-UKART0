@@ -158,7 +158,21 @@ const AuthenticatedApp = () => {
 };
 
 function AppShell() {
-  const [showSplash, setShowSplash] = useState(true);
+  // The splash covers the first cold open only. Returning to the app in the
+  // same session goes straight to the page instead of a loading screen.
+  const [showSplash, setShowSplash] = useState(() => {
+    try {
+      return sessionStorage.getItem('ukart_splash_shown') !== '1';
+    } catch {
+      return true;
+    }
+  });
+  const finishSplash = () => {
+    try {
+      sessionStorage.setItem('ukart_splash_shown', '1');
+    } catch {}
+    setShowSplash(false);
+  };
   const location = useLocation();
   const isRiderPath = location.pathname.startsWith('/rider');
   const isStaffPath = location.pathname.startsWith('/admin');
@@ -187,7 +201,7 @@ function AppShell() {
       <AuthenticatedApp />
       <AnimatePresence>
         {showSplash && !isStaffPath && (
-          isRiderPath ? <RiderSplash onDone={() => setShowSplash(false)} /> : <Splash onDone={() => setShowSplash(false)} />
+          isRiderPath ? <RiderSplash onDone={finishSplash} /> : <Splash onDone={finishSplash} />
         )}
       </AnimatePresence>
     </>

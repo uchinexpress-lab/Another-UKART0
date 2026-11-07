@@ -205,6 +205,20 @@
 }
 
 @layer utilities {
+  /* Every control responds on the first tap: no double-tap zoom wait,
+     no grey flash on iOS. */
+  .no-tap-highlight {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button,
+  a,
+  [role="button"],
+  [role="tab"],
+  input,
+  select,
+  textarea {
+    touch-action: manipulation;
+  }
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;

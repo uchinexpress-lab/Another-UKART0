@@ -2,24 +2,18 @@ import React from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { useSmartBack } from '@/lib/navigation';
 
 const TAB_ROOTS = ['/packages', '/order', '/wishlist', '/profile'];
 
 export default function BrandedHeader({ title, right = null }) {
-  const navigate = useNavigate();
   const location = useLocation();
   const isTabRoot = TAB_ROOTS.includes(location.pathname);
   const { itemCount } = useCart();
   const showCart = location.pathname.startsWith('/package/');
   const rightSlot = right || (showCart ? 'cart' : null);
 
-  const goBack = () => {
-    if (window.history.length > 1) {
-      navigate(-1);
-    } else {
-      navigate('/');
-    }
-  };
+  const goBack = useSmartBack('/');
 
   return (
     <header className="sticky top-0 z-30 bg-card border-b border-border">
@@ -30,9 +24,10 @@ export default function BrandedHeader({ title, right = null }) {
         <div className="w-10 shrink-0">
           {!isTabRoot && (
             <button
+              type="button"
               onClick={goBack}
               aria-label="Back"
-              className="w-10 h-10 rounded-full flex items-center justify-center text-foreground active:scale-90 transition-transform"
+              className="w-11 h-11 rounded-full flex items-center justify-center text-foreground active:scale-90 transition-transform touch-manipulation"
             >
               <ArrowLeft className="w-[22px] h-[22px]" strokeWidth={2.2} />
             </button>

@@ -57,37 +57,14 @@ export default function RiderApp() {
   return (
     <>
       <Suspense fallback={<RiderFallback />}>
-        <AnimatePresence mode="wait">
         <motion.div
           key={location.pathname}
-          initial={{ opacity: 0, x: 30 }}
+          initial={{ opacity: 0, x: 10 }}
           animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -30 }}
-          transition={{ duration: 0.25, ease: 'easeOut' }}
+          transition={{ duration: 0.16, ease: 'easeOut' }}
         >
-        <Routes location={location}>
-          {/* Public rider routes — no auth required */}
-          <Route path="/rider/login" element={<RiderLogin />} />
-          <Route path="/rider/register" element={<RiderRegister />} />
-          <Route path="/rider/pending" element={<RiderPending />} />
-
-          {/* Protected rider routes — requires approved rider profile */}
-          <Route element={<RiderGuard />}>
-            <Route path="/rider" element={<RiderLayout><RiderHome /></RiderLayout>} />
-            <Route path="/rider/home" element={<RiderLayout><RiderHome /></RiderLayout>} />
-            <Route path="/rider/deliveries" element={<RiderLayout><RiderDeliveries /></RiderLayout>} />
-            <Route path="/rider/active-delivery" element={<RiderLayout><RiderCurrentDelivery /></RiderLayout>} />
-            <Route path="/rider/settings" element={<RiderLayout><RiderSettings /></RiderLayout>} />
-            <Route path="/rider/delivery/:id" element={<RiderLayout><RiderActiveDelivery /></RiderLayout>} />
-            <Route path="/rider/delivery" element={<RiderLayout><RiderHome /></RiderLayout>} />
-            <Route path="/rider/profile" element={<RiderLayout><RiderProfile /></RiderLayout>} />
-          </Route>
-
-          {/* The protected /rider entry renders the existing dashboard directly. */}
-          <Route path="*" element={<Navigate to="/rider/login" replace />} />
-        </Routes>
+...
         </motion.div>
-        </AnimatePresence>
       </Suspense>
 
       <AnimatePresence>

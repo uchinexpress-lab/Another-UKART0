@@ -1,7 +1,7 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Image } from '@/components/ui/image';
+import { useSmartBack } from '@/lib/navigation';
 
 const UKART_LOGO_URL =
   'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/01b5442de_ukart.jpg';
@@ -14,11 +14,7 @@ export default function AuthShell({
   children,
   footer,
 }) {
-  const navigate = useNavigate();
-  const goBack = () => {
-    if (window.history.length > 1) navigate(-1);
-    else navigate('/');
-  };
+  const goBack = useSmartBack('/');
 
   return (
     <div className="min-h-screen bg-background flex flex-col max-w-md mx-auto relative">

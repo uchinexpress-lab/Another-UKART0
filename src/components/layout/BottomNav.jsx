@@ -1,7 +1,8 @@
 import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Home, Package, ClipboardList, Heart, User } from 'lucide-react';
 import { useTabNav, getTabForPath } from '@/context/TabNavContext';
+import { useGuardedNavigate } from '@/lib/navigation';
 
 const navItems = [
   { to: '/', icon: Home, label: 'Home' },
@@ -13,7 +14,7 @@ const navItems = [
 
 export default function BottomNav() {
   const location = useLocation();
-  const navigate = useNavigate();
+  const navigate = useGuardedNavigate();
   const { getTabRoute } = useTabNav();
   const pathname = location.pathname;
 
@@ -41,7 +42,7 @@ export default function BottomNav() {
               key={to}
               to={to}
               onClick={(e) => handleTap(e, to)}
-              className="flex-1 flex flex-col items-center justify-center gap-1 h-16 no-tap-highlight active:opacity-70 transition-opacity"
+              className="flex-1 flex flex-col items-center justify-center gap-1 h-16 no-tap-highlight touch-manipulation active:opacity-70 transition-opacity"
             >
               <Icon
                 className={`w-[22px] h-[22px] ${active ? 'text-[#2E7D32]' : 'text-muted-foreground'}`}
