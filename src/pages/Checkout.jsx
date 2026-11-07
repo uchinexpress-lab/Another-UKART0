@@ -411,7 +411,6 @@ export default function Checkout() {
           </div>
           <div className="flex-1">
             <p className="text-[13px] font-bold text-foreground">Pay Online</p>
-            <p className="text-[11px] text-muted-foreground">Card, bank transfer or USSD via Paystack</p>
           </div>
           <div className="w-5 h-5 rounded-full border-2 border-retail flex items-center justify-center">
             <div className="w-2.5 h-2.5 rounded-full bg-retail" />
