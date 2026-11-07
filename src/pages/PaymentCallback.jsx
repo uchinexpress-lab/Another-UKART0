@@ -70,10 +70,10 @@ export default function PaymentCallback() {
   // --- Verifying ---
   if (status === 'verifying') {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center min-h-[70vh]">
-        <Loader2 className="w-10 h-10 animate-spin text-[#2E7D32] mb-4" />
-        <h2 className="text-lg font-bold text-foreground mb-1">Verifying your payment…</h2>
-        <p className="text-sm text-muted-foreground">Please wait while we confirm your transaction.</p>
+      <div className="flex flex-col items-center justify-center p-8 text-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-retail mb-3" />
+        <p className="text-[15px] font-bold text-foreground">Verifying your payment…</p>
+        <p className="uk-sub mt-1">Please wait while we confirm your transaction.</p>
       </div>
     );
   }
@@ -81,19 +81,14 @@ export default function PaymentCallback() {
   // --- Success (fallback if the order could not be loaded) ---
   if (status === 'success') {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center min-h-[70vh]">
-        <div className="w-20 h-20 rounded-full bg-[#2E7D32]/10 flex items-center justify-center mb-4">
-          <CheckCircle2 className="w-12 h-12 text-[#2E7D32]" />
+      <div className="uk-page min-h-[60vh] flex flex-col items-center justify-center text-center">
+        <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center mb-3">
+          <CheckCircle2 className="w-7 h-7 text-retail" />
         </div>
-        <h2 className="text-xl font-bold text-foreground mb-1">Payment Successful</h2>
-        <p className="text-sm text-muted-foreground mb-6">
-          Your order has been confirmed and is now being processed.
-        </p>
-        <Link
-          to="/orders"
-          className="bg-[#2E7D32] text-white text-sm font-bold px-6 py-3 rounded-full active:scale-95 transition-transform"
-        >
-          View Order
+        <h2 className="uk-title">Payment successful</h2>
+        <p className="uk-sub mt-1 mb-5">Your order is confirmed and being processed.</p>
+        <Link to="/orders" className="uk-btn">
+          View order
         </Link>
       </div>
     );
@@ -101,25 +96,23 @@ export default function PaymentCallback() {
 
   // --- Failed / abandoned ---
   return (
-    <div className="flex flex-col items-center justify-center p-8 text-center min-h-[70vh]">
-      <div className="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center mb-4">
-        <XCircle className="w-12 h-12 text-red-500" />
+    <div className="uk-page min-h-[60vh] flex flex-col items-center justify-center text-center">
+      <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center mb-3">
+        <XCircle className="w-7 h-7 text-destructive" />
       </div>
-      <h2 className="text-xl font-bold text-foreground mb-1">Payment Failed</h2>
-      <p className="text-sm text-muted-foreground mb-6">
-        Your payment was not completed. Your order has not been confirmed.
-      </p>
+      <h2 className="uk-title">Payment failed</h2>
+      <p className="uk-sub mt-1">Your payment was not completed, so the order is not confirmed.</p>
 
       <button
         onClick={tryAgain}
         disabled={retrying || !order}
-        className="bg-[#2E7D32] text-white text-sm font-bold px-6 py-3 rounded-full mb-3 flex items-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+        className="uk-btn mt-5"
       >
         {retrying ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-        Try Payment Again
+        Try payment again
       </button>
-      <Link to="/orders" className="text-[#2E7D32] text-sm font-medium px-6 py-3">
-        Back to My Orders
+      <Link to="/orders" className="uk-btn-outline mt-2.5">
+        Back to my orders
       </Link>
     </div>
   );

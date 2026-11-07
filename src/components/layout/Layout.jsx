@@ -23,9 +23,13 @@ function getPageTitle(pathname) {
   if (pathname.startsWith('/wishlist')) return 'Wishlist';
   if (pathname.startsWith('/profile')) return 'Profile';
   if (pathname.startsWith('/budget/')) return 'Shop by Budget';
+  if (pathname.startsWith('/track-order/')) return 'Track Order';
   if (pathname.startsWith('/track')) return 'Order Tracking';
+  if (pathname.startsWith('/tickets')) return 'My Tickets';
+  if (pathname.startsWith('/payment/callback')) return 'Payment';
   if (pathname.startsWith('/admin/settings')) return 'Settings';
   if (pathname.startsWith('/admin/orders')) return 'Orders';
+  if (pathname.endsWith('/payment-success')) return 'Order Confirmed';
   if (pathname.startsWith('/orders/')) return 'Order Details';
   if (pathname.startsWith('/orders')) return 'My Orders';
   if (pathname.startsWith('/order')) return 'My Orders';
@@ -40,7 +44,7 @@ function getPageTitle(pathname) {
 
 const Fallback = (
   <div className="flex justify-center py-16">
-    <div className="w-8 h-8 border-4 border-gray-200 border-t-[#2E7D32] rounded-full animate-spin" />
+    <div className="w-7 h-7 border-[3px] border-muted border-t-retail rounded-full animate-spin" />
   </div>
 );
 

@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Check, Clock, Plus, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import MealKitDetail from '@/components/package/MealKitDetail';
+import { Image } from '@/components/ui/image';
 
 export default function PackageDetail() {
   const { id } = useParams();
@@ -41,65 +42,57 @@ export default function PackageDetail() {
   const savings = (pkg.original_total || 0) - (pkg.total_price || 0);
 
   return (
-    <div className="pb-40">
-      <div className="relative h-64 bg-muted">
-        <img src={pkg.image} alt={pkg.name} className="w-full h-full object-cover" />
+    <div className="pb-32">
+      <div className="h-56 bg-muted">
+        <Image
+          src={pkg.image}
+          alt={pkg.name}
+          className="w-full h-56"
+          fittingType="fill"
+        />
       </div>
 
-      <div className="px-4 -mt-6 relative">
-        <div className="bg-card rounded-3xl p-5 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            {pkg.badge && (
-              <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-primary/10 text-[#2E7D32]">
-                {pkg.badge}
-              </span>
-            )}
-            <span className="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
-              <Clock className="w-3.5 h-3.5" /> {pkg.delivery_time}
+      <div className="px-4 pt-3">
+        <div className="flex items-center gap-2 mb-1.5">
+          {pkg.badge && <span className="uk-meta-chip">{pkg.badge}</span>}
+          {pkg.delivery_time && (
+            <span className="flex items-center gap-1 uk-meta ml-auto">
+              <Clock className="w-3 h-3" /> {pkg.delivery_time}
             </span>
-          </div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">{pkg.name}</h1>
-          <p className="text-sm text-muted-foreground mb-3">{pkg.description}</p>
+          )}
+        </div>
 
-          <div className="flex items-end justify-between">
-            <div>
-              <span className="text-xs text-gray-400 block">Total Price</span>
-              <span className="text-3xl font-bold text-[#2E7D32]">
-                ₦{pkg.total_price.toLocaleString()}
-              </span>
-            </div>
-            <div className="text-right">
-              <span className="text-xs text-gray-400 line-through block">
-                ₦{pkg.original_total.toLocaleString()}
-              </span>
-              <span className="text-sm font-bold text-[#2E7D32]">
-                Save ₦{savings.toLocaleString()}
-              </span>
-            </div>
-          </div>
+        <h1 className="text-[19px] font-bold text-foreground leading-snug">{pkg.name}</h1>
+        {pkg.description && <p className="uk-sub mt-1">{pkg.description}</p>}
+
+        <div className="flex items-center gap-2 mt-2.5">
+          <span className="text-xl font-bold text-retail">
+            ₦{pkg.total_price.toLocaleString()}
+          </span>
+          {pkg.original_total > pkg.total_price && (
+            <span className="text-[12px] text-muted-foreground line-through">
+              ₦{pkg.original_total.toLocaleString()}
+            </span>
+          )}
+          {savings > 0 && <span className="uk-meta-chip">Save ₦{savings.toLocaleString()}</span>}
         </div>
       </div>
 
       {pkg.items?.length > 0 && (
-        <div className="px-4 mt-6">
-          <h2 className="text-lg font-bold text-foreground mb-3">
-            What's Included ({pkg.item_count} items)
-          </h2>
-          <div className="bg-card rounded-2xl border border-border divide-y divide-gray-50">
+        <div className="px-4 mt-5">
+          <p className="uk-section-label mb-2">
+            What&apos;s included · {pkg.item_count} items
+          </p>
+          <div className="uk-card divide-y divide-border overflow-hidden">
             {pkg.items.map((item, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between py-3 px-4"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Check className="w-3.5 h-3.5 text-[#2E7D32]" />
-                  </div>
-                  <span className="text-sm font-medium text-foreground">
-                    {item.name}
-                  </span>
+              <div key={i} className="flex items-center justify-between px-3.5 py-2.5">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <Check className="w-3.5 h-3.5 text-retail shrink-0" strokeWidth={2.5} />
+                  <span className="text-[13px] text-foreground truncate">{item.name}</span>
                 </div>
-                <span className="text-sm text-muted-foreground">{item.quantity}</span>
+                <span className="text-[12px] text-muted-foreground shrink-0 ml-2">
+                  {item.quantity}
+                </span>
               </div>
             ))}
           </div>
@@ -107,21 +100,16 @@ export default function PackageDetail() {
       )}
 
       {pkg.addons?.length > 0 && (
-        <div className="px-4 mt-6">
-          <h2 className="text-lg font-bold text-foreground mb-3">Suggested Add-ons</h2>
-          <div className="space-y-2">
+        <div className="px-4 mt-5">
+          <p className="uk-section-label mb-2">Suggested add-ons</p>
+          <div className="uk-card divide-y divide-border overflow-hidden">
             {pkg.addons.map((addon, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-between bg-card rounded-2xl border border-border p-3"
-              >
-                <div>
-                  <span className="text-sm font-medium text-foreground block">
-                    {addon.name}
-                  </span>
-                  <span className="text-sm font-bold text-[#2E7D32]">
+              <div key={i} className="flex items-center justify-between px-3.5 py-2.5">
+                <div className="min-w-0">
+                  <p className="text-[13px] font-medium text-foreground truncate">{addon.name}</p>
+                  <p className="text-[12px] font-bold text-retail">
                     ₦{addon.price.toLocaleString()}
-                  </span>
+                  </p>
                 </div>
                 <button
                   onClick={() =>
@@ -133,9 +121,10 @@ export default function PackageDetail() {
                       unit: '1 pack',
                     })
                   }
-                  className="w-8 h-8 rounded-full bg-[#2E7D32] flex items-center justify-center"
+                  aria-label={`Add ${addon.name}`}
+                  className="w-8 h-8 rounded-lg bg-retail flex items-center justify-center shrink-0 active:scale-90 transition-transform"
                 >
-                  <Plus className="w-4 h-4 text-white" strokeWidth={2.5} />
+                  <Plus className="w-4 h-4 text-retail-foreground" strokeWidth={2.5} />
                 </button>
               </div>
             ))}
@@ -143,7 +132,10 @@ export default function PackageDetail() {
         </div>
       )}
 
-      <div className="fixed bottom-16 left-0 right-0 max-w-md mx-auto px-4 py-3 bg-card border-t border-border">
+      <div
+        className="uk-cta"
+        style={{ bottom: 0, paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
+      >
         <button
           onClick={() => {
             addItem({
@@ -155,9 +147,9 @@ export default function PackageDetail() {
             });
             navigate('/cart');
           }}
-          className="w-full h-12 rounded-2xl bg-[#2E7D32] text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#1B5E20] transition-colors"
+          className="uk-btn"
         >
-          <ShoppingBag className="w-4 h-4" /> Add Package to Cart
+          <ShoppingBag className="w-4 h-4" /> Add package to cart
         </button>
       </div>
     </div>

@@ -130,151 +130,126 @@ export default function Account() {
       </div>
     );
 
+  const fieldLabel = 'text-[11px] font-semibold uppercase tracking-wide text-muted-foreground';
+
   return (
     <div className="uk-page space-y-5">
-      {/* Profile photo */}
-      <div className="uk-card p-5 flex flex-col items-center">
-        <div className="relative">
+      {/* Profile header */}
+      <div className="flex items-center gap-3">
+        <div className="relative shrink-0">
           {user.avatar_url ? (
             <Image
               src={user.avatar_url}
               fittingType="fill"
-              className="w-20 h-20 rounded-full object-cover"
+              className="w-14 h-14 rounded-full object-cover"
             />
           ) : (
-            <div className="w-20 h-20 rounded-full bg-[#2E7D32] flex items-center justify-center text-white">
-              <User className="w-10 h-10" />
+            <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center text-retail">
+              <User className="w-6 h-6" />
             </div>
           )}
-          <label className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-[#2E7D32] flex items-center justify-center shadow-md cursor-pointer active:scale-90 transition-transform ring-2 ring-white">
+          <label className="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-retail flex items-center justify-center cursor-pointer active:scale-90 transition-transform ring-2 ring-card">
             {uploading ? (
-              <Loader2 className="w-3.5 h-3.5 text-white animate-spin" />
+              <Loader2 className="w-3 h-3 text-retail-foreground animate-spin" />
             ) : (
-              <Camera className="w-3.5 h-3.5 text-white" />
+              <Camera className="w-3 h-3 text-retail-foreground" />
             )}
-            <input
-              type="file"
-              accept="image/*"
-              onChange={onPickPhoto}
-              className="hidden"
-            />
+            <input type="file" accept="image/*" onChange={onPickPhoto} className="hidden" />
           </label>
         </div>
-        <p className="text-sm font-bold text-[#1a2238] mt-3">
-          {user.full_name || 'Ukart User'}
-        </p>
-        <p className="text-xs text-muted-foreground">{user.email}</p>
-        <p className="text-[11px] text-gray-400 mt-1">JPG, PNG (Max 5MB)</p>
-      </div>
-
-      {/* Personal information */}
-      <div>
-        <h2 className="uk-section-label mb-2 px-1">
-          Personal Information
-        </h2>
-        <div className="uk-card p-4 space-y-4">
-          <div>
-            <Label className="mb-1.5 block">Full Name</Label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="pl-10 h-12 rounded-xl"
-                placeholder="Your full name"
-              />
-            </div>
-          </div>
-          <div>
-            <Label className="mb-1.5 block">Email Address</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                value={email}
-                disabled
-                className="pl-10 h-12 rounded-xl bg-muted/50 text-muted-foreground"
-              />
-            </div>
-            <p className="text-[11px] text-gray-400 mt-1">
-              Email cannot be changed. Contact support to update.
-            </p>
-          </div>
-          <div>
-            <Label className="mb-1.5 block">Phone Number</Label>
-            <div className="relative">
-              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                inputMode="tel"
-                className="pl-10 h-12 rounded-xl"
-                placeholder="e.g. 0803 123 4567"
-              />
-            </div>
-          </div>
-          <div>
-            <Label className="mb-1.5 block">Date of Birth</Label>
-            <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                type="date"
-                value={dateOfBirth}
-                onChange={(e) => setDateOfBirth(e.target.value)}
-                disabled={dobLocked}
-                className="pl-10 h-12 rounded-xl"
-                max={new Date().toISOString().split('T')[0]}
-              />
-            </div>
-            <p className="text-[11px] text-gray-400 mt-1">
-              {dobLocked
-                ? '🔒 Date of birth cannot be changed after a birthday reward has been issued.'
-                : 'Used to celebrate your birthday with a special Ukart reward. 🎁'}
-            </p>
-          </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-[15px] font-bold text-foreground truncate">
+            {user.full_name || 'Ukart User'}
+          </p>
+          <p className="uk-sub truncate">{user.email}</p>
         </div>
       </div>
 
-      {/* Birthday Reward */}
+      {/* Personal details */}
+      <div>
+        <p className="uk-section-label mb-2">Personal details</p>
+        <div className="space-y-3">
+          <div>
+            <Label className={fieldLabel}>Full name</Label>
+            <Input
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              className="mt-1.5 h-10 rounded-lg"
+              placeholder="Your full name"
+            />
+          </div>
+          <div>
+            <Label className={fieldLabel}>Email address</Label>
+            <Input
+              value={email}
+              disabled
+              className="mt-1.5 h-10 rounded-lg bg-muted/50 text-muted-foreground"
+            />
+          </div>
+          <div>
+            <Label className={fieldLabel}>Phone number</Label>
+            <Input
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              inputMode="tel"
+              className="mt-1.5 h-10 rounded-lg"
+              placeholder="e.g. 0803 123 4567"
+            />
+          </div>
+          <div>
+            <Label className={fieldLabel}>Date of birth</Label>
+            <Input
+              type="date"
+              value={dateOfBirth}
+              onChange={(e) => setDateOfBirth(e.target.value)}
+              disabled={dobLocked}
+              className="mt-1.5 h-10 rounded-lg"
+              max={new Date().toISOString().split('T')[0]}
+            />
+            <p className="text-[11px] text-muted-foreground mt-1">
+              {dobLocked
+                ? 'Date of birth is locked after a birthday reward has been issued.'
+                : 'Used to send you a birthday reward.'}
+            </p>
+          </div>
+
+          <button onClick={save} disabled={saving} className="uk-btn !h-11 !rounded-lg">
+            {saving ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Saving…
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" /> Save changes
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Account actions */}
+      <div>
+        <p className="uk-section-label mb-2">Account</p>
+        <div className="uk-card divide-y divide-border overflow-hidden">
+          <button onClick={changePassword} className="uk-row">
+            <div className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center shrink-0">
+              <KeyRound className="w-4 h-4 text-retail" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-[13px] font-semibold text-foreground">Change password</p>
+              <p className="uk-list-sub">We&apos;ll email you a reset link</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+          </button>
+        </div>
+      </div>
+
       <BirthdayReward />
 
-      {/* Order history */}
       <div>
-        <h2 className="uk-section-label mb-2 px-1">
-          Order History
-        </h2>
+        <p className="uk-section-label mb-2">Order history</p>
         <OrderHistory />
       </div>
-
-      {/* Change password */}
-      <button
-        onClick={changePassword}
-        className="w-full bg-card rounded-2xl border border-border p-4 flex items-center gap-3 active:bg-muted/50"
-      >
-        <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
-          <KeyRound className="w-5 h-5 text-gray-700" />
-        </div>
-        <div className="flex-1 text-left">
-          <p className="text-sm font-semibold text-foreground">Change Password</p>
-          <p className="text-xs text-muted-foreground">We'll email you a reset link</p>
-        </div>
-        <ChevronRight className="w-4 h-4 text-gray-400" />
-      </button>
-
-      <Button
-        className="w-full h-12 rounded-xl font-semibold"
-        onClick={save}
-        disabled={saving}
-      >
-        {saving ? (
-          <>
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...
-          </>
-        ) : (
-          <>
-            <Save className="w-4 h-4 mr-2" /> Save Changes
-          </>
-        )}
-      </Button>
     </div>
   );
 }

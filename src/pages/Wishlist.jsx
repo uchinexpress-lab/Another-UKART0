@@ -11,14 +11,14 @@ export default function Wishlist() {
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center min-h-[60vh]">
-        <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center mb-4">
-          <Heart className="w-9 h-9 text-[#2E7D32]" />
+      <div className="flex flex-col items-center justify-center p-8 text-center min-h-[55vh]">
+        <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center mb-3">
+          <Heart className="w-6 h-6 text-retail" />
         </div>
-        <h2 className="uk-title mb-1">Your wishlist is empty</h2>
-        <p className="uk-sub mb-5">Save items you love for later</p>
-        <Link to="/" className="bg-[#2E7D32] text-white text-sm font-bold px-6 py-3 rounded-xl">
-          Browse Products
+        <p className="text-[15px] font-bold text-foreground">Your wishlist is empty</p>
+        <p className="uk-sub mt-1 mb-4">Save items you love for later</p>
+        <Link to="/" className="bg-retail text-retail-foreground text-[13px] font-bold px-5 py-2.5 rounded-lg">
+          Browse products
         </Link>
       </div>
     );

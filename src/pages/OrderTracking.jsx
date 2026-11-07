@@ -98,46 +98,43 @@ export default function OrderTracking() {
 
   return (
     <div className="uk-page">
-      <h1 className="uk-title mb-1">Track Order</h1>
-      <p className="uk-sub mb-4">Live status for your Ukart delivery</p>
-
-      {/* Search bar — always visible so users can track another order */}
-      <form onSubmit={handleSearch} className="mb-5">
-        <div className="relative">
-          <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
+      {/* Compact search — always visible so users can track another order */}
+      <form onSubmit={handleSearch} className="flex items-center gap-2 mb-4">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
-            placeholder="Enter order number (e.g. UK-123456)"
-            className="uk-input pl-10"
+            placeholder="Enter order number"
+            className="uk-input pl-9 !py-2"
           />
         </div>
         <button
           type="submit"
           disabled={!searchValue.trim() || loading}
-          className="uk-btn mt-3"
+          className="h-10 px-4 rounded-lg bg-retail text-retail-foreground text-[12px] font-bold flex items-center gap-1.5 disabled:opacity-50 shrink-0"
         >
-          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-          {loading ? 'Tracking...' : 'Track Order'}
+          {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+          Track
         </button>
       </form>
 
       {loading && (
         <div className="flex justify-center py-16">
-          <Loader2 className="w-6 h-6 animate-spin text-[#2E7D32]" />
+          <Loader2 className="w-6 h-6 animate-spin text-retail" />
         </div>
       )}
 
       {error && !loading && (
         <div className="text-center py-10">
-          <Search className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
+          <Search className="w-9 h-9 text-muted-foreground/40 mx-auto mb-2.5" />
           <p className="uk-sub">{error}</p>
         </div>
       )}
 
       {!order && !error && !loading && (
         <div className="text-center py-10">
-          <Truck className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
+          <Truck className="w-9 h-9 text-muted-foreground/40 mx-auto mb-2.5" />
           <p className="uk-sub">Enter your order number to see live delivery status.</p>
         </div>
       )}
@@ -158,11 +155,11 @@ export default function OrderTracking() {
                   <XCircle className="w-3 h-3" /> Cancelled
                 </span>
               ) : isDelivered ? (
-                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-secondary text-[#2E7D32] flex items-center gap-1">
+                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-secondary text-retail flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3" /> Delivered
                 </span>
               ) : (
-                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-secondary text-[#2E7D32] flex items-center gap-1">
+                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-secondary text-retail flex items-center gap-1">
                   <Bike className="w-3 h-3" /> {ETA_BY_STATUS[order.status]}
                 </span>
               )}
@@ -172,11 +169,11 @@ export default function OrderTracking() {
               <div className="rounded-xl bg-secondary p-3 mt-3 flex items-center gap-2.5">
                 {(() => {
                   const Icon = STEPS[currentStepIndex]?.icon || ShoppingBag;
-                  return <Icon className="w-5 h-5 text-[#2E7D32] shrink-0" strokeWidth={2.2} />;
+                  return <Icon className="w-5 h-5 text-retail shrink-0" strokeWidth={2.2} />;
                 })()}
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold text-[#2E7D32]">{STEPS[currentStepIndex]?.title}</p>
-                  <p className="text-[11px] text-[#2E7D32]/75 truncate">
+                  <p className="text-[13px] font-bold text-retail">{STEPS[currentStepIndex]?.title}</p>
+                  <p className="text-[11px] text-retail/75 truncate">
                     {STEPS[currentStepIndex]?.description}
                   </p>
                 </div>
@@ -199,7 +196,7 @@ export default function OrderTracking() {
                       <div className="flex flex-col items-center">
                         <div
                           className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                            reached ? 'bg-[#2E7D32]' : 'bg-muted'
+                            reached ? 'bg-retail' : 'bg-muted'
                           }`}
                         >
                           <Icon
@@ -209,7 +206,7 @@ export default function OrderTracking() {
                         </div>
                         {i < STEPS.length - 1 &&
                           (isCompleted ? (
-                            <div className="w-0.5 flex-1 min-h-[26px] my-1 rounded-full bg-[#2E7D32]" />
+                            <div className="w-0.5 flex-1 min-h-[26px] my-1 rounded-full bg-retail" />
                           ) : (
                             <div className="flex-1 min-h-[26px] my-1 border-l-2 border-dashed border-border" />
                           ))}
@@ -229,8 +226,8 @@ export default function OrderTracking() {
                           <p className="text-[10px] text-muted-foreground/70 mt-1">{timeAgo(order.updated_date)}</p>
                         )}
                         {isCurrent && (
-                          <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-bold text-[#2E7D32] bg-secondary px-2 py-0.5 rounded-full">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#2E7D32] animate-pulse" />
+                          <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-bold text-retail bg-secondary px-2 py-0.5 rounded-full">
+                            <span className="w-1.5 h-1.5 rounded-full bg-retail animate-pulse" />
                             In progress
                           </span>
                         )}
@@ -242,8 +239,8 @@ export default function OrderTracking() {
 
               {order.status === 'on_the_way' && (
                 <div className="mt-2 p-3 rounded-xl bg-secondary text-center">
-                  <p className="text-[13px] font-bold text-[#2E7D32]">Your rider is on the way! 🛵</p>
-                  <p className="text-[11px] text-[#2E7D32]/75 mt-0.5">Estimated arrival: 15–40 minutes</p>
+                  <p className="text-[13px] font-bold text-retail">Your rider is on the way! 🛵</p>
+                  <p className="text-[11px] text-retail/75 mt-0.5">Estimated arrival: 15–40 minutes</p>
                 </div>
               )}
             </div>
@@ -259,7 +256,7 @@ export default function OrderTracking() {
           <div className="uk-card p-4">
             <p className="uk-section-label mb-2">Delivery address</p>
             <div className="flex items-start gap-2.5">
-              <MapPin className="w-4 h-4 text-[#2E7D32] shrink-0 mt-0.5" />
+              <MapPin className="w-4 h-4 text-retail shrink-0 mt-0.5" />
               <div className="min-w-0">
                 <p className="text-[13px] text-foreground font-semibold flex items-center gap-1.5">
                   <User className="w-3.5 h-3.5 text-muted-foreground" /> {order.customer_name}
@@ -292,7 +289,7 @@ export default function OrderTracking() {
             </div>
             <Link
               to={`/orders/${order.id}`}
-              className="flex items-center justify-between text-[13px] font-bold text-[#2E7D32] pt-2.5 border-t border-border"
+              className="flex items-center justify-between text-[13px] font-bold text-retail pt-2.5 border-t border-border"
             >
               <span>View full order details</span>
               <ChevronRight className="w-4 h-4" />
