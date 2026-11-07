@@ -3,11 +3,20 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
 import { Trash2, Minus, Plus, ShoppingBag, ArrowRight, Bike } from 'lucide-react';
 import { Image } from '@/components/ui/image';
+import useDeliveryPricing from '@/hooks/useDeliveryPricing';
+import { getServiceFee } from '@/lib/fees';
 
 export default function Cart() {
   const { items, updateQuantity, removeItem, total } = useCart();
   const navigate = useNavigate();
-  const deliveryFee = total > 0 ? 1500 : 0;
+  const {
+    base: deliveryBase,
+    percent: splashPercent,
+    fee: deliveryFee,
+    discount: splashDiscount,
+  } = useDeliveryPricing({ subtotal: total, zone: 'island' });
+  const serviceFee = getServiceFee(total);
+  const totalPayable = total + deliveryFee + serviceFee;
   const itemCount = items.reduce((s, i) => s + i.quantity, 0);
 
   if (items.length === 0) {
@@ -108,13 +117,23 @@ export default function Cart() {
           <div className="flex justify-between text-[13px]">
             <span className="text-muted-foreground">Delivery fee</span>
             <span className="font-semibold text-foreground">
-              {deliveryFee === 0 ? 'FREE' : `₦${deliveryFee.toLocaleString()}`}
+              {deliveryBase === 0 ? 'FREE' : `₦${deliveryBase.toLocaleString()}`}
             </span>
+          </div>
+          {splashDiscount > 0 && (
+            <div className="flex justify-between text-[13px]">
+              <span className="text-muted-foreground">Splash discount ({splashPercent}%)</span>
+              <span className="font-semibold text-retail">−₦{splashDiscount.toLocaleString()}</span>
+            </div>
+          )}
+          <div className="flex justify-between text-[13px]">
+            <span className="text-muted-foreground">Service fee</span>
+            <span className="font-semibold text-foreground">₦{serviceFee.toLocaleString()}</span>
           </div>
           <div className="flex justify-between pt-2.5 border-t border-border">
             <span className="text-[14px] font-bold text-foreground">Total payable</span>
             <span className="text-[17px] font-bold text-retail">
-              ₦{(total + deliveryFee).toLocaleString()}
+              ₦{totalPayable.toLocaleString()}
             </span>
           </div>
         </div>

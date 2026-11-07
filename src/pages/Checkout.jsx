@@ -7,6 +7,7 @@ import { toast } from '@/components/ui/use-toast';
 import { getServiceFee } from '@/lib/fees';
 import {
   getDeliveryFee,
+  getDeliveryBase,
   getDeliveryDiscountPercent,
   resolveDeliverySettings,
   DELIVERY_ZONES,
@@ -137,6 +138,8 @@ export default function Checkout() {
     deliverySettings
   );
   const feeSettings = resolveDeliverySettings(deliverySettings);
+  const deliveryBase = getDeliveryBase(total, zone, feeSettings);
+  const deliveryDiscount = deliveryBase - deliveryFee;
   const serviceFee = getServiceFee(total);
   const grandTotal = total - appliedDiscount + deliveryFee + serviceFee;
 
@@ -486,11 +489,15 @@ export default function Checkout() {
               <span className="text-foreground font-medium">₦{total.toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">
-                Delivery fee <span className="text-[10px]">{deliveryDiscountPercent > 0 ? `(${deliveryDiscountPercent}% off)` : ''}</span>
-              </span>
+              <span className="text-muted-foreground">Delivery fee</span>
               <span className="text-foreground font-medium">{deliveryFee === 0 ? 'Free' : `₦${deliveryFee.toLocaleString()}`}</span>
             </div>
+            {deliveryDiscount > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Splash discount ({deliveryDiscountPercent}%)</span>
+                <span className="text-retail font-semibold">−₦{deliveryDiscount.toLocaleString()}</span>
+              </div>
+            )}
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Service fee</span>
               <span className="text-foreground font-medium">₦{serviceFee.toLocaleString()}</span>
