@@ -89,6 +89,10 @@
     "customer_phone": {
       "type": "string"
     },
+    "alternate_phone": {
+      "type": "string",
+      "description": "Optional second phone number for the customer"
+    },
     "customer_address": {
       "type": "string"
     },

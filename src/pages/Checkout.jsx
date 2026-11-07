@@ -20,6 +20,7 @@ export default function Checkout() {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [altPhone, setAltPhone] = useState('');
   const [address, setAddress] = useState('');
   const [landmark, setLandmark] = useState('');
   const [zone, setZone] = useState('island');
@@ -102,18 +103,13 @@ export default function Checkout() {
             addrs.push({
               name: o.customer_name,
               phone: o.customer_phone,
+              altPhone: o.alternate_phone,
               address: o.customer_address,
               landmark: o.landmark,
             });
           }
         });
         setSavedAddresses(addrs);
-        if (addrs.length > 0) {
-          setName(addrs[0].name || '');
-          setPhone(addrs[0].phone || '');
-          setAddress(addrs[0].address || '');
-          setLandmark(addrs[0].landmark || '');
-        }
       } catch {}
     })();
   }, []);
@@ -180,6 +176,7 @@ export default function Checkout() {
   const applySaved = (a) => {
     setName(a.name || '');
     setPhone(a.phone || '');
+    setAltPhone(a.altPhone || '');
     setAddress(a.address || '');
     setLandmark(a.landmark || '');
   };
@@ -204,6 +201,7 @@ export default function Checkout() {
           voucherCode: voucher ? voucher.code : '',
           customer_name: name,
           customer_phone: phone,
+          alternate_phone: altPhone,
           customer_address: address,
           landmark,
           delivery_zone: zone,
@@ -407,6 +405,18 @@ export default function Checkout() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="e.g. 0803 123 4567"
+                inputMode="tel"
+                className={fieldClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>
+                <Phone className="w-3.5 h-3.5" /> Alternative Phone
+              </label>
+              <input
+                value={altPhone}
+                onChange={(e) => setAltPhone(e.target.value)}
+                placeholder="Optional — another number we can reach you on"
                 inputMode="tel"
                 className={fieldClass}
               />
