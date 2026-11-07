@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
 import { base44 } from '@/api/base44Client';
-import { notifyOrderCreated } from '@/lib/notifications';
 import { ArrowLeft, MapPin, Navigation, Phone, User, Loader2, ShoppingBag, Tag, History, X, CreditCard, Lock, ChevronRight } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
@@ -195,7 +194,8 @@ export default function Checkout() {
           toast({ title: 'Order total adjusted', description: `Final total: ₦${serverTotal.toLocaleString()}` });
         }
 
-        try { await notifyOrderCreated(orderId); } catch (e) { console.error('Notification error:', e); }
+        // No email here. Confirmation is sent server-side only after Paystack
+        // has verified the payment.
       }
 
       // Initiate Paystack payment — amount is recalculated server-side from the stored order

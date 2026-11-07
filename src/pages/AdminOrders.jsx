@@ -21,6 +21,7 @@ import {
 import AssignRiderSheet from '@/components/admin/AssignRiderSheet';
 
 const STATUSES = [
+{ value: 'awaiting_payment', label: 'Awaiting Payment', color: 'bg-amber-100 text-amber-700' },
 { value: 'new', label: 'Order Placed', color: 'bg-muted text-gray-700' },
 { value: 'processing', label: 'Being Prepared', color: 'bg-amber-100 text-amber-700' },
 { value: 'ready', label: 'Ready for Delivery', color: 'bg-blue-100 text-blue-700' },
@@ -149,6 +150,14 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted, onViewCusto
                 <span className="font-medium text-foreground capitalize">{order.payment_channel}</span>
               </div>
             )}
+            {order.payment_timestamp && order.payment_status === 'Paid' && (
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Paid at</span>
+                <span className="font-medium text-foreground">
+                  {new Date(order.payment_timestamp).toLocaleString('en-NG')}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Delivery rating */}
@@ -199,7 +208,7 @@ function OrderCard({ order, onStatusChange, updatingId, highlighted, onViewCusto
           <div>
             <p className="text-xs font-semibold text-gray-600 mb-1.5">Update Status</p>
             <div className="flex flex-wrap gap-1.5">
-              {STATUSES.map((s) =>
+              {STATUSES.filter((s) => s.value !== 'awaiting_payment').map((s) =>
             <button
               key={s.value}
               onClick={() => onStatusChange(order.id, s.value)}
@@ -236,6 +245,7 @@ export default function AdminOrders() {
   const [customerFilter, setCustomerFilter] = useState(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [paymentFilter, setPaymentFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('');
   const [assignOrder, setAssignOrder] = useState(null);
 
@@ -312,6 +322,7 @@ export default function AdminOrders() {
 
   const filteredOrders = visibleOrders.filter((o) => {
     if (statusFilter !== 'all' && o.status !== statusFilter) return false;
+    if (paymentFilter !== 'all' && (o.payment_status || 'Pending') !== paymentFilter) return false;
     if (dateFilter) {
       const d = o.created_date ? new Date(o.created_date).toISOString().slice(0, 10) : '';
       if (d !== dateFilter) return false;
@@ -324,10 +335,11 @@ export default function AdminOrders() {
     return true;
   });
 
-  const hasFilters = search.trim() || statusFilter !== 'all' || dateFilter;
+  const hasFilters = search.trim() || statusFilter !== 'all' || paymentFilter !== 'all' || dateFilter;
   const clearFilters = () => {
     setSearch('');
     setStatusFilter('all');
+    setPaymentFilter('all');
     setDateFilter('');
   };
 
@@ -382,14 +394,28 @@ export default function AdminOrders() {
             className="w-full pl-9 pr-3 h-10 text-sm rounded-xl border border-gray-200 outline-none focus:border-[#2E7D32]"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <SheetSelect
             value={statusFilter}
             onChange={setStatusFilter}
             options={[{ value: 'all', label: 'All statuses' }, ...STATUSES]}
             placeholder="All statuses"
             title="Filter by status"
-            triggerClassName="flex-1 h-10 flex items-center justify-between text-sm rounded-xl border border-gray-200 px-3 bg-card"
+            triggerClassName="flex-1 min-w-[130px] h-10 flex items-center justify-between text-sm rounded-xl border border-gray-200 px-3 bg-card"
+          />
+          <SheetSelect
+            value={paymentFilter}
+            onChange={setPaymentFilter}
+            options={[
+              { value: 'all', label: 'All payments' },
+              { value: 'Pending', label: 'Awaiting Payment' },
+              { value: 'Paid', label: 'Paid' },
+              { value: 'Failed', label: 'Failed' },
+              { value: 'Abandoned', label: 'Abandoned' },
+            ]}
+            placeholder="All payments"
+            title="Filter by payment"
+            triggerClassName="flex-1 min-w-[130px] h-10 flex items-center justify-between text-sm rounded-xl border border-gray-200 px-3 bg-card"
           />
           <div className="relative flex-1">
             <Calendar className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />

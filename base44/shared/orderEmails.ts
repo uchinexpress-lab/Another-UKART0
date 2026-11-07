@@ -107,9 +107,9 @@ export function adminNewOrderEmail(order: any): string {
 export function customerConfirmationEmail(order: any): string {
   const trackUrl = `${APP_URL}/track?order=${encodeURIComponent(order.order_number)}`;
   const content = `
-    <h2 style="margin:0 0 8px;color:${BRAND.green};font-size:20px;">Thank You for Your Order! \u2705</h2>
-    <p style="margin:0 0 20px;color:#444;font-size:14px;line-height:1.6;">Hi ${escapeHtml(order.customer_name) || "there"},<br><br>We've received your order and our team is getting it ready. Here's a summary of your purchase:</p>
-    <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">${infoRow("Order Number", order.order_number)}${infoRow("Order Date", formatDate(order.created_date))}${infoRow("Current Status", getStatusLabel(order.status))}${infoRow("Est. Delivery", "Within 2-4 hours (Lagos same-day)")}</table>
+    <h2 style="margin:0 0 8px;color:${BRAND.green};font-size:20px;">Payment Confirmed \u2014 Thank You for Your Order! \u2705</h2>
+    <p style="margin:0 0 20px;color:#444;font-size:14px;line-height:1.6;">Hi ${escapeHtml(order.customer_name) || "there"},<br><br>Your payment has been verified and your order is now being processed. Here's a summary of your purchase:</p>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">${infoRow("Order Number", order.order_number)}${infoRow("Order Date", formatDate(order.created_date))}${infoRow("Payment", "Paid \u00B7 Paystack")}${infoRow("Amount Paid", formatCurrency(order.total))}${infoRow("Current Status", getStatusLabel(order.status))}${infoRow("Est. Delivery", "Within 2-4 hours (Lagos same-day)")}</table>
     <h3 style="margin:20px 0 4px;font-size:15px;color:#333;">Your Items</h3>
     ${itemsTable(order.items)}
     <table style="width:100%;border-collapse:collapse;margin-top:8px;">${infoRow("Subtotal", formatCurrency(order.subtotal))}${infoRow("Delivery Fee", order.delivery_fee === 0 ? "FREE" : formatCurrency(order.delivery_fee))}<tr><td style="padding:10px 0;font-size:15px;color:${BRAND.green};font-weight:bold;">Total</td><td style="padding:10px 0;font-size:18px;color:${BRAND.green};font-weight:bold;text-align:right;">${formatCurrency(order.total)}</td></tr></table>

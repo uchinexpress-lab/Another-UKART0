@@ -31,8 +31,18 @@
         "processing",
         "paid",
         "failed",
+        "abandoned",
         "cancelled",
         "refunded"
+      ],
+      "enumColors": [
+        "yellow",
+        "blue",
+        "green",
+        "red",
+        "gray",
+        "gray",
+        "purple"
       ],
       "default": "pending"
     },

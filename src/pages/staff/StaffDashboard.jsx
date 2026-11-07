@@ -38,7 +38,7 @@ export default function StaffDashboard() {
           ordersRes, ticketsRes,
         ] = await Promise.all([
           base44.entities.Order.count({ created_date: { $gte: todayStr } }),
-          base44.entities.Order.count({ status: 'new' }),
+          base44.entities.Order.count({ status: { $in: ['awaiting_payment', 'new'] } }),
           base44.entities.Order.count({ payment_status: 'Paid' }),
           base44.entities.Order.count({ status: 'ready', payment_status: 'Paid' }),
           base44.entities.Delivery.count({ status: { $in: ['assigned', 'accepted', 'preparing', 'ready_for_pickup', 'picked_up', 'on_the_way', 'arriving_soon', 'arrived'] } }),

@@ -42,8 +42,29 @@ export default function OrderDetail() {
   const [order, setOrder] = useState(null);
   const [delivery, setDelivery] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [paying, setPaying] = useState(false);
   const { addItems } = useCart();
   const navigate = useNavigate();
+
+  const payNow = async () => {
+    if (!order) return;
+    setPaying(true);
+    try {
+      const callbackUrl = `${window.location.origin}/payment/callback`;
+      const res = await base44.functions.invoke('initiatePaystackPayment', {
+        orderId: order.id,
+        callbackUrl,
+      });
+      if (res.data?.authorization_url) {
+        window.location.href = res.data.authorization_url;
+        return;
+      }
+      toast({ title: 'Could not start payment', description: res.data?.error || 'Please try again.' });
+    } catch (err) {
+      toast({ title: 'Could not start payment', description: err?.message || 'Please try again.' });
+    }
+    setPaying(false);
+  };
 
   const reorder = () => {
     const cartItems = (order.items || [])
@@ -194,11 +215,23 @@ export default function OrderDetail() {
               <span className="text-muted-foreground">Payment Status</span>
               {order.payment_status === 'Paid' ? (
                 <span className="font-bold text-[#2E7D32] flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" /> Paid
+                  <CheckCircle2 className="w-3 h-3" /> Payment Confirmed
+                </span>
+              ) : order.payment_status === 'Failed' ? (
+                <span className="font-bold text-red-600 flex items-center gap-1">
+                  <XCircle className="w-3 h-3" /> Payment Failed
                 </span>
               ) : (
-                <span className="font-medium text-muted-foreground">{order.payment_status || 'Pending'}</span>
+                <span className="font-bold text-[#E65100] flex items-center gap-1">
+                  <Clock className="w-3 h-3" /> Payment Pending
+                </span>
               )}
+            </p>
+            <p className="flex items-center justify-between text-xs">
+              <span className="text-muted-foreground">Order Status</span>
+              <span className="font-medium text-foreground capitalize">
+                {(order.status || '').replace(/_/g, ' ')}
+              </span>
             </p>
             {order.paystack_reference && (
               <p className="flex items-center justify-between text-xs">
@@ -212,11 +245,29 @@ export default function OrderDetail() {
                 <span className="font-medium text-foreground capitalize">{order.payment_channel}</span>
               </p>
             )}
+            {order.payment_timestamp && order.payment_status === 'Paid' && (
+              <p className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">Paid at</span>
+                <span className="font-medium text-foreground">
+                  {new Date(order.payment_timestamp).toLocaleString('en-NG')}
+                </span>
+              </p>
+            )}
+            {order.payment_status !== 'Paid' && order.status !== 'cancelled' && (
+              <button
+                onClick={payNow}
+                disabled={paying}
+                className="mt-2 w-full h-10 rounded-xl bg-[#2E7D32] text-white text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-50"
+              >
+                {paying ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCw className="w-3.5 h-3.5" />}
+                {order.payment_status === 'Failed' ? 'Retry Payment' : 'Pay Now'}
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      {!isCancelled ? (
+      {!isCancelled && order.payment_status === 'Paid' ? (
         <div className="bg-card rounded-2xl border border-border p-4">
           <h3 className="text-xs font-semibold text-muted-foreground uppercase mb-4">Delivery Progress</h3>
           <div className="space-y-0">
@@ -280,13 +331,13 @@ export default function OrderDetail() {
             </Link>
           )}
         </div>
-      ) : (
+      ) : isCancelled ? (
         <div className="bg-red-50 rounded-2xl border border-red-100 p-4 text-center">
           <XCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
           <p className="text-sm font-bold text-red-700">This order was cancelled</p>
           <p className="text-xs text-red-500 mt-1">Contact support if this is a mistake.</p>
         </div>
-      )}
+      ) : null}
 
       {order.status === 'delivered' && (
         <div className="bg-card rounded-2xl border border-border p-4">

@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import PullToRefresh from '@/components/home/PullToRefresh';
 
-const ACTIVE = ['new', 'processing', 'ready', 'on_the_way'];
+const ACTIVE = ['awaiting_payment', 'new', 'processing', 'ready', 'on_the_way'];
 const ACTIVE_STEP_INDEX = { new: 0, processing: 1, ready: 2, on_the_way: 3 };
 
 const TABS = [
@@ -39,6 +39,12 @@ function formatDate(d) {
 }
 
 function StatusBadge({ status }) {
+  if (status === 'awaiting_payment')
+    return (
+      <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#FFF3E0] text-[#E65100] flex items-center gap-1">
+        <Clock className="w-3 h-3" /> Awaiting Payment
+      </span>
+    );
   if (status === 'delivered')
     return (
       <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-primary/10 text-[#2E7D32] flex items-center gap-1">
@@ -62,8 +68,30 @@ export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('active');
+  const [payingId, setPayingId] = useState(null);
   const { addItems } = useCart();
   const navigate = useNavigate();
+
+  const payNow = async (e, order) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setPayingId(order.id);
+    try {
+      const callbackUrl = `${window.location.origin}/payment/callback`;
+      const res = await base44.functions.invoke('initiatePaystackPayment', {
+        orderId: order.id,
+        callbackUrl,
+      });
+      if (res.data?.authorization_url) {
+        window.location.href = res.data.authorization_url;
+        return;
+      }
+      toast({ title: 'Could not start payment', description: res.data?.error || 'Please try again.' });
+    } catch (err) {
+      toast({ title: 'Could not start payment', description: err?.message || 'Please try again.' });
+    }
+    setPayingId(null);
+  };
 
   const reorder = (e, order) => {
     e.preventDefault();
@@ -148,16 +176,30 @@ export default function Orders() {
             return (
               <Link
                 key={o.id}
-                to={isActive ? `/track?id=${o.id}` : `/orders/${o.id}`}
+                to={isActive && o.payment_status === 'Paid' ? `/track?id=${o.id}` : `/orders/${o.id}`}
                 className="block bg-card rounded-2xl border border-border p-4 active:scale-[0.98] transition-transform"
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-bold text-foreground">{o.order_number}</span>
                   <StatusBadge status={o.status} />
                 </div>
-                {o.payment_status === 'Paid' && (
+                {o.payment_status === 'Paid' ? (
                   <div className="flex items-center gap-1 text-[10px] font-bold text-[#2E7D32] mb-1">
-                    <CheckCircle2 className="w-3 h-3" /> Paid · Paystack
+                    <CheckCircle2 className="w-3 h-3" /> Payment Confirmed
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <span className={`flex items-center gap-1 text-[10px] font-bold ${o.payment_status === 'Failed' ? 'text-red-600' : 'text-[#E65100]'}`}>
+                      <XCircle className="w-3 h-3" />
+                      {o.payment_status === 'Failed' ? 'Payment Failed' : 'Payment Pending'}
+                    </span>
+                    <button
+                      onClick={(e) => payNow(e, o)}
+                      disabled={payingId === o.id}
+                      className="text-[10px] font-bold text-white bg-[#2E7D32] px-2.5 py-1 rounded-full disabled:opacity-50"
+                    >
+                      {payingId === o.id ? 'Starting…' : o.payment_status === 'Failed' ? 'Retry Payment' : 'Pay Now'}
+                    </button>
                   </div>
                 )}
                 <p className="text-xs text-muted-foreground mb-3">{formatDate(o.created_date)}</p>

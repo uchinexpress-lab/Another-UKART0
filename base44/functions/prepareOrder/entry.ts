@@ -254,7 +254,7 @@ export default async function (req: Request): Promise<Response> {
       customer_email: user.email,
       customer_address,
       landmark,
-      status: "new",
+      status: "awaiting_payment",
       payment_method: "Pay Online",
       payment_status: "Pending",
       referral_id,

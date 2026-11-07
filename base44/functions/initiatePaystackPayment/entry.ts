@@ -28,15 +28,15 @@ export default async function (req) {
       return Response.json({ error: "Order does not belong to you" }, { status: 403 });
     }
 
-    // Only allow initiation while payment is still pending or processing
-    if (
-      order.payment_status &&
-      !["Pending", "Processing"].includes(order.payment_status)
-    ) {
+    // Paid orders can never be charged again
+    if (order.payment_status === "Paid") {
       return Response.json(
-        { error: `Order payment is ${order.payment_status}` },
+        { error: "This order has already been paid" },
         { status: 400 }
       );
+    }
+    if (order.status === "cancelled") {
+      return Response.json({ error: "This order was cancelled" }, { status: 400 });
     }
 
     // Server-side amount — never trust a client-sent amount
@@ -48,6 +48,20 @@ export default async function (req) {
 
     const reference = generateReference(order.order_number);
     const mode = detectMode();
+
+    // Any earlier attempt that was opened but never completed is abandoned now.
+    // Those records can never be confirmed after this point.
+    try {
+      const stale = await base44.asServiceRole.entities.Payment.filter(
+        { order_id: order.id, status: { $in: ["pending", "processing"] } },
+        { limit: 20 }
+      );
+      for (const p of stale.items || []) {
+        await base44.asServiceRole.entities.Payment.update(p.id, { status: "abandoned" });
+      }
+    } catch (e) {
+      console.error("Could not close previous payment attempts:", e);
+    }
 
     // Create a pending payment record (service role — Payment entity is admin-create)
     const payment = await base44.asServiceRole.entities.Payment.create({
@@ -83,9 +97,11 @@ export default async function (req) {
       },
     });
 
-    // Mark the order as processing payment
+    // The order stays PENDING / awaiting_payment. Opening Paystack is NOT
+    // payment: the order only becomes paid after server-side verification.
     await base44.asServiceRole.entities.Order.update(order.id, {
-      payment_status: "Processing",
+      payment_status: "Pending",
+      status: order.status === "awaiting_payment" || !order.status ? "awaiting_payment" : order.status,
       paystack_reference: reference,
       paystack_mode: mode,
     });

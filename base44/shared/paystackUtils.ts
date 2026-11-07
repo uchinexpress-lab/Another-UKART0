@@ -1,7 +1,14 @@
 // Shared Paystack payment utilities — used by initiatePaystackPayment,
 // verifyPaystackPayment, and paystackWebhook backend functions.
+//
+// Payment truth is ALWAYS Paystack's verify endpoint. The order is only marked
+// paid after a successful verification whose amount, currency and reference
+// match the Ukart order. Emails are only sent after that point, and every step
+// is idempotent so the webhook and the browser callback can both arrive
+// without duplicate payments or duplicate emails.
 
 import { secrets } from "base44:runtime";
+import { sendOrderPaidEmails } from "./orderPaidEmails.ts";
 
 const PAYSTACK_BASE = "https://api.paystack.co";
 
@@ -47,6 +54,33 @@ export async function verifyTransaction(reference) {
   return data.data;
 }
 
+// Record a failed/abandoned attempt. A paid order is never downgraded.
+async function markUnpaid(base44, payment, paymentStatus, reason, tx) {
+  try {
+    await base44.asServiceRole.entities.Payment.update(payment.id, {
+      status: paymentStatus,
+      paystack_response: tx || {},
+      verified_at: new Date().toISOString(),
+    });
+  } catch (e) {
+    console.error("Payment status update failed:", e);
+  }
+
+  try {
+    const order = await base44.asServiceRole.entities.Order.get(payment.order_id);
+    if (order && order.payment_status !== "Paid") {
+      await base44.asServiceRole.entities.Order.update(order.id, {
+        payment_status: paymentStatus === "abandoned" ? "Abandoned" : "Failed",
+        // Order status intentionally stays awaiting_payment — no fulfilment.
+      });
+    }
+  } catch (e) {
+    console.error("Order payment status update failed:", e);
+  }
+
+  return { ok: false, reason };
+}
+
 // Core confirmation logic — verify with Paystack and mark the order as paid.
 // Idempotent: safe to call multiple times (webhook + callback).
 // Used by both verifyPaystackPayment and paystackWebhook.
@@ -61,9 +95,27 @@ export async function confirmPayment(base44, reference) {
   }
   const payment = payments.items[0];
 
-  // Already processed — idempotent return
+  const order = await base44.asServiceRole.entities.Order.get(payment.order_id);
+  if (!order) {
+    return { ok: false, reason: "Order not found" };
+  }
+
+  // Already processed — repair the order if needed, then return (idempotent).
   if (payment.status === "paid") {
-    return { ok: true, alreadyPaid: true, orderId: payment.order_id };
+    if (order.payment_status !== "Paid") {
+      await base44.asServiceRole.entities.Order.update(order.id, {
+        payment_status: "Paid",
+        status: ["awaiting_payment", "new", undefined, null].includes(order.status)
+          ? "processing"
+          : order.status,
+        paystack_reference: reference,
+        paystack_transaction_id: payment.paystack_transaction_id,
+        payment_channel: payment.payment_channel,
+        payment_timestamp: payment.paid_at || payment.verified_at,
+      });
+    }
+    await sendOrderPaidEmails(base44.asServiceRole, order.id);
+    return { ok: true, alreadyPaid: true, orderId: order.id };
   }
 
   // Re-verify with Paystack (authoritative source of truth)
@@ -71,42 +123,39 @@ export async function confirmPayment(base44, reference) {
 
   // Transaction must be successful
   if (tx.status !== "success") {
-    await base44.asServiceRole.entities.Payment.update(payment.id, {
-      status: "failed",
-      paystack_response: tx,
-    });
-    return { ok: false, reason: "Transaction was not successful" };
+    const failedStatus = tx.status === "abandoned" ? "abandoned" : "failed";
+    return markUnpaid(
+      base44,
+      payment,
+      failedStatus,
+      `Transaction status: ${tx.status}`,
+      tx
+    );
   }
 
-  // Amount verification — Paystack amount is in kobo, our amount in naira
-  const expectedKobo = Math.round(payment.amount * 100);
-  if (Number(tx.amount) !== expectedKobo) {
-    await base44.asServiceRole.entities.Payment.update(payment.id, {
-      status: "failed",
-      paystack_response: tx,
-    });
-    return { ok: false, reason: "Amount mismatch" };
+  // Amount verification — Paystack amount is in kobo, our amount in naira.
+  // Both the stored payment amount AND the order total must match.
+  const expectedKobo = Math.round(Number(payment.amount) * 100);
+  const orderKobo = Math.round(Number(order.total) * 100);
+  if (Number(tx.amount) !== expectedKobo || Number(tx.amount) !== orderKobo) {
+    return markUnpaid(base44, payment, "failed", "Amount mismatch", tx);
   }
 
   // Currency verification
   if ((tx.currency || "NGN") !== (payment.currency || "NGN")) {
-    await base44.asServiceRole.entities.Payment.update(payment.id, {
-      status: "failed",
-      paystack_response: tx,
-    });
-    return { ok: false, reason: "Currency mismatch" };
+    return markUnpaid(base44, payment, "failed", "Currency mismatch", tx);
   }
 
   // Reference must match
   if (tx.reference !== reference) {
-    return { ok: false, reason: "Reference mismatch" };
+    return markUnpaid(base44, payment, "failed", "Reference mismatch", tx);
   }
 
   const now = new Date().toISOString();
   const txId = tx.id;
   const channel = tx.channel || "unknown";
 
-  // Update the payment record to paid
+  // 1. Payment record → paid
   await base44.asServiceRole.entities.Payment.update(payment.id, {
     status: "paid",
     paystack_transaction_id: txId,
@@ -116,52 +165,55 @@ export async function confirmPayment(base44, reference) {
     paid_at: now,
   });
 
-  // Update the order to paid — this is what unlocks fulfillment
-  await base44.asServiceRole.entities.Order.update(payment.order_id, {
+  // 2. Order → paid + processing (only if it hasn't moved further along)
+  const orderUpdate: Record<string, any> = {
     payment_status: "Paid",
     paystack_reference: reference,
     paystack_transaction_id: txId,
     payment_channel: channel,
     payment_timestamp: now,
     paystack_response: tx,
-  });
+  };
+  if (["awaiting_payment", "new", undefined, null].includes(order.status)) {
+    orderUpdate.status = "processing";
+  }
+  await base44.asServiceRole.entities.Order.update(order.id, orderUpdate);
 
-  // Finalize discounts only on successful payment — failed/abandoned payments
-  // never consume a one-time voucher or a referral reward. Idempotent: this
-  // block only runs on the first confirmation (early-return above for paid).
-  const paidOrder = await base44.asServiceRole.entities.Order.get(payment.order_id);
-  if (paidOrder) {
-    if (paidOrder.voucher_code) {
-      try {
-        const vRes = await base44.asServiceRole.entities.Voucher.filter(
-          { code: paidOrder.voucher_code },
-          { limit: 1 }
-        );
-        const v = vRes.items && vRes.items[0];
-        if (v) {
-          await base44.asServiceRole.entities.Voucher.update(v.id, {
-            uses: (v.uses || 0) + 1,
-          });
-        }
-      } catch (e) {
-        console.error("Voucher usage increment failed:", e);
+  // 3. Finalize discounts only on successful payment — failed/abandoned
+  // payments never consume a one-time voucher or a referral reward.
+  if (order.voucher_code) {
+    try {
+      const vRes = await base44.asServiceRole.entities.Voucher.filter(
+        { code: order.voucher_code },
+        { limit: 1 }
+      );
+      const v = vRes.items && vRes.items[0];
+      if (v) {
+        await base44.asServiceRole.entities.Voucher.update(v.id, {
+          uses: (v.uses || 0) + 1,
+        });
       }
+    } catch (e) {
+      console.error("Voucher usage increment failed:", e);
     }
-    if (paidOrder.referral_id) {
-      try {
-        const ref = await base44.asServiceRole.entities.Referral.get(paidOrder.referral_id);
-        if (ref) {
-          const rewardUpdate =
-            paidOrder.referral_type === "referrer"
-              ? { referrer_rewarded: true, status: "rewarded" }
-              : { referred_rewarded: true, status: "rewarded" };
-          await base44.asServiceRole.entities.Referral.update(ref.id, rewardUpdate);
-        }
-      } catch (e) {
-        console.error("Referral reward finalization failed:", e);
+  }
+  if (order.referral_id) {
+    try {
+      const ref = await base44.asServiceRole.entities.Referral.get(order.referral_id);
+      if (ref) {
+        const rewardUpdate =
+          order.referral_type === "referrer"
+            ? { referrer_rewarded: true, status: "rewarded" }
+            : { referred_rewarded: true, status: "rewarded" };
+        await base44.asServiceRole.entities.Referral.update(ref.id, rewardUpdate);
       }
+    } catch (e) {
+      console.error("Referral reward finalization failed:", e);
     }
   }
 
-  return { ok: true, orderId: payment.order_id, channel };
+  // 4. Confirmation emails — only now, never at order creation.
+  await sendOrderPaidEmails(base44.asServiceRole, order.id);
+
+  return { ok: true, orderId: order.id, channel, amount: Number(tx.amount) / 100 };
 }

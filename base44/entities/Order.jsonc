@@ -101,10 +101,21 @@
         "Processing",
         "Paid",
         "Failed",
+        "Abandoned",
         "Cancelled",
         "Refunded"
       ],
-      "default": "Pending"
+      "enumColors": [
+        "yellow",
+        "blue",
+        "green",
+        "red",
+        "gray",
+        "gray",
+        "purple"
+      ],
+      "default": "Pending",
+      "description": "Payment state only \u2014 independent of fulfilment status"
     },
     "paystack_reference": {
       "type": "string",
@@ -137,6 +148,7 @@
     "status": {
       "type": "string",
       "enum": [
+        "awaiting_payment",
         "new",
         "processing",
         "ready",
@@ -144,7 +156,17 @@
         "delivered",
         "cancelled"
       ],
-      "default": "new"
+      "enumColors": [
+        "yellow",
+        "gray",
+        "blue",
+        "blue",
+        "blue",
+        "green",
+        "red"
+      ],
+      "default": "awaiting_payment",
+      "description": "Fulfilment state only \u2014 payment state lives in payment_status"
     },
     "admin_notified": {
       "type": "boolean",

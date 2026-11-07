@@ -7,7 +7,7 @@ import { confirmPayment } from "../../shared/paystackUtils.ts";
 // with Paystack's API before marking the order as paid.
 //
 // Webhook URL to register in your Paystack dashboard:
-//   https://ukart-fresh-now.base44.app/functions/paystackWebhook
+//   https://ukart.base44.app/functions/paystackWebhook
 export default async function (req) {
   try {
     const base44 = createClientFromRequest(req);

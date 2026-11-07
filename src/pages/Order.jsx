@@ -14,7 +14,7 @@ import {
   Loader2,
 } from 'lucide-react';
 
-const ACTIVE = ['new', 'processing', 'ready', 'on_the_way'];
+const ACTIVE = ['awaiting_payment', 'new', 'processing', 'ready', 'on_the_way'];
 
 const TABS = [
   { key: 'cart', label: 'Cart' },

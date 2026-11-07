@@ -94,7 +94,7 @@ export default function OrderTracking() {
 
   const isCancelled = order?.status === 'cancelled';
   const isDelivered = order?.status === 'delivered';
-  const currentStepIndex = order ? STEP_ORDER.indexOf(order.status) : -1;
+  const currentStepIndex = order ? Math.max(0, STEP_ORDER.indexOf(order.status)) : -1;
   const progressPct = order && currentStepIndex >= 0 ? (currentStepIndex / (STEPS.length - 1)) * 100 : 0;
 
   return (

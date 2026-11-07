@@ -1,9 +1,5 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.52";
-import {
-  adminNewOrderEmail,
-  customerConfirmationEmail,
-  statusEmail,
-} from "../../shared/orderEmails.ts";
+import { statusEmail } from "../../shared/orderEmails.ts";
 
 // Centralized order email notifications. Runs as the service role so it can
 // send email and update Order notification flags (Order.update is admin-only).
@@ -46,41 +42,9 @@ export default async function (req: Request): Promise<Response> {
     const settings = await getSettings(admin);
 
     if (type === "created") {
-      // Admin / business new-order email
-      if (settings.enable_business_email && !order.admin_notified) {
-        try {
-          await admin.integrations.Core.SendEmail({
-            to: settings.business_email,
-            subject: `\uD83D\uDED2 New Ukart Order #${order.order_number}`,
-            html: adminNewOrderEmail(order),
-          });
-          await admin.entities.Order.update(order.id, { admin_notified: true });
-        } catch (e) {
-          console.error("Admin order notification failed:", e);
-        }
-      }
-
-      // Customer confirmation email
-      if (
-        settings.enable_customer_confirmation &&
-        order.customer_email &&
-        !order.confirmation_email_sent
-      ) {
-        try {
-          await admin.integrations.Core.SendEmail({
-            to: order.customer_email,
-            subject: `\u2705 Your Ukart Order #${order.order_number} Has Been Received`,
-            html: customerConfirmationEmail(order),
-          });
-          await admin.entities.Order.update(order.id, {
-            confirmation_email_sent: true,
-            last_status_notified: "new",
-          });
-        } catch (e) {
-          console.error("Customer confirmation email failed:", e);
-        }
-      }
-      return Response.json({ ok: true });
+      // Order creation sends NO email. Confirmation is sent by the payment
+      // flow (orderPaidEmails) only after Paystack verification succeeds.
+      return Response.json({ ok: true, skipped: "Confirmation is sent after payment" });
     }
 
     if (type === "status") {
@@ -93,6 +57,15 @@ export default async function (req: Request): Promise<Response> {
       const ALLOWED_STATUSES = ["processing", "ready", "on_the_way", "delivered", "cancelled"];
       if (!status || !ALLOWED_STATUSES.includes(status)) {
         return Response.json({ error: "Invalid status" }, { status: 400 });
+      }
+
+      // Fulfilment is impossible before Paystack has confirmed the payment.
+      const FULFILMENT_STATUSES = ["processing", "ready", "on_the_way", "delivered"];
+      if (FULFILMENT_STATUSES.includes(status) && order.payment_status !== "Paid") {
+        return Response.json(
+          { error: "Payment has not been confirmed for this order" },
+          { status: 400 }
+        );
       }
 
       // Update the order status (service role — Order.update is admin-only).

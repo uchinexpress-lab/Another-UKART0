@@ -13,6 +13,7 @@ import {
 import SheetSelect from '@/components/SheetSelect';
 
 const STATUSES = [
+  { value: 'awaiting_payment', label: 'Awaiting Payment' },
   { value: 'new', label: 'Order Placed' },
   { value: 'processing', label: 'Being Prepared' },
   { value: 'ready', label: 'Ready for Delivery' },
@@ -121,8 +122,9 @@ export default function StaffOrders() {
           options={[
             { value: 'all', label: 'All Payments' },
             { value: 'Paid', label: 'Paid' },
-            { value: 'Pending', label: 'Pending' },
+            { value: 'Pending', label: 'Awaiting Payment' },
             { value: 'Failed', label: 'Failed' },
+            { value: 'Abandoned', label: 'Abandoned' },
           ]}
         />
       </div>
@@ -205,6 +207,17 @@ export default function StaffOrders() {
                               <p className="flex items-start gap-1.5 text-gray-600">
                                 <MapPin className="w-3 h-3 mt-0.5" /> {o.customer_address}
                               </p>
+                              {o.paystack_reference && (
+                                <p className="text-gray-500 text-[11px] break-all">
+                                  Ref: {o.paystack_reference}
+                                </p>
+                              )}
+                              {o.payment_timestamp && o.payment_status === 'Paid' && (
+                                <p className="text-gray-500 text-[11px]">
+                                  Paid: {new Date(o.payment_timestamp).toLocaleString('en-NG')}
+                                  {o.payment_channel ? ` · ${o.payment_channel}` : ''}
+                                </p>
+                              )}
                             </div>
                             <div className="text-xs">
                               <p className="font-semibold text-gray-700 mb-1">
@@ -236,7 +249,7 @@ export default function StaffOrders() {
                                     Update Status
                                   </p>
                                   <div className="flex flex-wrap gap-1">
-                                    {STATUSES.map((s) => (
+                                    {STATUSES.filter((s) => s.value !== 'awaiting_payment').map((s) => (
                                       <button
                                         key={s.value}
                                         onClick={() => handleStatusChange(o.id, o.order_number, s.value)}
