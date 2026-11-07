@@ -16,6 +16,16 @@ import { createClientFromRequest } from "npm:@base44/sdk@0.8.52";
 const REFERRAL_REWARD_AMOUNT = 1000;
 const DELIVERY_FEE = 1500;
 
+// Service fee by order subtotal (naira). Mirrors src/lib/fees.js.
+function getServiceFee(subtotal: number): number {
+  if (subtotal <= 0) return 0;
+  if (subtotal <= 5000) return 560;
+  if (subtotal <= 25000) return 865;
+  if (subtotal <= 55000) return 1265;
+  if (subtotal <= 125000) return 1865;
+  return 2665;
+}
+
 export default async function (req: Request): Promise<Response> {
   try {
     const base44 = createClientFromRequest(req);
@@ -231,9 +241,12 @@ export default async function (req: Request): Promise<Response> {
       }
     }
 
+    // --- Service fee (tiered by subtotal) ---
+    const service_fee = getServiceFee(subtotal);
+
     // --- Totals ---
     const discount = Math.min(referralDiscount + voucherDiscount + firstOrderDiscount, subtotal);
-    const total = subtotal - discount + delivery_fee;
+    const total = subtotal - discount + delivery_fee + service_fee;
 
     if (total <= 0) {
       return Response.json({ error: "Invalid order amount" }, { status: 400 });
@@ -246,6 +259,7 @@ export default async function (req: Request): Promise<Response> {
       items: orderItems,
       subtotal,
       delivery_fee,
+      service_fee,
       discount,
       voucher_code,
       total,
@@ -285,6 +299,7 @@ export default async function (req: Request): Promise<Response> {
       orderNumber,
       subtotal,
       delivery_fee,
+      service_fee,
       discount,
       total,
       voucher_id,

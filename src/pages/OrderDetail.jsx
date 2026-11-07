@@ -170,6 +170,10 @@ export default function OrderDetail() {
             <span>Delivery fee</span>
             <span>₦{(order.delivery_fee || 0).toLocaleString()}</span>
           </div>
+          <div className="flex justify-between text-muted-foreground">
+            <span>Service fee</span>
+            <span>₦{(order.service_fee || 0).toLocaleString()}</span>
+          </div>
           {order.first_order_discount > 0 && (
             <div className="flex justify-between text-[#2E7D32] font-medium">
               <span className="flex items-center gap-1">

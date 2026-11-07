@@ -4,6 +4,7 @@ import { useCart } from '@/context/CartContext';
 import { base44 } from '@/api/base44Client';
 import { ArrowLeft, MapPin, Navigation, Phone, User, Loader2, ShoppingBag, Tag, History, X, CreditCard, Lock, ChevronRight } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
+import { getServiceFee } from '@/lib/fees';
 
 const REWARD_AMOUNT = 1000;
 
@@ -117,7 +118,8 @@ export default function Checkout() {
     : 0;
   const appliedDiscount = Math.min(referralDiscount + voucherDiscount + firstOrderDiscount, total);
   const deliveryFee = total > 0 ? (firstOrderFreeDelivery ? 0 : 1500) : 0;
-  const grandTotal = total - appliedDiscount + deliveryFee;
+  const serviceFee = getServiceFee(total);
+  const grandTotal = total - appliedDiscount + deliveryFee + serviceFee;
 
   const canPlace = name.trim() && phone.trim() && address.trim() && landmark.trim() && !placing;
 
@@ -447,6 +449,10 @@ export default function Checkout() {
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Delivery fee</span>
               <span className="text-foreground font-medium">{deliveryFee === 0 ? 'Free' : `₦${deliveryFee.toLocaleString()}`}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Service fee</span>
+              <span className="text-foreground font-medium">₦{serviceFee.toLocaleString()}</span>
             </div>
             {firstOrderDiscount > 0 && (
               <div className="flex justify-between text-sm">

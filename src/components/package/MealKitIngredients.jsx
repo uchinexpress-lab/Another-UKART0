@@ -13,18 +13,8 @@ export default function MealKitIngredients({ items }) {
       </h2>
       <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50 overflow-hidden">
         {list.map((item, idx) => (
-          <div key={idx} className="flex items-center gap-3 px-4 py-3">
-            {item.image ? (
-              <img
-                src={item.image}
-                alt=""
-                className="w-8 h-8 rounded-lg object-contain bg-gray-50 shrink-0"
-              />
-            ) : (
-              <span className="w-8 h-8 rounded-lg bg-[#E8F5E9] flex items-center justify-center shrink-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#2E7D32]" />
-              </span>
-            )}
+          <div key={idx} className="flex items-center gap-2.5 px-4 py-3">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#2E7D32] shrink-0" />
             <span className="flex-1 text-sm font-medium text-gray-900 truncate">
               {item.name}
             </span>

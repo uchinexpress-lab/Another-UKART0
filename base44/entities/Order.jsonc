@@ -65,6 +65,11 @@
     "delivery_fee": {
       "type": "number"
     },
+    "service_fee": {
+      "type": "number",
+      "default": 0,
+      "description": "Tiered service fee added at checkout (server-calculated)"
+    },
     "discount": {
       "type": "number",
       "default": 0
