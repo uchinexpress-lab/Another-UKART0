@@ -18,12 +18,9 @@ const DELIVERY_FEE = 1500;
 
 // Service fee by order subtotal (naira). Mirrors src/lib/fees.js.
 function getServiceFee(subtotal: number): number {
-  if (subtotal <= 0) return 0;
-  if (subtotal <= 5000) return 560;
-  if (subtotal <= 25000) return 865;
-  if (subtotal <= 55000) return 1265;
-  if (subtotal <= 125000) return 1865;
-  return 2665;
+  if (subtotal < 5000) return 0;
+  if (subtotal <= 50000) return 310;
+  return 490;
 }
 
 export default async function (req: Request): Promise<Response> {
