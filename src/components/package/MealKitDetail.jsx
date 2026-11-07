@@ -58,7 +58,7 @@ export default function MealKitDetail({ pkg }) {
 
   const kitStock = pkg.stock_status || 'in_stock';
   const stockCfg = STOCK_CONFIG[kitStock] || STOCK_CONFIG.in_stock;
-  const kitAvailable = kitStock !== 'out_of_stock';
+  const kitAvailable = kitStock !== 'out_of_stock' && pkg.active !== false;
 
   const proteins = pkg.proteins || [];
 
@@ -121,6 +121,14 @@ export default function MealKitDetail({ pkg }) {
     ];
     addItem({
       id: `mealkit-${pkg.id}${chosenSize ? `-${chosenSize.label}` : ''}`,
+      package_id: pkg.id,
+      size_label: chosenSize?.label || '',
+      addon_ids: kitAddons
+        .filter((a, index) => selectedAddons[index] && a.active !== false && a.available !== false)
+        .map((a) => a.id)
+        .filter(Boolean),
+      protein_names: chosenProteins,
+      selections: selections.map((s) => ({ product_id: s.id, quantity: s.quantity })),
       name: chosenSize ? `${pkg.name} — ${chosenSize.label}` : pkg.name,
       price: total,
       image: pkg.image,

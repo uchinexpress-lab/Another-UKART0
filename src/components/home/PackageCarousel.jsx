@@ -5,7 +5,7 @@ import PackageCard from '@/components/package/PackageCard';
 
 export default function PackageCarousel({ packages }) {
   const navigate = useNavigate();
-  const essentials = (packages || []).filter((p) => p.group !== 'meal_kits');
+  const essentials = (packages || []).filter((p) => p.group !== 'meal_kits' && p.active !== false);
   if (!essentials.length) return null;
 
   return (

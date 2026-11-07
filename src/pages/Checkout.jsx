@@ -190,12 +190,24 @@ export default function Checkout() {
         // validation all happen server-side. The client only sends the cart
         // (product_id + variant + quantity), voucher code, and delivery details.
         const res = await base44.functions.invoke('prepareOrder', {
-          items: items.map((i) => ({
-            product_id: i.product_id || (i.id || '').split('__')[0],
-            variant_label: i.variant_label || i.details || '',
-            quantity: i.quantity,
-            addon_ids: (i.addons || []).map((a) => a.id),
-          })),
+          items: items.map((i) => {
+            // Meal kits are Package records. Older carts stored only the
+            // "mealkit-<packageId>" id, so recover the package id from it.
+            const packageId =
+              i.package_id || (String(i.id).startsWith('mealkit-') ? String(i.id).slice(8).split('-')[0] : '');
+            return {
+              product_id: packageId ? '' : i.product_id || (i.id || '').split('__')[0],
+              package_id: packageId,
+              size_label: i.size_label || '',
+              protein_names: i.protein_names || [],
+              selections: i.selections || [],
+              variant_label: packageId ? '' : i.variant_label || i.details || '',
+              quantity: i.quantity,
+              addon_ids: packageId
+                ? i.addon_ids || []
+                : (i.addons || []).map((a) => a.id),
+            };
+          }),
           voucherCode: voucher ? voucher.code : '',
           customer_name: name,
           customer_phone: phone,

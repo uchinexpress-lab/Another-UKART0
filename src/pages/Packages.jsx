@@ -35,8 +35,9 @@ export default function Packages() {
     );
   }
 
-  const essentials = packages.filter((p) => p.group !== 'meal_kits');
-  const mealKits = packages.filter((p) => p.group === 'meal_kits');
+  const sellable = packages.filter((p) => p.active !== false);
+  const essentials = sellable.filter((p) => p.group !== 'meal_kits');
+  const mealKits = sellable.filter((p) => p.group === 'meal_kits');
 
   return (
     <PullToRefresh onRefresh={loadPackages}>

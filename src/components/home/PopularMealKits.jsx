@@ -6,7 +6,7 @@ import MealKitImage from '@/components/package/MealKitImage';
 export default function PopularMealKits({ packages }) {
   const navigate = useNavigate();
   const mealKits = (packages || [])
-    .filter((p) => p.group === 'meal_kits')
+    .filter((p) => p.group === 'meal_kits' && p.active !== false)
     .slice(0, 6);
 
   if (!mealKits.length) return null;

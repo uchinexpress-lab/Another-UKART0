@@ -73,12 +73,94 @@ export default async function (req: Request): Promise<Response> {
     let subtotal = 0;
 
     for (const ci of items) {
+      const packageId = ci.package_id || "";
       const productId = ci.product_id;
       const variantLabel = ci.variant_label || "";
       const quantity = Number(ci.quantity);
 
-      if (!productId || !quantity || quantity <= 0) {
+      if ((!productId && !packageId) || !quantity || quantity <= 0) {
         return Response.json({ error: "Invalid cart item" }, { status: 400 });
+      }
+
+      // --- Meal kits and packages live in the Package entity ---
+      if (packageId) {
+        const pkg = await admin.entities.Package.get(packageId);
+        if (!pkg || pkg.active === false) {
+          return Response.json(
+            { error: "This item is no longer available" },
+            { status: 400 }
+          );
+        }
+
+        const sizeLabel = ci.size_label || "";
+        let basePrice = Number(pkg.total_price) || Number(pkg.starting_price) || 0;
+        let serves = pkg.serves || "Meal Kit";
+        if (sizeLabel) {
+          const size = (pkg.sizes || []).find((s: any) => s.label === sizeLabel);
+          if (!size) {
+            return Response.json(
+              { error: `Size "${sizeLabel}" not found for ${pkg.name}` },
+              { status: 400 }
+            );
+          }
+          if (size.price != null) basePrice = Number(size.price);
+          if (size.serves) serves = size.serves;
+          if (size.available === false) {
+            return Response.json({ error: `${pkg.name} (${sizeLabel}) is unavailable` }, { status: 400 });
+          }
+        }
+
+        let addonsTotal = 0;
+        const resolvedAddons: any[] = [];
+        for (const addonId of Array.isArray(ci.addon_ids) ? ci.addon_ids : []) {
+          const addon = (pkg.addons || []).find(
+            (a: any) => a.id === addonId && a.active !== false && a.available !== false
+          );
+          if (addon) {
+            const addonPrice = Number(addon.price) || 0;
+            addonsTotal += addonPrice;
+            resolvedAddons.push({ id: addon.id, name: addon.name, price: addonPrice });
+          }
+        }
+
+        let proteinsTotal = 0;
+        for (const name of Array.isArray(ci.protein_names) ? ci.protein_names : []) {
+          const protein = (pkg.proteins || []).find(
+            (p: any) => p.name === name && p.available !== false
+          );
+          if (protein) proteinsTotal += Number(protein.price) || 0;
+        }
+
+        // Products picked while building the kit are re-priced from the catalog.
+        let selectionsTotal = 0;
+        for (const sel of Array.isArray(ci.selections) ? ci.selections : []) {
+          const selQty = Number(sel.quantity) || 0;
+          if (!sel.product_id || selQty <= 0) continue;
+          const selProduct = await admin.entities.Product.get(sel.product_id);
+          if (!selProduct || selProduct.is_hidden) {
+            return Response.json(
+              { error: `${selProduct?.name || "An item"} in your kit is no longer available` },
+              { status: 400 }
+            );
+          }
+          selectionsTotal += Number(selProduct.price) * selQty;
+        }
+
+        const kitUnitPrice = basePrice + addonsTotal + proteinsTotal + selectionsTotal;
+        subtotal += kitUnitPrice * quantity;
+
+        orderItems.push({
+          product_id: "",
+          product_name: pkg.name,
+          variant_label: sizeLabel,
+          name: sizeLabel ? `${pkg.name} — ${sizeLabel}` : pkg.name,
+          price: kitUnitPrice,
+          quantity,
+          unit: serves,
+          addons: resolvedAddons,
+          addons_total: addonsTotal,
+        });
+        continue;
       }
 
       const product = await admin.entities.Product.get(productId);
