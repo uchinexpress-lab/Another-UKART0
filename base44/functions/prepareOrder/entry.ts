@@ -171,15 +171,29 @@ export default async function (req: Request): Promise<Response> {
     }
 
     // --- Delivery fee ---
-    // Base: Lagos Island is ₦3,000 and any order under ₦10,000 is ₦3,000
-    // everywhere; every other order is ₦5,000.
-    // Splash discount: 65% off a new customer's first delivery (orders from
-    // ₦4,900), 50% off every delivery after that. Mirrors src/lib/delivery.js.
+    // Base and discount are admin-editable (DeliverySetting); the defaults
+    // below apply until an admin saves their own values.
+    // Mirrors src/lib/delivery.js.
     const zone = delivery_zone === "mainland" ? "mainland" : "island";
-    const baseDelivery = zone === "mainland" && subtotal >= 10000 ? 5000 : 3000;
-    const splashFirst = isFirstOrder && subtotal >= 4900;
+    const deliverySettingRes = await admin.entities.DeliverySetting.filter({}, { limit: 1 });
+    const ds = (deliverySettingRes.items && deliverySettingRes.items[0]) || {};
+    const islandFee = Number(ds.island_fee ?? 3000) || 0;
+    const mainlandFee = Number(ds.mainland_fee ?? 5000) || 0;
+    const mainlandThreshold = Number(ds.mainland_threshold ?? 10000) || 0;
+    const discountsEnabled = ds.discounts_enabled !== false;
+    const firstOrderPercent = Number(ds.first_order_discount_percent ?? 65) || 0;
+    const repeatPercent = Number(ds.repeat_discount_percent ?? 50) || 0;
+    const firstOrderMinSubtotal = Number(ds.first_order_min_subtotal ?? 4900) || 0;
+
+    const baseDelivery = zone === "mainland" && subtotal >= mainlandThreshold
+      ? mainlandFee
+      : islandFee;
+    const splashFirst = isFirstOrder && subtotal >= firstOrderMinSubtotal;
+    const deliveryPercent = discountsEnabled
+      ? (splashFirst ? firstOrderPercent : repeatPercent)
+      : 0;
     const delivery_fee = subtotal > 0
-      ? Math.round(baseDelivery * (splashFirst ? 0.35 : 0.5))
+      ? Math.round(baseDelivery * (1 - deliveryPercent / 100))
       : 0;
 
     // --- Voucher validation (check only — do NOT increment) ---

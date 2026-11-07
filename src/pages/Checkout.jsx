@@ -5,7 +5,12 @@ import { base44 } from '@/api/base44Client';
 import { ArrowLeft, MapPin, Navigation, Phone, User, Loader2, ShoppingBag, Tag, History, X, CreditCard, Lock, ChevronRight, Truck } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { getServiceFee } from '@/lib/fees';
-import { getDeliveryFee, DELIVERY_ZONES } from '@/lib/delivery';
+import {
+  getDeliveryFee,
+  getDeliveryDiscountPercent,
+  resolveDeliverySettings,
+  DELIVERY_ZONES,
+} from '@/lib/delivery';
 
 const REWARD_AMOUNT = 1000;
 
@@ -29,6 +34,7 @@ export default function Checkout() {
   const [createdOrderId, setCreatedOrderId] = useState(null);
   const [promoSettings, setPromoSettings] = useState(null);
   const [isFirstOrder, setIsFirstOrder] = useState(false);
+  const [deliverySettings, setDeliverySettings] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -63,6 +69,10 @@ export default function Checkout() {
       try {
         const promoRes = await base44.entities.PromotionSetting.filter({}, { limit: 1 });
         setPromoSettings(promoRes.items?.[0] || null);
+      } catch {}
+      try {
+        const deliveryRes = await base44.entities.DeliverySetting.filter({}, { limit: 1 });
+        setDeliverySettings(deliveryRes.items?.[0] || null);
       } catch {}
     })();
   }, []);
@@ -116,8 +126,17 @@ export default function Checkout() {
       : Math.round((total * (voucher.discount_percent || 0)) / 100)
     : 0;
   const appliedDiscount = Math.min(referralDiscount + voucherDiscount + firstOrderDiscount, total);
-  const deliveryFee = getDeliveryFee({ subtotal: total, zone, isFirstOrder });
-  const splashFirstDelivery = isFirstOrder && total >= 4900;
+  const deliveryFee = getDeliveryFee({
+    subtotal: total,
+    zone,
+    isFirstOrder,
+    settings: deliverySettings,
+  });
+  const deliveryDiscountPercent = getDeliveryDiscountPercent(
+    { subtotal: total, isFirstOrder },
+    deliverySettings
+  );
+  const feeSettings = resolveDeliverySettings(deliverySettings);
   const serviceFee = getServiceFee(total);
   const grandTotal = total - appliedDiscount + deliveryFee + serviceFee;
 
@@ -343,7 +362,7 @@ export default function Checkout() {
               ))}
             </div>
             <p className="text-[11px] text-muted-foreground mt-2">
-              Lagos Island ₦3,000 · Outside ₦5,000 for orders from ₦10,000
+              {DELIVERY_ZONES[0].label} ₦{Number(feeSettings.island_fee).toLocaleString()} · {DELIVERY_ZONES[1].label} ₦{Number(feeSettings.mainland_fee).toLocaleString()} from ₦{Number(feeSettings.mainland_threshold).toLocaleString()}
             </p>
           </div>
 
@@ -468,7 +487,7 @@ export default function Checkout() {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">
-                Delivery fee <span className="text-[10px]">{splashFirstDelivery ? '(65% off)' : '(50% off)'}</span>
+                Delivery fee <span className="text-[10px]">{deliveryDiscountPercent > 0 ? `(${deliveryDiscountPercent}% off)` : ''}</span>
               </span>
               <span className="text-foreground font-medium">{deliveryFee === 0 ? 'Free' : `₦${deliveryFee.toLocaleString()}`}</span>
             </div>

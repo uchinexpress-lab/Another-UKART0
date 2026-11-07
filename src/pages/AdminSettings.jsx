@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import AdminNav from '@/components/admin/AdminNav';
+import DeliveryPricingSettings from '@/components/admin/DeliveryPricingSettings';
 
 const toggleFields = [
   {
@@ -147,8 +148,6 @@ export default function AdminSettings() {
       const payload = {
         first_order_enabled: promoSettings.first_order_enabled !== false,
         first_order_discount: Number(promoSettings.first_order_discount) || 0,
-        free_delivery_threshold: Number(promoSettings.free_delivery_threshold) || 0,
-        first_order_free_delivery_enabled: promoSettings.first_order_free_delivery_enabled !== false,
       };
       if (promoSettings.id) {
         await base44.entities.PromotionSetting.update(promoSettings.id, payload);
@@ -303,14 +302,14 @@ export default function AdminSettings() {
             <h2 className="text-sm font-bold text-foreground">Promotion Settings</h2>
           </div>
           <p className="text-xs text-muted-foreground">
-            Configure the first-order discount and free delivery promotion. These settings apply to new customers only.
+            Configure the first-order discount for new customers.
           </p>
 
           {/* Enable/disable toggle */}
           <div className="flex items-start justify-between py-2 border-b border-gray-50">
             <div className="flex-1 pr-3">
               <p className="text-sm font-semibold text-foreground">First Order Discount</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Enable ₦500 off a customer's first order</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Apply a discount to a customer's first order</p>
             </div>
             <button
               onClick={() => setPromoSettings((p) => ({ ...p, first_order_enabled: !(p?.first_order_enabled !== false) }))}
@@ -335,36 +334,6 @@ export default function AdminSettings() {
             />
           </div>
 
-          {/* Free delivery threshold */}
-          <div>
-            <label className="text-xs font-medium text-muted-foreground">Free delivery threshold (₦)</label>
-            <input
-              type="number"
-              value={promoSettings?.free_delivery_threshold ?? 30000}
-              onChange={(e) => setPromoSettings((p) => ({ ...p, free_delivery_threshold: parseFloat(e.target.value) || 0 }))}
-              className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none focus:border-[#2E7D32]"
-            />
-            <p className="text-[11px] text-muted-foreground mt-1">First orders at or above this subtotal get free delivery</p>
-          </div>
-
-          {/* Free delivery toggle */}
-          <div className="flex items-start justify-between py-2 border-t border-gray-50">
-            <div className="flex-1 pr-3">
-              <p className="text-sm font-semibold text-foreground">First Order Free Delivery</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Enable free delivery at the threshold for first orders</p>
-            </div>
-            <button
-              onClick={() => setPromoSettings((p) => ({ ...p, first_order_free_delivery_enabled: !(p?.first_order_free_delivery_enabled !== false) }))}
-              className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
-                promoSettings?.first_order_free_delivery_enabled !== false ? 'bg-[#2E7D32]' : 'bg-gray-200'
-              }`}
-            >
-              <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-card shadow-sm transition-transform ${
-                promoSettings?.first_order_free_delivery_enabled !== false ? 'translate-x-5' : 'translate-x-0.5'
-              }`} />
-            </button>
-          </div>
-
           {/* Save button */}
           <button
             onClick={handleSavePromo}
@@ -380,6 +349,12 @@ export default function AdminSettings() {
             )}
           </button>
         </div>
+      </div>
+
+      {/* Delivery fees by area & delivery discounts */}
+      <div className="mt-8">
+        <h1 className="text-xl font-bold text-foreground mb-4">Delivery Fees & Discounts</h1>
+        <DeliveryPricingSettings />
       </div>
 
       {/* Deal & Discount Broadcast */}
