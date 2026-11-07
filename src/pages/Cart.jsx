@@ -115,17 +115,25 @@ export default function Cart() {
             <span className="font-semibold text-foreground">₦{total.toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-[13px]">
-            <span className="text-muted-foreground">Delivery fee</span>
-            <span className="font-semibold text-foreground">
-              {deliveryBase === 0 ? 'FREE' : `₦${deliveryBase.toLocaleString()}`}
+            <span className="text-muted-foreground">
+              Delivery fee
+              {splashDiscount > 0 && (
+                <span className="block text-[11px] font-semibold text-retail">
+                  {splashPercent}% splash discount
+                </span>
+              )}
+            </span>
+            <span className="text-right">
+              {splashDiscount > 0 && (
+                <span className="block text-[11px] text-muted-foreground line-through">
+                  ₦{deliveryBase.toLocaleString()}
+                </span>
+              )}
+              <span className="font-semibold text-foreground">
+                {deliveryFee === 0 ? 'FREE' : `₦${deliveryFee.toLocaleString()}`}
+              </span>
             </span>
           </div>
-          {splashDiscount > 0 && (
-            <div className="flex justify-between text-[13px]">
-              <span className="text-muted-foreground">Splash discount ({splashPercent}%)</span>
-              <span className="font-semibold text-retail">−₦{splashDiscount.toLocaleString()}</span>
-            </div>
-          )}
           <div className="flex justify-between text-[13px]">
             <span className="text-muted-foreground">Service fee</span>
             <span className="font-semibold text-foreground">₦{serviceFee.toLocaleString()}</span>

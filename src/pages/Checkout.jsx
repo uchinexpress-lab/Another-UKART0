@@ -484,15 +484,25 @@ export default function Checkout() {
               <span className="text-foreground font-medium">₦{total.toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Delivery fee</span>
-              <span className="text-foreground font-medium">{deliveryFee === 0 ? 'Free' : `₦${deliveryFee.toLocaleString()}`}</span>
+              <span className="text-muted-foreground">
+                Delivery fee
+                {deliveryDiscount > 0 && (
+                  <span className="block text-[11px] font-semibold text-retail">
+                    {deliveryDiscountPercent}% splash discount
+                  </span>
+                )}
+              </span>
+              <span className="text-right">
+                {deliveryDiscount > 0 && (
+                  <span className="block text-[12px] text-muted-foreground line-through">
+                    ₦{deliveryBase.toLocaleString()}
+                  </span>
+                )}
+                <span className="text-foreground font-semibold">
+                  {deliveryFee === 0 ? 'Free' : `₦${deliveryFee.toLocaleString()}`}
+                </span>
+              </span>
             </div>
-            {deliveryDiscount > 0 && (
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Splash discount ({deliveryDiscountPercent}%)</span>
-                <span className="text-retail font-semibold">−₦{deliveryDiscount.toLocaleString()}</span>
-              </div>
-            )}
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Service fee</span>
               <span className="text-foreground font-medium">₦{serviceFee.toLocaleString()}</span>
