@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft, MapPin, Navigation, Phone, User, Loader2, ShoppingBag, Tag, History, X, CreditCard, Lock, ChevronRight, Truck } from 'lucide-react';
+import { Clock, MapPin, Navigation, Phone, User, Loader2, ShoppingBag, Tag, History, X, CreditCard, Lock, Truck } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { getServiceFee } from '@/lib/fees';
 import AddressAutocomplete from '@/components/checkout/AddressAutocomplete';
@@ -16,7 +16,7 @@ import {
 const REWARD_AMOUNT = 1000;
 
 export default function Checkout() {
-  const { items, total, clearCart } = useCart();
+  const { items, total } = useCart();
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -31,8 +31,6 @@ export default function Checkout() {
   const [voucherCode, setVoucherCode] = useState('');
   const [voucher, setVoucher] = useState(null);
   const [voucherError, setVoucherError] = useState('');
-  const [step, setStep] = useState(1);
-  const [paymentMethod, setPaymentMethod] = useState('Pay Online');
   const [createdOrderId, setCreatedOrderId] = useState(null);
   const [promoSettings, setPromoSettings] = useState(null);
   const [isFirstOrder, setIsFirstOrder] = useState(false);
@@ -256,31 +254,10 @@ export default function Checkout() {
   const labelClass = 'text-[11px] font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5 mb-1.5';
 
   return (
-    <div className="p-4 pb-44">
+    <div className="p-4 pb-10">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <h2 className="uk-title">Checkout</h2>
-        {step === 2 && (
-          <button
-            onClick={() => setStep(1)}
-            className="flex items-center gap-1 text-[12px] font-bold text-retail"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" /> Change address
-          </button>
-        )}
-      </div>
-
-      {/* Step indicator */}
-      <div className="flex items-center gap-2 mb-5">
-        <div className={`flex items-center gap-1.5 h-9 px-3 rounded-full ${step >= 1 ? 'bg-secondary' : 'bg-card border border-border'}`}>
-          <span className={step >= 1 ? 'uk-step-dot uk-step-dot-active' : 'uk-step-dot'}>1</span>
-          <span className="text-[12px] font-bold text-foreground">Address</span>
-        </div>
-        <div className={`flex-1 h-px ${step >= 2 ? 'bg-retail' : 'bg-border'}`} />
-        <div className={`flex items-center gap-1.5 h-9 px-3 rounded-full ${step >= 2 ? 'bg-secondary' : 'bg-card border border-border'}`}>
-          <span className={step >= 2 ? 'uk-step-dot uk-step-dot-active' : 'uk-step-dot'}>2</span>
-          <span className={`text-[12px] font-bold ${step >= 2 ? 'text-foreground' : 'text-muted-foreground'}`}>Payment</span>
-        </div>
       </div>
 
       {/* Cart summary */}
@@ -290,7 +267,7 @@ export default function Checkout() {
             {items.reduce((s, i) => s + i.quantity, 0)} items
           </span>
           <span className="font-bold text-retail">
-            {step === 2 ? `₦${grandTotal.toLocaleString()}` : 'Fees shown at payment'}
+            ₦{grandTotal.toLocaleString()}
           </span>
         </div>
         {firstOrderDiscount > 0 && (
@@ -320,243 +297,238 @@ export default function Checkout() {
         </div>
       </div>
 
-      {/* Step 1: Delivery address */}
-      {step === 1 && (
-        <>
-          {savedAddresses.length > 0 && (
-            <div className="mb-4">
-              <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 mb-2">
-                <History className="w-3.5 h-3.5" /> Use a saved address
-              </p>
-              <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-                {savedAddresses.map((a, i) => (
-                  <button
-                    key={i}
-                    onClick={() => applySaved(a)}
-                    className="flex-shrink-0 text-left text-xs bg-card border border-border rounded-xl px-3 py-2 w-44 active:scale-95 transition-transform"
-                  >
-                    <span className="font-semibold text-foreground block line-clamp-1">{a.name}</span>
-                    <span className="text-muted-foreground line-clamp-2">{a.address}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+      {/* 1. Delivery address */}
+      <p className="uk-section-label mb-2">1. Delivery address</p>
 
-          <div className="uk-card p-4 mb-4">
-            <div className="flex items-center gap-2.5">
-              <div className="uk-icon-btn">
-                <Truck className="w-[18px] h-[18px]" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[13px] font-bold text-foreground">
-                  {zone === 'mainland' ? 'Outside Lagos Island' : 'Lagos Island'}
-                </p>
-                <p className="text-[11px] text-muted-foreground">
-                  Delivery area detected from your address
-                </p>
-              </div>
-            </div>
+      {savedAddresses.length > 0 && (
+        <div className="mb-4">
+          <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 mb-2">
+            <History className="w-3.5 h-3.5" /> Use a saved address
+          </p>
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+            {savedAddresses.map((a, i) => (
+              <button
+                key={i}
+                onClick={() => applySaved(a)}
+                className="flex-shrink-0 text-left text-xs bg-card border border-border rounded-xl px-3 py-2 w-44 active:scale-95 transition-transform"
+              >
+                <span className="font-semibold text-foreground block line-clamp-1">{a.name}</span>
+                <span className="text-muted-foreground line-clamp-2">{a.address}</span>
+              </button>
+            ))}
           </div>
-
-          <div className="uk-card p-4 space-y-4">
-            <div>
-              <label className={labelClass}>
-                <User className="w-3.5 h-3.5" /> Full Name
-              </label>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Adaeze Okafor"
-                className={fieldClass}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>
-                <MapPin className="w-3.5 h-3.5" /> House Address
-              </label>
-              <AddressAutocomplete
-                value={address}
-                onChange={setAddress}
-                onResolved={(d) => d?.zone && setZone(d.zone)}
-                placeholder="Start typing your street or estate"
-                className={fieldClass}
-              />
-              <p className="text-[11px] text-muted-foreground mt-1.5">
-                Pick the suggestion so we find your exact street, then add your house or flat number.
-              </p>
-            </div>
-            <div>
-              <label className={labelClass}>
-                <Navigation className="w-3.5 h-3.5" /> Landmark
-              </label>
-              <input
-                value={landmark}
-                onChange={(e) => setLandmark(e.target.value)}
-                placeholder="e.g. opposite Total filling station"
-                className={fieldClass}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>
-                <Phone className="w-3.5 h-3.5" /> Phone Number
-              </label>
-              <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="e.g. 0803 123 4567"
-                inputMode="tel"
-                className={fieldClass}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>
-                <Phone className="w-3.5 h-3.5" /> Alternative Phone
-              </label>
-              <input
-                value={altPhone}
-                onChange={(e) => setAltPhone(e.target.value)}
-                placeholder="Optional — another number we can reach you on"
-                inputMode="tel"
-                className={fieldClass}
-              />
-            </div>
-          </div>
-        </>
+        </div>
       )}
 
-      {/* Step 2: Payment method */}
-      {step === 2 && (
-        <>
-          <div className="uk-card p-4 mb-4">
-            <p className="text-sm font-bold text-foreground mb-3">Payment Method</p>
-            <div className="uk-radio-card uk-radio-card-active">
-              <div className="uk-icon-btn">
-                <CreditCard className="w-[18px] h-[18px]" />
-              </div>
-              <div className="flex-1">
-                <p className="text-[13px] font-bold text-foreground">Pay Online</p>
-                <p className="text-[11px] text-muted-foreground">Card, bank transfer or USSD via Paystack</p>
-              </div>
-              <div className="w-5 h-5 rounded-full border-2 border-retail flex items-center justify-center">
-                <div className="w-2.5 h-2.5 rounded-full bg-retail" />
-              </div>
-            </div>
-            <div className="flex items-center gap-1.5 mt-2.5 text-[11px] text-muted-foreground">
-              <Lock className="w-3 h-3" /> Secured by Paystack
-            </div>
+      <div className="uk-card p-4 mb-4">
+        <div className="flex items-center gap-2.5">
+          <div className="uk-icon-btn">
+            <Truck className="w-[18px] h-[18px]" />
           </div>
-
-          {/* Voucher / Promo code */}
-          <div className="uk-card p-4 mb-4">
-            <label className={labelClass}>
-              <Tag className="w-3.5 h-3.5" /> Voucher / Promo Code
-            </label>
-            {voucher ? (
-              <div className="flex items-center justify-between bg-primary/10 rounded-xl px-3 py-2.5">
-                <span className="text-sm font-semibold text-retail">
-                  {voucher.code} ({voucher.discount_type === 'fixed_amount' ? `₦${(voucher.discount_amount || 0).toLocaleString()} off` : `${voucher.discount_percent}% off`})
-                </span>
-                <button
-                  onClick={() => {
-                    setVoucher(null);
-                    setVoucherCode('');
-                  }}
-                  className="text-retail"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <input
-                  value={voucherCode}
-                  onChange={(e) => setVoucherCode(e.target.value)}
-                  placeholder="Enter code"
-                  className="uk-input flex-1"
-                />
-                <button
-                  onClick={applyVoucher}
-                  className="px-4 rounded-xl bg-retail text-white text-sm font-semibold"
-                >
-                  Apply
-                </button>
-              </div>
-            )}
-            {voucherError && <p className="text-xs text-red-500 mt-1.5">{voucherError}</p>}
+          <div className="min-w-0">
+            <p className="text-[13px] font-bold text-foreground">
+              {zone === 'mainland' ? 'Outside Lagos Island' : 'Lagos Island'}
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              Delivery area detected from your address
+            </p>
           </div>
+        </div>
+      </div>
 
-          {/* Order summary */}
-          <div className="uk-card p-4 space-y-2">
-            <p className="text-sm font-bold text-foreground mb-1">Order Summary</p>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Subtotal</span>
-              <span className="text-foreground font-medium">₦{total.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">
-                Delivery fee
-                {deliveryDiscount > 0 && (
-                  <span className="block text-[11px] font-semibold text-retail">
-                    {deliveryDiscountPercent}% splash discount
-                  </span>
-                )}
-              </span>
-              <span className="text-right">
-                {deliveryDiscount > 0 && (
-                  <span className="block text-[12px] text-muted-foreground line-through">
-                    ₦{deliveryBase.toLocaleString()}
-                  </span>
-                )}
-                <span className="text-foreground font-semibold">
-                  {deliveryFee === 0 ? 'Free' : `₦${deliveryFee.toLocaleString()}`}
-                </span>
-              </span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Service fee</span>
-              <span className="text-foreground font-medium">₦{serviceFee.toLocaleString()}</span>
-            </div>
-            {firstOrderDiscount > 0 && (
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">First Order Discount</span>
-                <span className="text-retail font-semibold">−₦{firstOrderDiscount.toLocaleString()}</span>
-              </div>
-            )}
-            {(referralDiscount + voucherDiscount) > 0 && (
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Discount {voucher ? `(${voucher.code})` : ''}</span>
-                <span className="text-retail font-semibold">−₦{(referralDiscount + voucherDiscount).toLocaleString()}</span>
-              </div>
-            )}
-            <div className="border-t border-border pt-2 flex justify-between">
-              <span className="text-sm font-bold text-foreground">Total</span>
-              <span className="text-lg font-bold text-retail">₦{grandTotal.toLocaleString()}</span>
-            </div>
+      <div className="uk-card p-4 space-y-4">
+        <div>
+          <label className={labelClass}>
+            <User className="w-3.5 h-3.5" /> Full Name
+          </label>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Adaeze Okafor"
+            className={fieldClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>
+            <MapPin className="w-3.5 h-3.5" /> House Address
+          </label>
+          <AddressAutocomplete
+            value={address}
+            onChange={setAddress}
+            onResolved={(d) => d?.zone && setZone(d.zone)}
+            placeholder="Start typing your street or estate"
+            className={fieldClass}
+          />
+          <p className="text-[11px] text-muted-foreground mt-1.5">
+            Pick the suggestion so we find your exact street, then add your house or flat number.
+          </p>
+        </div>
+        <div>
+          <label className={labelClass}>
+            <Navigation className="w-3.5 h-3.5" /> Landmark
+          </label>
+          <input
+            value={landmark}
+            onChange={(e) => setLandmark(e.target.value)}
+            placeholder="e.g. opposite Total filling station"
+            className={fieldClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>
+            <Phone className="w-3.5 h-3.5" /> Phone Number
+          </label>
+          <input
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="e.g. 0803 123 4567"
+            inputMode="tel"
+            className={fieldClass}
+          />
+        </div>
+        <div>
+          <label className={labelClass}>
+            <Phone className="w-3.5 h-3.5" /> Alternative Phone
+          </label>
+          <input
+            value={altPhone}
+            onChange={(e) => setAltPhone(e.target.value)}
+            placeholder="Optional — another number we can reach you on"
+            inputMode="tel"
+            className={fieldClass}
+          />
+        </div>
+      </div>
+
+      {/* 2. Payment */}
+      <p className="uk-section-label mb-2 mt-5">2. Payment</p>
+
+      <div className="uk-card p-4 mb-4">
+        <p className="text-sm font-bold text-foreground mb-3">Payment Method</p>
+        <div className="uk-radio-card uk-radio-card-active">
+          <div className="uk-icon-btn">
+            <CreditCard className="w-[18px] h-[18px]" />
           </div>
-        </>
-      )}
+          <div className="flex-1">
+            <p className="text-[13px] font-bold text-foreground">Pay Online</p>
+            <p className="text-[11px] text-muted-foreground">Card, bank transfer or USSD via Paystack</p>
+          </div>
+          <div className="w-5 h-5 rounded-full border-2 border-retail flex items-center justify-center">
+            <div className="w-2.5 h-2.5 rounded-full bg-retail" />
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5 mt-2.5 text-[11px] text-muted-foreground">
+          <Lock className="w-3 h-3" /> Secured by Paystack
+        </div>
+      </div>
 
-      {/* Bottom action bar */}
-      <div
-        className="uk-cta"
-        style={{ bottom: 0, paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
-      >
-        {step === 1 ? (
-          <button onClick={() => setStep(2)} disabled={!canPlace} className="uk-btn">
-            Continue to Payment <ChevronRight className="w-4 h-4" />
-          </button>
+      {/* Voucher / Promo code */}
+      <div className="uk-card p-4 mb-4">
+        <label className={labelClass}>
+          <Tag className="w-3.5 h-3.5" /> Voucher / Promo Code
+        </label>
+        {voucher ? (
+          <div className="flex items-center justify-between bg-primary/10 rounded-xl px-3 py-2.5">
+            <span className="text-sm font-semibold text-retail">
+              {voucher.code} ({voucher.discount_type === 'fixed_amount' ? `₦${(voucher.discount_amount || 0).toLocaleString()} off` : `${voucher.discount_percent}% off`})
+            </span>
+            <button
+              onClick={() => {
+                setVoucher(null);
+                setVoucherCode('');
+              }}
+              className="text-retail"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         ) : (
-          <button onClick={placeOrder} disabled={!canPlace} className="uk-btn">
-            {placing ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Placing order...
-              </>
-            ) : (
-              <>Pay ₦{grandTotal.toLocaleString()}</>
-            )}
-          </button>
+          <div className="flex gap-2">
+            <input
+              value={voucherCode}
+              onChange={(e) => setVoucherCode(e.target.value)}
+              placeholder="Enter code"
+              className="uk-input flex-1"
+            />
+            <button
+              onClick={applyVoucher}
+              className="px-4 rounded-xl bg-retail text-white text-sm font-semibold"
+            >
+              Apply
+            </button>
+          </div>
         )}
+        {voucherError && <p className="text-xs text-red-500 mt-1.5">{voucherError}</p>}
+      </div>
+
+      {/* Order summary */}
+      <div className="uk-card p-4 space-y-2">
+        <p className="text-sm font-bold text-foreground mb-1">Order Summary</p>
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Subtotal</span>
+          <span className="text-foreground font-medium">₦{total.toLocaleString()}</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">
+            Delivery fee
+            {deliveryDiscount > 0 && (
+              <span className="block text-[11px] font-semibold text-retail">
+                {deliveryDiscountPercent}% splash discount
+              </span>
+            )}
+          </span>
+          <span className="text-right">
+            {deliveryDiscount > 0 && (
+              <span className="block text-[12px] text-muted-foreground line-through">
+                ₦{deliveryBase.toLocaleString()}
+              </span>
+            )}
+            <span className="text-foreground font-semibold">
+              {deliveryFee === 0 ? 'Free' : `₦${deliveryFee.toLocaleString()}`}
+            </span>
+          </span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Service fee</span>
+          <span className="text-foreground font-medium">₦{serviceFee.toLocaleString()}</span>
+        </div>
+        {firstOrderDiscount > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">First Order Discount</span>
+            <span className="text-retail font-semibold">−₦{firstOrderDiscount.toLocaleString()}</span>
+          </div>
+        )}
+        {(referralDiscount + voucherDiscount) > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Discount {voucher ? `(${voucher.code})` : ''}</span>
+            <span className="text-retail font-semibold">−₦{(referralDiscount + voucherDiscount).toLocaleString()}</span>
+          </div>
+        )}
+        <div className="border-t border-border pt-2 flex justify-between">
+          <span className="text-sm font-bold text-foreground">Total</span>
+          <span className="text-lg font-bold text-retail">₦{grandTotal.toLocaleString()}</span>
+        </div>
+      </div>
+
+      {/* Same-day cutoff notice */}
+      <div className="uk-card p-3.5 mt-4 flex items-start gap-2.5">
+        <Clock className="w-4 h-4 text-retail shrink-0 mt-0.5" />
+        <p className="text-[12px] font-medium text-foreground">
+          Orders placed from 5pm will be delivered the next day.
+        </p>
+      </div>
+
+      {/* Pay button — last on the page */}
+      <div className="mt-3">
+        <button onClick={placeOrder} disabled={!canPlace} className="uk-btn">
+          {placing ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" /> Placing order...
+            </>
+          ) : (
+            <>Pay ₦{grandTotal.toLocaleString()}</>
+          )}
+        </button>
       </div>
     </div>
   );
