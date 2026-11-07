@@ -40,24 +40,20 @@ export default function Packages() {
 
   return (
     <PullToRefresh onRefresh={loadPackages}>
-    <div className="p-4">
-      <h1 className="text-2xl font-bold text-foreground mb-1">Grocery Packages</h1>
-      <p className="text-sm text-muted-foreground mb-3">Curated bundles for every lifestyle</p>
+    <div className="uk-page">
+      <h1 className="uk-title mb-1">Grocery Packages</h1>
+      <p className="uk-sub mb-3">Curated bundles for every lifestyle</p>
 
-      <div className="flex gap-2 p-1 bg-muted rounded-full mb-3 sticky top-16 z-30">
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-4 -mx-1 px-1">
         <button
           onClick={() => setTab('essentials')}
-          className={`flex-1 py-2 rounded-full text-sm font-semibold transition-colors ${
-            tab === 'essentials' ? 'bg-card text-[#2E7D32] shadow-sm' : 'text-muted-foreground'
-          }`}
+          className={`uk-chip ${tab === 'essentials' ? 'uk-chip-active' : ''}`}
         >
           Essentials
         </button>
         <button
           onClick={() => setTab('meal_kits')}
-          className={`flex-1 py-2 rounded-full text-sm font-semibold transition-colors ${
-            tab === 'meal_kits' ? 'bg-card text-[#2E7D32] shadow-sm' : 'text-muted-foreground'
-          }`}
+          className={`uk-chip ${tab === 'meal_kits' ? 'uk-chip-active' : ''}`}
         >
           Meal Kits
         </button>

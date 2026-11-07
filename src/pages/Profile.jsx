@@ -25,34 +25,38 @@ import { toast } from '@/components/ui/use-toast';
 
 function MenuSection({ items, showAddresses, setShowAddresses, navigate }) {
   return (
-    <div className="bg-card rounded-2xl border border-border divide-y divide-gray-50">
+    <div className="uk-card overflow-hidden divide-y divide-border">
       {items.map((item, i) => (
         <div key={i}>
           {item.toggle ? (
             <motion.button
-              whileTap={{ scale: 0.98 }}
-              className="w-full flex items-center gap-3 p-4 active:bg-muted/50"
+              whileTap={{ scale: 0.995 }}
+              className="uk-row"
               onClick={() => setShowAddresses((v) => !v)}
             >
-              <item.icon className="w-5 h-5 text-[#2E7D32]" />
-              <span className="text-sm font-medium text-foreground flex-1 text-left">
+              <span className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                <item.icon className="w-[18px] h-[18px] text-[#2E7D32]" strokeWidth={1.9} />
+              </span>
+              <span className="text-[13px] font-medium text-foreground flex-1 text-left">
                 {item.label}
               </span>
               <ChevronDown
-                className={`w-4 h-4 text-gray-400 transition-transform ${showAddresses ? 'rotate-180' : ''}`}
+                className={`w-4 h-4 text-muted-foreground transition-transform ${showAddresses ? 'rotate-180' : ''}`}
               />
             </motion.button>
           ) : (
             <motion.button
-              whileTap={{ scale: 0.98 }}
-              className="w-full flex items-center gap-3 p-4 active:bg-muted/50"
+              whileTap={{ scale: 0.995 }}
+              className="uk-row"
               onClick={() => navigate(item.to)}
             >
-              <item.icon className="w-5 h-5 text-[#2E7D32]" />
-              <span className="text-sm font-medium text-foreground flex-1 text-left">
+              <span className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                <item.icon className="w-[18px] h-[18px] text-[#2E7D32]" strokeWidth={1.9} />
+              </span>
+              <span className="text-[13px] font-medium text-foreground flex-1 text-left">
                 {item.label}
               </span>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </motion.button>
           )}
           {item.toggle && (
@@ -111,12 +115,12 @@ export default function Profile() {
   ];
 
   return (
-    <div className="p-4 space-y-5">
-      {/* Profile card */}
+    <div className="uk-page space-y-5">
+      {/* Profile header */}
       <motion.button
-        whileTap={{ scale: 0.98 }}
+        whileTap={{ scale: 0.995 }}
         onClick={() => navigate('/account')}
-        className="w-full bg-card rounded-2xl border border-border p-4 flex items-center gap-3.5 active:bg-muted/50"
+        className="w-full uk-card p-4 flex items-center gap-3.5"
       >
         {user?.avatar_url ? (
           <Image
@@ -126,30 +130,26 @@ export default function Profile() {
           />
         ) : (
           <div className="w-14 h-14 rounded-full bg-[#2E7D32] flex items-center justify-center text-white">
-            <UserIcon className="w-7 h-7" />
+            <UserIcon className="w-6 h-6" />
           </div>
         )}
         <div className="flex-1 text-left min-w-0">
-          <h2 className="font-bold text-[#1a2238] truncate">
+          <h2 className="text-[15px] font-bold text-foreground truncate">
             {user?.full_name || 'Welcome to Ukart'}
           </h2>
-          <p className="text-xs text-muted-foreground truncate">
+          <p className="text-[12px] text-muted-foreground truncate">
             {user?.email || 'No Market Wahala'}
           </p>
-          <span className="text-[11px] text-[#2E7D32] font-semibold">
-            Edit Profile →
-          </span>
+          <span className="text-[11px] text-[#2E7D32] font-bold">Edit profile</span>
         </div>
-        <ChevronRight className="w-4 h-4 text-gray-300" />
+        <ChevronRight className="w-4 h-4 text-muted-foreground" />
       </motion.button>
 
       <AdminEntry />
       <ReferEarn />
 
       <div>
-        <h2 className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-2 px-1">
-          Account
-        </h2>
+        <h2 className="uk-section-label mb-2 px-1">Account</h2>
         <MenuSection
           items={accountItems}
           showAddresses={showAddresses}
@@ -159,9 +159,7 @@ export default function Profile() {
       </div>
 
       <div>
-        <h2 className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-2 px-1">
-          Support
-        </h2>
+        <h2 className="uk-section-label mb-2 px-1">Support</h2>
         <MenuSection
           items={supportItems}
           showAddresses={showAddresses}
@@ -172,42 +170,28 @@ export default function Profile() {
 
       {isAdmin && (
         <div>
-          <h2 className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-2 px-1">
-            Admin
-          </h2>
-          <div className="bg-card rounded-2xl border border-border divide-y divide-gray-50">
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              className="w-full flex items-center gap-3 p-4 active:bg-muted/50"
-              onClick={() => navigate('/admin/orders')}
-            >
-              <ClipboardList className="w-5 h-5 text-[#2E7D32]" />
-              <span className="text-sm font-medium text-foreground flex-1 text-left">
-                Manage Orders
+          <h2 className="uk-section-label mb-2 px-1">Admin</h2>
+          <div className="uk-card overflow-hidden divide-y divide-border">
+            <motion.button whileTap={{ scale: 0.995 }} className="uk-row" onClick={() => navigate('/admin/orders')}>
+              <span className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                <ClipboardList className="w-[18px] h-[18px] text-[#2E7D32]" strokeWidth={1.9} />
               </span>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <span className="text-[13px] font-medium text-foreground flex-1 text-left">Manage Orders</span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              className="w-full flex items-center gap-3 p-4 active:bg-muted/50"
-              onClick={() => navigate('/admin/tickets')}
-            >
-              <HelpCircle className="w-5 h-5 text-[#2E7D32]" />
-              <span className="text-sm font-medium text-foreground flex-1 text-left">
-                Support Tickets
+            <motion.button whileTap={{ scale: 0.995 }} className="uk-row" onClick={() => navigate('/admin/tickets')}>
+              <span className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                <HelpCircle className="w-[18px] h-[18px] text-[#2E7D32]" strokeWidth={1.9} />
               </span>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <span className="text-[13px] font-medium text-foreground flex-1 text-left">Support Tickets</span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.98 }}
-              className="w-full flex items-center gap-3 p-4 active:bg-muted/50"
-              onClick={() => navigate('/admin/settings')}
-            >
-              <Settings className="w-5 h-5 text-[#2E7D32]" />
-              <span className="text-sm font-medium text-foreground flex-1 text-left">
-                Notification Settings
+            <motion.button whileTap={{ scale: 0.995 }} className="uk-row" onClick={() => navigate('/admin/settings')}>
+              <span className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                <Settings className="w-[18px] h-[18px] text-[#2E7D32]" strokeWidth={1.9} />
               </span>
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <span className="text-[13px] font-medium text-foreground flex-1 text-left">Notification Settings</span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </motion.button>
           </div>
         </div>
@@ -215,12 +199,12 @@ export default function Profile() {
 
       <button
         onClick={handleLogout}
-        className="w-full bg-card rounded-2xl border border-border p-4 flex items-center gap-3 active:bg-red-50 transition-colors"
+        className="w-full uk-card p-4 flex items-center gap-3 active:bg-red-50 transition-colors"
       >
-        <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
-          <LogOut className="w-5 h-5 text-red-500" />
-        </div>
-        <span className="text-sm font-semibold text-red-500">Log Out</span>
+        <span className="w-9 h-9 rounded-full bg-red-50 flex items-center justify-center shrink-0">
+          <LogOut className="w-[18px] h-[18px] text-red-500" />
+        </span>
+        <span className="text-[13px] font-semibold text-red-500">Log Out</span>
       </button>
     </div>
   );

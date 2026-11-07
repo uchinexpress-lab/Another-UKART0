@@ -229,35 +229,39 @@ export default function Checkout() {
     );
   }
 
-  const fieldClass =
-    'w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none focus:border-[#2E7D32]';
-  const labelClass = 'text-xs font-semibold text-gray-600 flex items-center gap-1.5 mb-1.5';
+  const fieldClass = 'uk-input';
+  const labelClass = 'text-[11px] font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5 mb-1.5';
 
   return (
     <div className="p-4 pb-44">
       {/* Header */}
-      <div className="flex items-center gap-2 mb-4">
-        <button onClick={() => (step === 2 ? setStep(1) : navigate(-1))} className="p-1.5 -ml-1.5 rounded-full hover:bg-black/5">
-          <ArrowLeft className="w-5 h-5 text-gray-700" />
-        </button>
-        <h1 className="text-xl font-bold text-foreground">Checkout</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="uk-title">Checkout</h1>
+        {step === 2 && (
+          <button
+            onClick={() => setStep(1)}
+            className="flex items-center gap-1 text-[12px] font-bold text-[#2E7D32]"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Change address
+          </button>
+        )}
       </div>
 
       {/* Step indicator */}
       <div className="flex items-center mb-5">
         <div className="flex items-center gap-2">
-          <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step >= 1 ? 'bg-[#2E7D32] text-white' : 'bg-muted text-muted-foreground'}`}>1</div>
-          <span className={`text-sm font-semibold ${step >= 1 ? 'text-foreground' : 'text-muted-foreground'}`}>Delivery</span>
+          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold ${step >= 1 ? 'bg-[#2E7D32] text-white' : 'bg-muted text-muted-foreground'}`}>1</div>
+          <span className={`text-[12px] font-bold ${step >= 1 ? 'text-foreground' : 'text-muted-foreground'}`}>Address</span>
         </div>
         <div className={`flex-1 h-0.5 mx-2 rounded ${step >= 2 ? 'bg-[#2E7D32]' : 'bg-border'}`} />
         <div className="flex items-center gap-2">
-          <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${step >= 2 ? 'bg-[#2E7D32] text-white' : 'bg-muted text-muted-foreground'}`}>2</div>
-          <span className={`text-sm font-semibold ${step >= 2 ? 'text-foreground' : 'text-muted-foreground'}`}>Payment</span>
+          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold ${step >= 2 ? 'bg-[#2E7D32] text-white' : 'bg-muted text-muted-foreground'}`}>2</div>
+          <span className={`text-[12px] font-bold ${step >= 2 ? 'text-foreground' : 'text-muted-foreground'}`}>Payment</span>
         </div>
       </div>
 
       {/* Cart summary */}
-      <div className="bg-card rounded-2xl border border-border p-3 mb-4">
+      <div className="uk-card p-3.5 mb-4">
         <div className="flex items-center justify-between text-sm mb-2">
           <span className="text-muted-foreground">
             {items.reduce((s, i) => s + i.quantity, 0)} items
@@ -321,7 +325,7 @@ export default function Checkout() {
             </div>
           )}
 
-          <div className="bg-card rounded-2xl border border-border p-4 space-y-4">
+          <div className="uk-card p-4 space-y-4">
             <div>
               <label className={labelClass}>
                 <User className="w-3.5 h-3.5" /> Full Name
@@ -375,7 +379,7 @@ export default function Checkout() {
       {/* Step 2: Payment method */}
       {step === 2 && (
         <>
-          <div className="bg-card rounded-2xl border border-border p-4 mb-4">
+          <div className="uk-card p-4 mb-4">
             <p className="text-sm font-bold text-foreground mb-3">Payment Method</p>
             <div className="flex items-center gap-3 p-3.5 rounded-xl border-2 border-[#2E7D32] bg-[#2E7D32]/5">
               <div className="w-10 h-10 rounded-full flex items-center justify-center bg-[#2E7D32]">
@@ -395,7 +399,7 @@ export default function Checkout() {
           </div>
 
           {/* Voucher / Promo code */}
-          <div className="bg-card rounded-2xl border border-border p-4 mb-4">
+          <div className="uk-card p-4 mb-4">
             <label className={labelClass}>
               <Tag className="w-3.5 h-3.5" /> Voucher / Promo Code
             </label>
@@ -420,7 +424,7 @@ export default function Checkout() {
                   value={voucherCode}
                   onChange={(e) => setVoucherCode(e.target.value)}
                   placeholder="Enter code"
-                  className="flex-1 text-sm border border-gray-200 rounded-xl px-3 py-2.5 outline-none focus:border-[#2E7D32]"
+                  className="uk-input flex-1"
                 />
                 <button
                   onClick={applyVoucher}
@@ -434,7 +438,7 @@ export default function Checkout() {
           </div>
 
           {/* Order summary */}
-          <div className="bg-card rounded-2xl border border-border p-4 space-y-2">
+          <div className="uk-card p-4 space-y-2">
             <p className="text-sm font-bold text-foreground mb-1">Order Summary</p>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Subtotal</span>
@@ -466,23 +470,15 @@ export default function Checkout() {
 
       {/* Bottom action bar */}
       <div
-        className="fixed left-0 right-0 max-w-md mx-auto px-4 py-3 bg-card border-t border-border"
-        style={{ bottom: 'calc(env(safe-area-inset-bottom) + 76px)' }}
+        className="fixed left-0 right-0 max-w-md mx-auto px-4 pt-3 bg-card border-t border-border"
+        style={{ bottom: 0, paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}
       >
         {step === 1 ? (
-          <button
-            onClick={() => setStep(2)}
-            disabled={!canPlace}
-            className="w-full h-12 rounded-2xl bg-[#2E7D32] text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#1B5E20] disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+          <button onClick={() => setStep(2)} disabled={!canPlace} className="uk-btn">
             Continue to Payment <ChevronRight className="w-4 h-4" />
           </button>
         ) : (
-          <button
-            onClick={placeOrder}
-            disabled={!canPlace}
-            className="w-full h-12 rounded-2xl bg-[#2E7D32] text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#1B5E20] disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+          <button onClick={placeOrder} disabled={!canPlace} className="uk-btn">
             {placing ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" /> Placing order...

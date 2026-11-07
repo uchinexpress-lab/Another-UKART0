@@ -95,27 +95,27 @@ export default function OrderTracking() {
   const isCancelled = order?.status === 'cancelled';
   const isDelivered = order?.status === 'delivered';
   const currentStepIndex = order ? Math.max(0, STEP_ORDER.indexOf(order.status)) : -1;
-  const progressPct = order && currentStepIndex >= 0 ? (currentStepIndex / (STEPS.length - 1)) * 100 : 0;
 
   return (
-    <div className="p-4 pb-10">
-      <h1 className="text-xl font-bold text-foreground mb-4">Track Your Order</h1>
+    <div className="uk-page">
+      <h1 className="uk-title mb-1">Track Order</h1>
+      <p className="uk-sub mb-4">Live status for your Ukart delivery</p>
 
       {/* Search bar — always visible so users can track another order */}
-      <form onSubmit={handleSearch} className="mb-6">
+      <form onSubmit={handleSearch} className="mb-5">
         <div className="relative">
+          <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
             placeholder="Enter order number (e.g. UK-123456)"
-            className="w-full text-sm border border-border rounded-xl pl-10 pr-3 py-2.5 outline-none focus:border-primary bg-card text-foreground placeholder:text-muted-foreground"
+            className="uk-input pl-10"
           />
-          <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
         </div>
         <button
           type="submit"
           disabled={!searchValue.trim() || loading}
-          className="w-full mt-3 h-11 rounded-2xl bg-primary text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+          className="uk-btn mt-3"
         >
           {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
           {loading ? 'Tracking...' : 'Track Order'}
@@ -124,185 +124,114 @@ export default function OrderTracking() {
 
       {loading && (
         <div className="flex justify-center py-16">
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
+          <Loader2 className="w-6 h-6 animate-spin text-[#2E7D32]" />
         </div>
       )}
 
       {error && !loading && (
         <div className="text-center py-10">
-          <Search className="w-12 h-12 text-muted/40 mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">{error}</p>
+          <Search className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
+          <p className="uk-sub">{error}</p>
         </div>
       )}
 
       {!order && !error && !loading && (
         <div className="text-center py-10">
-          <Truck className="w-12 h-12 text-muted/40 mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">Enter your order number to see live delivery status.</p>
+          <Truck className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
+          <p className="uk-sub">Enter your order number to see live delivery status.</p>
         </div>
       )}
 
       {order && !loading && (
-        <div className="space-y-4">
-          {/* Status hero card */}
-          <div className="bg-card rounded-2xl border border-border p-4 overflow-hidden">
-            <div className="flex items-center justify-between mb-3">
+        <div className="space-y-3">
+          {/* Status hero */}
+          <div className="uk-card p-4">
+            <div className="flex items-start justify-between gap-2">
               <div>
-                <span className="text-sm font-bold text-foreground">{order.order_number}</span>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <h2 className="text-[17px] font-bold text-foreground">#{order.order_number}</h2>
+                <p className="uk-sub mt-0.5">
                   {order.items?.length || 0} items · ₦{(order.total || 0).toLocaleString()}
                 </p>
               </div>
               {isCancelled ? (
-                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-red-50 text-red-600 flex items-center gap-1">
+                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-red-50 text-red-600 flex items-center gap-1">
                   <XCircle className="w-3 h-3" /> Cancelled
                 </span>
               ) : isDelivered ? (
-                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-primary/10 text-[#2E7D32] flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" /> Completed
+                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-secondary text-[#2E7D32] flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> Delivered
                 </span>
               ) : (
-                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#FFF3E0] text-[#E65100] flex items-center gap-1">
-                  <Clock className="w-3 h-3" /> In Progress
+                <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-secondary text-[#2E7D32] flex items-center gap-1">
+                  <Bike className="w-3 h-3" /> {ETA_BY_STATUS[order.status]}
                 </span>
               )}
             </div>
 
-            {/* Current status banner */}
             {!isCancelled && (
-              <div className="rounded-xl bg-primary/10 p-3 mb-4">
-                <div className="flex items-center gap-2">
-                  {(() => {
-                    const Icon = STEPS[currentStepIndex]?.icon || ShoppingBag;
-                    return <Icon className="w-5 h-5 text-[#2E7D32] shrink-0" />;
-                  })()}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-[#2E7D32]">{STEPS[currentStepIndex]?.title}</p>
-                    <p className="text-xs text-[#2E7D32]/70 truncate">{STEPS[currentStepIndex]?.description}</p>
-                  </div>
-                  {!isDelivered && (
-                    <span className="flex items-center gap-1 text-[10px] font-bold text-[#2E7D32] whitespace-nowrap">
-                      <Bike className="w-3.5 h-3.5" /> {ETA_BY_STATUS[order.status]}
-                    </span>
-                  )}
+              <div className="rounded-xl bg-secondary p-3 mt-3 flex items-center gap-2.5">
+                {(() => {
+                  const Icon = STEPS[currentStepIndex]?.icon || ShoppingBag;
+                  return <Icon className="w-5 h-5 text-[#2E7D32] shrink-0" strokeWidth={2.2} />;
+                })()}
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-bold text-[#2E7D32]">{STEPS[currentStepIndex]?.title}</p>
+                  <p className="text-[11px] text-[#2E7D32]/75 truncate">
+                    {STEPS[currentStepIndex]?.description}
+                  </p>
                 </div>
               </div>
             )}
-
-            {/* Horizontal progress bar */}
-            {!isCancelled && (
-              <div className="relative mb-2">
-                <div className="h-2 rounded-full bg-muted overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-[#2E7D32] transition-all duration-500"
-                    style={{ width: `${progressPct}%` }}
-                  />
-                </div>
-                <div className="flex justify-between mt-2">
-                  {STEPS.map((step, i) => {
-                    const Icon = step.icon;
-                    const reached = i <= currentStepIndex;
-                    return (
-                      <div key={step.key} className="flex flex-col items-center" style={{ width: '20%' }}>
-                        <div
-                          className={`w-7 h-7 rounded-full flex items-center justify-center mb-1 transition-colors ${
-                            reached ? 'bg-[#2E7D32]' : 'bg-muted'
-                          }`}
-                        >
-                          <Icon className={`w-3.5 h-3.5 ${reached ? 'text-white' : 'text-muted-foreground'}`} strokeWidth={2.5} />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Order items */}
-          <div className="bg-card rounded-2xl border border-border p-4">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase mb-3">Order Items</h3>
-            <div className="flex gap-1 overflow-x-auto scrollbar-hide mb-3">
-              {order.items?.map((item, i) => (
-                <div
-                  key={i}
-                  className="flex-shrink-0 bg-muted/50 rounded-lg px-2.5 py-1.5 text-[11px] text-foreground font-medium"
-                >
-                  {item.quantity}× {item.name}
-                </div>
-              ))}
-            </div>
-            <Link
-              to={`/orders/${order.id}`}
-              className="flex items-center justify-between text-sm font-bold text-[#2E7D32] pt-2 border-t border-border"
-            >
-              <span>View full order details</span>
-              <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          {/* Delivery address */}
-          <div className="bg-card rounded-2xl border border-border p-4">
-            <h3 className="text-xs font-semibold text-muted-foreground uppercase mb-2">Delivery Address</h3>
-            <div className="flex items-start gap-2">
-              <MapPin className="w-4 h-4 text-[#2E7D32] flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm text-foreground font-medium flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-muted-foreground" /> {order.customer_name}
-                </p>
-                <p className="text-sm text-muted-foreground mt-0.5">{order.customer_address}</p>
-                {order.landmark && (
-                  <p className="text-xs text-muted-foreground/70 mt-0.5">Near {order.landmark}</p>
-                )}
-                <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                  <Phone className="w-3 h-3" /> {order.customer_phone}
-                </p>
-              </div>
-            </div>
           </div>
 
           {/* Vertical tracking timeline */}
           {!isCancelled ? (
-            <div className="bg-card rounded-2xl border border-border p-4">
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase mb-4">Delivery Progress</h3>
-              <div className="space-y-0">
+            <div className="uk-card p-4">
+              <p className="uk-section-label mb-3">Delivery progress</p>
+              <div>
                 {STEPS.map((step, i) => {
-                  const isCompleted = i < currentStepIndex;
-                  const isCurrent = i === currentStepIndex;
+                  const isCompleted = i < currentStepIndex || (isDelivered && i === currentStepIndex);
+                  const isCurrent = i === currentStepIndex && !isDelivered;
                   const Icon = step.icon;
+                  const reached = i <= currentStepIndex;
                   return (
                     <div key={step.key} className="flex gap-3">
                       <div className="flex flex-col items-center">
                         <div
-                          className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${
-                            isCompleted || isCurrent ? 'bg-primary/10' : 'bg-muted'
-                          } ${isCurrent ? 'ring-2 ring-[#2E7D32] ring-offset-1 ring-offset-card' : ''}`}
+                          className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                            reached ? 'bg-[#2E7D32]' : 'bg-muted'
+                          }`}
                         >
                           <Icon
-                            className={`w-4 h-4 ${
-                              isCompleted ? 'text-[#2E7D32]' : isCurrent ? 'text-[#2E7D32]' : 'text-muted-foreground'
-                            }`}
-                            strokeWidth={isCompleted || isCurrent ? 2.5 : 2}
+                            className={`w-3.5 h-3.5 ${reached ? 'text-white' : 'text-muted-foreground'}`}
+                            strokeWidth={2.4}
                           />
                         </div>
-                        {i < STEPS.length - 1 && (
-                          <div className={`w-0.5 flex-1 min-h-[28px] my-1 rounded-full ${isCompleted ? 'bg-[#2E7D32]' : 'bg-muted'}`} />
-                        )}
+                        {i < STEPS.length - 1 &&
+                          (isCompleted ? (
+                            <div className="w-0.5 flex-1 min-h-[26px] my-1 rounded-full bg-[#2E7D32]" />
+                          ) : (
+                            <div className="flex-1 min-h-[26px] my-1 border-l-2 border-dashed border-border" />
+                          ))}
                       </div>
-                      <div className={`pb-6 ${i === STEPS.length - 1 ? 'pb-0' : ''}`}>
-                        <p className={`text-sm font-bold ${isCompleted || isCurrent ? 'text-foreground' : 'text-muted-foreground'}`}>
+                      <div className={`pb-5 min-w-0 ${i === STEPS.length - 1 ? 'pb-0' : ''}`}>
+                        <p
+                          className={`text-[13px] ${
+                            reached ? 'font-bold text-foreground' : 'font-medium text-muted-foreground'
+                          }`}
+                        >
                           {step.title}
                         </p>
-                        <p className={`text-xs mt-0.5 ${isCompleted || isCurrent ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}>
+                        <p className={`text-[11px] mt-0.5 ${reached ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}>
                           {step.description}
                         </p>
                         {isCompleted && (
                           <p className="text-[10px] text-muted-foreground/70 mt-1">{timeAgo(order.updated_date)}</p>
                         )}
-                        {isCurrent && !isDelivered && (
-                          <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-bold text-[#2E7D32] bg-primary/10 px-2 py-0.5 rounded-full">
+                        {isCurrent && (
+                          <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-bold text-[#2E7D32] bg-secondary px-2 py-0.5 rounded-full">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#2E7D32] animate-pulse" />
-                            Current step
+                            In progress
                           </span>
                         )}
                       </div>
@@ -312,24 +241,69 @@ export default function OrderTracking() {
               </div>
 
               {order.status === 'on_the_way' && (
-                <div className="mt-2 p-3 rounded-xl bg-primary/10 text-center">
-                  <p className="text-sm font-bold text-[#2E7D32]">Your rider is on the way! 🛵</p>
-                  <p className="text-xs text-[#2E7D32]/70 mt-0.5">Estimated arrival: 15–40 minutes</p>
+                <div className="mt-2 p-3 rounded-xl bg-secondary text-center">
+                  <p className="text-[13px] font-bold text-[#2E7D32]">Your rider is on the way! 🛵</p>
+                  <p className="text-[11px] text-[#2E7D32]/75 mt-0.5">Estimated arrival: 15–40 minutes</p>
                 </div>
               )}
             </div>
           ) : (
-            <div className="bg-red-50 dark:bg-red-950/30 rounded-2xl border border-red-100 dark:border-red-900 p-4 text-center">
+            <div className="bg-red-50 rounded-2xl border border-red-100 p-4 text-center">
               <XCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-              <p className="text-sm font-bold text-red-700 dark:text-red-400">This order was cancelled</p>
-              <p className="text-xs text-red-500 dark:text-red-400/70 mt-1">If this is a mistake, please contact support.</p>
+              <p className="text-[13px] font-bold text-red-700">This order was cancelled</p>
+              <p className="text-[11px] text-red-500 mt-1">If this is a mistake, please contact support.</p>
             </div>
           )}
 
-          <Link
-            to="/orders"
-            className="block w-full text-center bg-card border border-border text-foreground text-sm font-bold px-6 py-3 rounded-2xl active:scale-[0.98] transition-transform"
-          >
+          {/* Delivery address */}
+          <div className="uk-card p-4">
+            <p className="uk-section-label mb-2">Delivery address</p>
+            <div className="flex items-start gap-2.5">
+              <MapPin className="w-4 h-4 text-[#2E7D32] shrink-0 mt-0.5" />
+              <div className="min-w-0">
+                <p className="text-[13px] text-foreground font-semibold flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-muted-foreground" /> {order.customer_name}
+                </p>
+                <p className="text-[13px] text-muted-foreground mt-0.5">{order.customer_address}</p>
+                {order.landmark && (
+                  <p className="text-[11px] text-muted-foreground/80 mt-0.5">Near {order.landmark}</p>
+                )}
+                <p className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1">
+                  <Phone className="w-3 h-3" /> {order.customer_phone}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Order items */}
+          <div className="uk-card p-4">
+            <p className="uk-section-label mb-2.5">Order items</p>
+            <div className="space-y-1.5 mb-3">
+              {order.items?.map((item, i) => (
+                <div key={i} className="flex items-center justify-between text-[13px]">
+                  <span className="text-foreground truncate pr-2">
+                    {item.quantity}× {item.name}
+                  </span>
+                  <span className="font-semibold text-foreground shrink-0">
+                    ₦{((item.price || 0) * (item.quantity || 1)).toLocaleString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <Link
+              to={`/orders/${order.id}`}
+              className="flex items-center justify-between text-[13px] font-bold text-[#2E7D32] pt-2.5 border-t border-border"
+            >
+              <span>View full order details</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground pt-1">
+            <Clock className="w-3.5 h-3.5" /> Last update {timeAgo(order.updated_date) || 'just now'}
+          </div>
+
+          <Link to="/orders" className="uk-btn-outline">
             Back to My Orders
           </Link>
         </div>

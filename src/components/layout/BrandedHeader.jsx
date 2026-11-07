@@ -21,28 +21,25 @@ export default function BrandedHeader({ title }) {
   };
 
   return (
-    <header className="relative bg-card overflow-hidden border-b border-border">
-      {/* subtle pale-green decoration */}
-      <div className="absolute -top-10 -right-12 w-44 h-44 rounded-full bg-[#E8F5E9] opacity-60 blur-2xl pointer-events-none" />
-      <div className="absolute top-1 right-14 w-24 h-24 rounded-full bg-[#D6F0DD] opacity-40 blur-xl pointer-events-none" />
+    <header className="bg-card border-b border-border">
       <div
-        className={`relative flex items-center gap-3 px-4 pb-3 max-w-md mx-auto w-full ${
+        className={`flex items-center gap-3 px-4 pb-2.5 max-w-md mx-auto w-full ${
           isTabRoot ? 'justify-center' : ''
         }`}
-        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
         {!isTabRoot && (
           <button
             onClick={goBack}
             aria-label="Back"
-            className="w-11 h-11 rounded-full bg-[#EEF8EE] flex items-center justify-center active:scale-90 transition-transform shrink-0"
+            className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center active:scale-90 transition-transform shrink-0"
           >
-            <ArrowLeft className="w-5 h-5 text-[#2E7D32]" />
+            <ArrowLeft className="w-5 h-5 text-[#2E7D32]" strokeWidth={2.5} />
           </button>
         )}
         <h1
-          className={`text-xl font-bold text-foreground tracking-tight truncate ${
-            showCart ? 'flex-1' : ''
+          className={`text-[17px] font-bold text-foreground tracking-tight truncate ${
+            isTabRoot ? 'text-center' : 'flex-1'
           }`}
         >
           {title}
@@ -51,11 +48,11 @@ export default function BrandedHeader({ title }) {
           <Link
             to="/cart"
             aria-label="Cart"
-            className="relative w-11 h-11 rounded-full bg-[#EEF8EE] flex items-center justify-center active:scale-90 transition-transform shrink-0"
+            className="relative w-10 h-10 rounded-full bg-secondary flex items-center justify-center active:scale-90 transition-transform shrink-0"
           >
             <ShoppingCart className="w-5 h-5 text-[#2E7D32]" />
             {itemCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#2E7D32] text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-card">
+              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#EF4444] text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-card">
                 {itemCount}
               </span>
             )}

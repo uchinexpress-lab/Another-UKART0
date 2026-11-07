@@ -12,12 +12,12 @@ export default function Wishlist() {
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center min-h-[60vh]">
-        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-          <Heart className="w-10 h-10 text-[#2E7D32]" />
+        <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center mb-4">
+          <Heart className="w-9 h-9 text-[#2E7D32]" />
         </div>
-        <h2 className="text-xl font-bold text-foreground mb-1">Your wishlist is empty</h2>
-        <p className="text-sm text-muted-foreground mb-4">Save items you love for later</p>
-        <Link to="/" className="bg-[#2E7D32] text-white text-sm font-bold px-6 py-3 rounded-full">
+        <h2 className="uk-title mb-1">Your wishlist is empty</h2>
+        <p className="uk-sub mb-5">Save items you love for later</p>
+        <Link to="/" className="bg-[#2E7D32] text-white text-sm font-bold px-6 py-3 rounded-xl">
           Browse Products
         </Link>
       </div>
@@ -25,9 +25,14 @@ export default function Wishlist() {
   }
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold text-foreground mb-4">My Wishlist ({items.length})</h1>
-      <div className="grid grid-cols-3 gap-2">
+    <div className="uk-page">
+      <div className="flex items-center justify-between mb-3">
+        <h1 className="uk-title">Wishlist</h1>
+        <span className="uk-meta">
+          {items.length} saved
+        </span>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
         {items.map((item) => (
           <ProductCardSurface key={item.id} product={item}
             priceInfo={{ text: `₦${item.price.toLocaleString()}`, isRange: false }} wished

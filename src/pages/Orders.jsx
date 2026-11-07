@@ -4,7 +4,6 @@ import { base44 } from '@/api/base44Client';
 import { useCart } from '@/context/CartContext';
 import { toast } from '@/components/ui/use-toast';
 import {
-  Package,
   Clock,
   CheckCircle2,
   XCircle,
@@ -47,7 +46,7 @@ function StatusBadge({ status }) {
     );
   if (status === 'delivered')
     return (
-      <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-primary/10 text-[#2E7D32] flex items-center gap-1">
+      <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-secondary text-[#2E7D32] flex items-center gap-1">
         <CheckCircle2 className="w-3 h-3" /> Completed
       </span>
     );
@@ -58,8 +57,8 @@ function StatusBadge({ status }) {
       </span>
     );
   return (
-    <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#FFF3E0] text-[#E65100] flex items-center gap-1">
-      <Clock className="w-3 h-3" /> In Progress
+    <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-secondary text-[#2E7D32] flex items-center gap-1">
+      <Truck className="w-3 h-3" /> In Progress
     </span>
   );
 }
@@ -137,15 +136,15 @@ export default function Orders() {
 
   return (
     <PullToRefresh onRefresh={loadOrders}>
-    <div className="p-4">
-      <div className="flex bg-muted rounded-2xl p-1 mb-4">
+    <div className="uk-page">
+      <h1 className="uk-title mb-3">My Orders</h1>
+
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-4 -mx-1 px-1">
         {TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`flex-1 text-sm font-semibold py-2 rounded-xl transition-colors ${
-              tab === t.key ? 'bg-card text-[#2E7D32] shadow-sm' : 'text-muted-foreground'
-            }`}
+            className={`uk-chip ${tab === t.key ? 'uk-chip-active' : ''}`}
           >
             {t.label}
           </button>
@@ -154,15 +153,15 @@ export default function Orders() {
 
       {loading ? (
         <div className="flex justify-center py-16">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16">
-          <ShoppingBag className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">No {tab} orders yet.</p>
+          <ShoppingBag className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
+          <p className="uk-sub">No {tab} orders yet.</p>
           <Link
             to="/"
-            className="inline-block mt-4 bg-[#2E7D32] text-white text-sm font-bold px-5 py-2.5 rounded-full"
+            className="inline-block mt-4 bg-[#2E7D32] text-white text-sm font-bold px-5 py-2.5 rounded-xl"
           >
             Start Shopping
           </Link>
@@ -177,12 +176,13 @@ export default function Orders() {
               <Link
                 key={o.id}
                 to={isActive && o.payment_status === 'Paid' ? `/track?id=${o.id}` : `/orders/${o.id}`}
-                className="block bg-card rounded-2xl border border-border p-4 active:scale-[0.98] transition-transform"
+                className="block uk-card p-3.5 active:scale-[0.99] transition-transform"
               >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-bold text-foreground">{o.order_number}</span>
+                <div className="flex items-center justify-between gap-2 mb-1.5">
+                  <span className="text-[13px] font-bold text-foreground">{o.order_number}</span>
                   <StatusBadge status={o.status} />
                 </div>
+
                 {o.payment_status === 'Paid' ? (
                   <div className="flex items-center gap-1 text-[10px] font-bold text-[#2E7D32] mb-1">
                     <CheckCircle2 className="w-3 h-3" /> Payment Confirmed
@@ -202,11 +202,16 @@ export default function Orders() {
                     </button>
                   </div>
                 )}
-                <p className="text-xs text-muted-foreground mb-3">{formatDate(o.created_date)}</p>
 
-                {/* Mini progress bar for active orders */}
+                <div className="flex items-center justify-between">
+                  <p className="uk-meta">{formatDate(o.created_date)}</p>
+                  <p className="text-[13px] font-bold text-foreground">
+                    ₦{(o.total || 0).toLocaleString()}
+                  </p>
+                </div>
+
                 {isActive && (
-                  <div className="mb-3">
+                  <div className="mt-2.5">
                     <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                       <div
                         className="h-full rounded-full bg-[#2E7D32] transition-all duration-500"
@@ -215,29 +220,32 @@ export default function Orders() {
                     </div>
                     <div className="flex items-center gap-1 mt-1.5 text-[10px] font-bold text-[#2E7D32]">
                       <Truck className="w-3 h-3" />
-                      <span>Track shipment · {Math.round(progressPct)}% complete</span>
+                      <span>{Math.round(progressPct)}% complete</span>
                     </div>
                   </div>
                 )}
 
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">
-                    {o.items?.length || 0} item{(o.items?.length || 0) > 1 ? 's' : ''}
+                <div className="flex items-center justify-between mt-2.5 pt-2.5 border-t border-border">
+                  <span className="uk-meta">
+                    {(o.items?.length || 0)} item{(o.items?.length || 0) > 1 ? 's' : ''}
                   </span>
-                  <span className="flex items-center gap-1 font-bold text-[#2E7D32] text-sm">
-                    ₦{(o.total || 0).toLocaleString()}
-                    <ChevronRight className="w-4 h-4" />
-                  </span>
+                  {isActive ? (
+                    <span className="flex items-center gap-1 text-[11px] font-bold text-[#2E7D32]">
+                      Track <ChevronRight className="w-3.5 h-3.5" />
+                    </span>
+                  ) : (o.items?.length || 0) > 0 ? (
+                    <button
+                      onClick={(e) => reorder(e, o)}
+                      className="flex items-center gap-1.5 border border-[#2E7D32] text-[#2E7D32] text-[11px] font-bold px-3 py-1.5 rounded-lg active:scale-95 transition-transform"
+                    >
+                      <RotateCw className="w-3 h-3" /> Reorder
+                    </button>
+                  ) : (
+                    <span className="flex items-center gap-1 text-[11px] font-bold text-muted-foreground">
+                      Details <ChevronRight className="w-3.5 h-3.5" />
+                    </span>
+                  )}
                 </div>
-
-                {!isActive && (o.items?.length || 0) > 0 && (
-                  <button
-                    onClick={(e) => reorder(e, o)}
-                    className="mt-3 w-full flex items-center justify-center gap-1.5 bg-[#2E7D32]/10 text-[#2E7D32] text-sm font-bold py-2.5 rounded-xl active:scale-[0.98] transition-transform"
-                  >
-                    <RotateCw className="w-4 h-4" /> Reorder
-                  </button>
-                )}
               </Link>
             );
           })}

@@ -7,16 +7,16 @@ export default function Categories() {
   const navigate = useNavigate();
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold text-foreground mb-4">Categories</h1>
-      <div className="grid grid-cols-2 gap-3">
+    <div className="uk-page">
+      <h1 className="uk-title mb-3">All Categories</h1>
+      <div className="grid grid-cols-3 gap-2.5">
         {BROAD_CATEGORIES.map((cat) => (
           <button
             key={cat.slug}
             onClick={() => navigate(cat.route || `/shop/${cat.slug}`)}
-            className="bg-card rounded-2xl border border-border overflow-hidden flex flex-col active:scale-95 transition-transform"
+            className="bg-card rounded-2xl border border-border p-2.5 flex flex-col items-center active:scale-95 transition-transform"
           >
-            <div className="w-full aspect-[4/3] flex items-center justify-center">
+            <div className="w-full aspect-square rounded-xl overflow-hidden bg-muted flex items-center justify-center mb-2">
               {cat.image ? (
                 <Image
                   src={cat.image}
@@ -25,17 +25,15 @@ export default function Categories() {
                   fittingType="fill"
                 />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-4xl bg-primary/10">
-                  {cat.icon}
-                </div>
+                <span className="text-3xl">{cat.icon}</span>
               )}
             </div>
-            <div className="p-3 text-left">
-              <div className="text-sm font-bold text-foreground leading-tight">{cat.name}</div>
-              <div className="text-[11px] text-gray-400 leading-tight mt-0.5">
-                {cat.example}
-              </div>
-            </div>
+            <span className="text-[12px] font-bold text-foreground leading-tight text-center line-clamp-1">
+              {cat.name}
+            </span>
+            <span className="text-[10px] text-muted-foreground leading-tight mt-0.5 text-center line-clamp-1">
+              {cat.example}
+            </span>
           </button>
         ))}
       </div>
