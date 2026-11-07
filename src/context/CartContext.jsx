@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { toast } from '@/components/ui/use-toast';
 
 const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
@@ -27,6 +28,7 @@ export function CartProvider({ children }) {
       }
       return [...prev, { ...product, quantity: 1 }];
     });
+    toast({ title: 'Added to cart', description: product.name || 'Item added' });
   };
 
   const addItems = (products) => {
@@ -44,6 +46,10 @@ export function CartProvider({ children }) {
         }
       }
       return next;
+    });
+    toast({
+      title: 'Added to cart',
+      description: `${products.length} item${products.length === 1 ? '' : 's'} added`,
     });
   };
 
