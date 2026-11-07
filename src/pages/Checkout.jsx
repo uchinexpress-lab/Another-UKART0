@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { ArrowLeft, MapPin, Navigation, Phone, User, Loader2, ShoppingBag, Tag, History, X, CreditCard, Lock, ChevronRight, Truck } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { getServiceFee } from '@/lib/fees';
+import AddressAutocomplete from '@/components/checkout/AddressAutocomplete';
 import {
   getDeliveryFee,
   getDeliveryBase,
@@ -385,13 +386,15 @@ export default function Checkout() {
               <label className={labelClass}>
                 <MapPin className="w-3.5 h-3.5" /> House Address
               </label>
-              <textarea
+              <AddressAutocomplete
                 value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="House/flat number, street name, area"
-                rows={2}
-                className={`${fieldClass} resize-none`}
+                onChange={setAddress}
+                placeholder="Start typing your street or estate"
+                className={fieldClass}
               />
+              <p className="text-[11px] text-muted-foreground mt-1.5">
+                Pick the suggestion so we find your exact street, then add your house or flat number.
+              </p>
             </div>
             <div>
               <label className={labelClass}>
