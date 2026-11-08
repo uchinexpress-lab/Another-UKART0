@@ -129,6 +129,8 @@ export default function Orders() {
   }, []);
 
   const filtered = orders.filter((o) => {
+    // An abandoned checkout lives in the cart, never as a pending order.
+    if (o.payment_status === 'Abandoned') return false;
     if (tab === 'active') return ACTIVE.includes(o.status);
     if (tab === 'delivered') return o.status === 'delivered';
     return o.status === 'cancelled';

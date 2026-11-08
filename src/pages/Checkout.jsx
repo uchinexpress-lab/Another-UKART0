@@ -112,6 +112,19 @@ export default function Checkout() {
     })();
   }, []);
 
+  // A previous attempt that was left at Paystack is closed as abandoned. The
+  // cart is untouched, so the customer simply starts again.
+  useEffect(() => {
+    let stale = null;
+    try {
+      stale = sessionStorage.getItem('ukart_pending_order');
+      if (stale) sessionStorage.removeItem('ukart_pending_order');
+    } catch {}
+    if (stale) {
+      base44.functions.invoke('abandonCheckout', { orderId: stale }).catch(() => {});
+    }
+  }, []);
+
   const firstOrderEligible = isFirstOrder && promoSettings?.first_order_enabled !== false;
   const firstOrderDiscount = firstOrderEligible ? (promoSettings?.first_order_discount || 500) : 0;
 
@@ -208,6 +221,10 @@ export default function Checkout() {
           throw new Error(res.data?.error || 'Could not prepare order');
         }
         setCreatedOrderId(orderId);
+        // Remember the attempt so a return from Paystack can resolve it.
+        try {
+          sessionStorage.setItem('ukart_pending_order', orderId);
+        } catch {}
 
         const serverTotal = res.data?.total;
         if (serverTotal != null && serverTotal !== grandTotal) {
