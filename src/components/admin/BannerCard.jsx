@@ -1,12 +1,15 @@
 import React from 'react';
-import { GripVertical, Pencil, Trash2, Copy, Eye, Image as ImageIcon } from 'lucide-react';
+import { GripVertical, Pencil, Trash2, Copy, Eye, ChevronUp, ChevronDown, Image as ImageIcon } from 'lucide-react';
 import { BANNER_LOCATIONS } from '@/lib/bannerConfig';
 
 /**
  * Admin banner card with thumbnail, info, and action buttons.
  * Includes a drag handle for reordering via @hello-pangea/dnd.
  */
-export default function BannerCard({ banner, index, onEdit, onDelete, onDuplicate, onReplace, onToggleActive, onPreview }) {
+export default function BannerCard({
+  banner, index, onEdit, onDelete, onDuplicate, onReplace, onToggleActive, onPreview,
+  onMoveUp, onMoveDown, canMoveUp, canMoveDown, isFirst,
+}) {
   const config = BANNER_LOCATIONS[banner.location] || BANNER_LOCATIONS.home;
   const bgSize = banner.zoom > 1
     ? `${banner.zoom * 100}%`
@@ -52,7 +55,14 @@ export default function BannerCard({ banner, index, onEdit, onDelete, onDuplicat
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <h3 className="text-sm font-semibold text-foreground truncate">{banner.name}</h3>
+        <div className="flex items-center gap-1.5">
+          <h3 className="text-sm font-semibold text-foreground truncate">{banner.name}</h3>
+          {isFirst && (
+            <span className="flex-shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded bg-[#2E7D32] text-white">
+              FIRST
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-2 mt-0.5">
           <span className="text-[10px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
             {config?.label || banner.location}
@@ -74,6 +84,22 @@ export default function BannerCard({ banner, index, onEdit, onDelete, onDuplicat
 
       {/* Action buttons */}
       <div className="flex-shrink-0 flex items-center gap-1">
+        <button
+          onClick={onMoveUp}
+          disabled={!canMoveUp}
+          className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-[#2E7D32] transition-colors disabled:opacity-25 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
+          title="Show earlier"
+        >
+          <ChevronUp className="w-4 h-4" />
+        </button>
+        <button
+          onClick={onMoveDown}
+          disabled={!canMoveDown}
+          className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-[#2E7D32] transition-colors disabled:opacity-25 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
+          title="Show later"
+        >
+          <ChevronDown className="w-4 h-4" />
+        </button>
         <button
           onClick={() => onPreview(banner)}
           className="w-8 h-8 rounded-lg hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-[#2E7D32] transition-colors"

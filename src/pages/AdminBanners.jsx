@@ -50,29 +50,58 @@ export default function AdminBanners() {
     ? banners
     : banners.filter((b) => b.location === filter);
 
-  const handleDragEnd = async (result) => {
+  // Order is numbered per location: only banners sharing a location renumber
+  // each other, so a drag never disturbs another location's sequence.
+  const persistOrder = async (renumbered) => {
+    const orderById = {};
+    const payload = [];
+    Object.values(renumbered).forEach((list) =>
+      list.forEach((b, i) => {
+        orderById[b.id] = i;
+        payload.push({ id: b.id, order: i });
+      })
+    );
+    setBanners((prev) =>
+      prev.map((b) => (orderById[b.id] != null ? { ...b, order: orderById[b.id] } : b))
+    );
+    try {
+      await base44.entities.Banner.bulkUpdate(payload);
+    } catch (err) {
+      loadBanners();
+    }
+  };
+
+  const handleDragEnd = (result) => {
     if (!result.destination) return;
     const reordered = Array.from(filtered);
     const [moved] = reordered.splice(result.source.index, 1);
     reordered.splice(result.destination.index, 0, moved);
 
-    // Assign new order values within the same location
-    const locationBanners = reordered.map((b, i) => ({ ...b, order: i }));
-    const newAll = banners.map((b) => {
-      const updated = locationBanners.find((lb) => lb.id === b.id);
-      return updated || b;
+    const byLocation = {};
+    reordered.forEach((b) => {
+      (byLocation[b.location] = byLocation[b.location] || []).push(b);
     });
-    setBanners(newAll);
+    persistOrder(byLocation);
+  };
 
-    // Persist order to database
-    try {
-      await base44.entities.Banner.bulkUpdate(
-        locationBanners.map((b) => ({ id: b.id, order: b.order }))
-      );
-    } catch (err) {
-      // Reload on failure
-      loadBanners();
-    }
+  // Move a banner one step earlier / later within its own location.
+  const moveBanner = (banner, direction) => {
+    const siblings = banners
+      .filter((b) => b.location === banner.location)
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
+    const from = siblings.findIndex((b) => b.id === banner.id);
+    const to = from + direction;
+    if (from < 0 || to < 0 || to >= siblings.length) return;
+    [siblings[from], siblings[to]] = [siblings[to], siblings[from]];
+    persistOrder({ [banner.location]: siblings });
+  };
+
+  // Position of a banner inside its own location (1 = shows first).
+  const positionOf = (banner) => {
+    const siblings = banners
+      .filter((b) => b.location === banner.location)
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
+    return { position: siblings.findIndex((b) => b.id === banner.id), count: siblings.length };
   };
 
   const handleSave = async (data) => {
@@ -165,7 +194,7 @@ export default function AdminBanners() {
         <div>
           <h1 className="text-xl font-bold text-foreground">Banner Manager</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Manage promotional banners across the app
+            Manage promotional banners across the app · drag or use the arrows to set which shows first
           </p>
         </div>
         <button
@@ -219,7 +248,9 @@ export default function AdminBanners() {
           <Droppable droppableId={`banners-${filter}`}>
             {(provided) => (
               <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-2">
-                {filtered.map((banner, index) => (
+                {filtered.map((banner, index) => {
+                  const { position, count } = positionOf(banner);
+                  return (
                   <Draggable key={banner.id} draggableId={banner.id} index={index}>
                     {(prov) => (
                       <div
@@ -228,7 +259,12 @@ export default function AdminBanners() {
                       >
                         <BannerCard
                           banner={banner}
-                          index={index}
+                          index={position}
+                          isFirst={position === 0}
+                          canMoveUp={position > 0}
+                          canMoveDown={position < count - 1}
+                          onMoveUp={() => moveBanner(banner, -1)}
+                          onMoveDown={() => moveBanner(banner, 1)}
                           {...prov.dragHandleProps}
                           onEdit={(b) => {
                             setEditingBanner(b);
@@ -243,7 +279,8 @@ export default function AdminBanners() {
                       </div>
                     )}
                   </Draggable>
-                ))}
+                  );
+                })}
                 {provided.placeholder}
               </div>
             )}
