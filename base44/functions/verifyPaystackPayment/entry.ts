@@ -23,13 +23,16 @@ export default async function (req) {
     if (!payments.items || payments.items.length === 0) {
       return Response.json({ ok: false, reason: "Payment not found" });
     }
-    if (payments.items[0].customer_email !== user.email) {
+    const payment = payments.items[0];
+    if (payment.customer_email !== user.email) {
       return Response.json({ error: "Payment does not belong to you" }, { status: 403 });
     }
 
     // Confirm the payment (re-verifies with Paystack, checks amount, updates status)
     const result = await confirmPayment(base44, reference);
-    return Response.json(result);
+    // The order id is always returned so the browser can show the right state
+    // (success page, retry, or "still confirming") without another lookup.
+    return Response.json({ ...result, orderId: result?.orderId || payment.order_id });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }

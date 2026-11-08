@@ -107,7 +107,12 @@ export async function confirmPayment(base44, reference) {
   }
   const payment = payments.items[0];
 
-  const order = await base44.asServiceRole.entities.Order.get(payment.order_id);
+  let order: any = null;
+  try {
+    order = await base44.asServiceRole.entities.Order.get(payment.order_id);
+  } catch {
+    order = null;
+  }
   if (!order) {
     return { ok: false, reason: "Order not found" };
   }
@@ -132,24 +137,42 @@ export async function confirmPayment(base44, reference) {
 
   // Re-verify with Paystack (authoritative source of truth)
   const tx = await verifyTransaction(reference);
+  const txStatus = String(tx.status || "");
 
-  // Transaction must be successful
-  if (tx.status !== "success") {
-    const failedStatus = tx.status === "abandoned" ? "abandoned" : "failed";
-    return markUnpaid(
-      base44,
-      payment,
-      failedStatus,
-      `Transaction status: ${tx.status}`,
-      tx
-    );
+  // Only a success is final in our favour, and only a definitive failure may
+  // close the attempt. Anything still in flight (a bank transfer awaiting
+  // settlement, "ongoing", "pending", "queued"…) stays pending so the webhook
+  // can confirm it later. It is never marked failed.
+  if (txStatus !== "success") {
+    if (["failed", "reversed"].includes(txStatus)) {
+      return markUnpaid(base44, payment, "failed", `Transaction status: ${txStatus}`, tx);
+    }
+    if (txStatus === "abandoned") {
+      return markUnpaid(base44, payment, "abandoned", `Transaction status: ${txStatus}`, tx);
+    }
+    return { ok: false, pending: true, reason: `Transaction status: ${txStatus}` };
   }
 
-  // Amount verification — Paystack amount is in kobo, our amount in naira.
-  // Both the stored payment amount AND the order total must match.
+  // Amount verification — Paystack reports two amounts, both in kobo:
+  //   requested_amount: what Ukart asked for (must equal the order total)
+  //   amount:           what the customer was actually debited, which is higher
+  //                     on channels where the customer bears Paystack's fee
+  //                     (bank transfer charges requested_amount + fees).
+  // Comparing `amount` alone rejected real, fully paid orders.
   const expectedKobo = Math.round(Number(payment.amount) * 100);
   const orderKobo = Math.round(Number(order.total) * 100);
-  if (Number(tx.amount) !== expectedKobo || Number(tx.amount) !== orderKobo) {
+  const paidKobo = Number(tx.amount);
+  const requestedKobo = tx.requested_amount != null ? Number(tx.requested_amount) : paidKobo;
+  const amountOk =
+    requestedKobo === expectedKobo && requestedKobo === orderKobo && paidKobo >= orderKobo;
+  if (!amountOk) {
+    console.error("Paystack amount mismatch", {
+      reference,
+      expectedKobo,
+      orderKobo,
+      paidKobo,
+      requestedKobo,
+    });
     return markUnpaid(base44, payment, "failed", "Amount mismatch", tx);
   }
 

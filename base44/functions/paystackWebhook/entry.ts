@@ -16,6 +16,10 @@ export default async function (req) {
     const signature = req.headers.get("x-paystack-signature") || "";
     const rawBody = await req.text();
     const secret = secrets.get("PAYSTACK_SECRET_KEY");
+    if (!secret) {
+      console.error("PAYSTACK_SECRET_KEY is not configured");
+      return Response.json({ error: "Payment provider not configured" }, { status: 500 });
+    }
 
     const enc = new TextEncoder();
     const key = await crypto.subtle.importKey(
@@ -40,8 +44,19 @@ export default async function (req) {
     if (event.event === "charge.success") {
       const reference = event.data?.reference;
       if (reference) {
-        // confirmPayment re-verifies with Paystack and is idempotent
-        await confirmPayment(base44, reference);
+        try {
+          // confirmPayment re-verifies with Paystack and is idempotent, so a
+          // duplicate event never double-pays or double-emails.
+          const result = await confirmPayment(base44, reference);
+          if (result && result.ok === false && /not found/i.test(result.reason || "")) {
+            // Not one of our transactions — acknowledge so Paystack stops retrying.
+            return Response.json({ status: "ignored", reason: result.reason });
+          }
+        } catch (e) {
+          // Transient failure: ask Paystack to retry the event.
+          console.error("Webhook confirmation failed:", e);
+          return Response.json({ error: "Retry later" }, { status: 500 });
+        }
       }
     }
 

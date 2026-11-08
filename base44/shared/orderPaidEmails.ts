@@ -24,7 +24,9 @@ export async function sendOrderPaidEmails(admin: any, orderId: string) {
   }
 
   // --- Business / admin new paid order ---
-  if (settings.enable_business_email && !order.admin_notified) {
+  // Re-read before claiming: the callback and the webhook may arrive together.
+  const freshAdmin = await admin.entities.Order.get(order.id);
+  if (settings.enable_business_email && freshAdmin && !freshAdmin.admin_notified) {
     try {
       await admin.entities.Order.update(order.id, { admin_notified: true });
       await admin.integrations.Core.SendEmail({

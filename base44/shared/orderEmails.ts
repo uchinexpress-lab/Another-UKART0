@@ -16,7 +16,7 @@ const BANNER_URL =
   "https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/250e47ebc_ChatGPTImageSep16202612_22_03PM1.png";
 
 // Published app URL — used for links inside emails (backend has no window).
-const APP_URL = "https://ukart-fresh-now.base44.app";
+const APP_URL = "https://ukartapp.com";
 
 export function formatCurrency(n: number): string {
   return "\u20A6" + (n || 0).toLocaleString();
