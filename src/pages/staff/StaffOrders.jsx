@@ -68,7 +68,9 @@ export default function StaffOrders() {
       });
       setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)));
     } catch (e) {
-      alert('Failed to update order status');
+      const reason =
+        e?.response?.data?.error || e?.data?.error || e?.message || 'Please try again.';
+      alert(`Failed to update order status — ${reason}`);
     } finally {
       setUpdatingId(null);
     }

@@ -54,18 +54,16 @@ export default async function (req: Request): Promise<Response> {
       if (user.role !== "admin") {
         return Response.json({ error: "Forbidden — admins only" }, { status: 403 });
       }
-      const ALLOWED_STATUSES = ["processing", "ready", "on_the_way", "delivered", "cancelled"];
+      const ALLOWED_STATUSES = [
+        "new",
+        "processing",
+        "ready",
+        "on_the_way",
+        "delivered",
+        "cancelled",
+      ];
       if (!status || !ALLOWED_STATUSES.includes(status)) {
         return Response.json({ error: "Invalid status" }, { status: 400 });
-      }
-
-      // Fulfilment is impossible before Paystack has confirmed the payment.
-      const FULFILMENT_STATUSES = ["processing", "ready", "on_the_way", "delivered"];
-      if (FULFILMENT_STATUSES.includes(status) && order.payment_status !== "Paid") {
-        return Response.json(
-          { error: "Payment has not been confirmed for this order" },
-          { status: 400 }
-        );
       }
 
       // Update the order status (service role — Order.update is admin-only).

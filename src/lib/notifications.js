@@ -44,7 +44,7 @@ export async function notifyOrderCreated(orderId) {
 // Called when an admin updates the order status. Updates the status, sends a
 // status-specific email, and sets last_status_notified — all server-side.
 export async function notifyOrderStatusChanged(orderId, newStatus) {
-  if (!orderId || newStatus === 'new') return;
+  if (!orderId) return;
   try {
     await base44.functions.invoke('orderNotifications', {
       type: 'status',
