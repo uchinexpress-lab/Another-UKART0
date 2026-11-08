@@ -204,7 +204,7 @@ export default function Orders() {
                         }`}
                       >
                         <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                        Payment {o.payment_status || 'Pending'}
+                        Payment {o.payment_status === 'Paid' ? 'Successful' : o.payment_status || 'Pending'}
                       </p>
                     </div>
 

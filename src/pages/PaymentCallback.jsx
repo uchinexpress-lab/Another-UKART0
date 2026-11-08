@@ -32,17 +32,16 @@ export default function PaymentCallback() {
         try {
           const res = await base44.functions.invoke('verifyPaystackPayment', { reference });
           if (res.data?.ok) {
-            let ord = null;
-            try {
-              const payments = await base44.entities.Payment.filter({ reference }, { limit: 1 });
-              const pmt = payments.items?.[0];
-              if (pmt?.order_id) ord = await base44.entities.Order.get(pmt.order_id);
-            } catch {}
-
+            // The verified order id comes straight from the confirmation, so a
+            // lookup failure can never block the success page.
+            const orderId = res.data.orderId;
             clearCart();
             forgetPending();
             if (!active) return;
-            navigate(ord ? `/orders/${ord.id}/payment-success` : '/orders', { replace: true });
+            navigate(
+              orderId ? `/orders/${orderId}/payment-success` : '/orders',
+              { replace: true }
+            );
             return;
           }
         } catch {}
