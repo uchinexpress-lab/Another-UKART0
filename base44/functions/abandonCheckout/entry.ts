@@ -45,7 +45,16 @@ export default async function (req: Request): Promise<Response> {
       return Response.json({ ok: true, abandoned: false, paid: true });
     }
 
-    // Close any payment attempt that was opened but never completed.
+    // Give back the voucher use this order claimed at creation.
+    if (order.voucher_id && order.voucher_claimed) {
+      await admin.entities.Voucher.updateMany(
+        { id: order.voucher_id },
+        { $inc: { uses: -1 } }
+      );
+    }
+
+    // Close the payment attempts that were opened but never completed, then
+    // remove the order itself: an abandoned checkout leaves no record behind.
     const open = await admin.entities.Payment.filter(
       { order_id: order.id, status: { $in: ["pending", "processing"] } },
       { limit: 20 }
@@ -54,16 +63,7 @@ export default async function (req: Request): Promise<Response> {
       await admin.entities.Payment.update(p.id, { status: "abandoned" });
     }
 
-    await admin.entities.Order.update(order.id, { payment_status: "Abandoned" });
-
-    // Give back the voucher use this order claimed at creation.
-    if (order.voucher_id && order.voucher_claimed) {
-      await admin.entities.Order.update(order.id, { voucher_claimed: false });
-      await admin.entities.Voucher.updateMany(
-        { id: order.voucher_id },
-        { $inc: { uses: -1 } }
-      );
-    }
+    await admin.entities.Order.delete(order.id);
 
     return Response.json({ ok: true, abandoned: true });
   } catch (error) {
