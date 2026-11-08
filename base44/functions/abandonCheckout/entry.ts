@@ -110,10 +110,9 @@ export default async function (req: Request): Promise<Response> {
 
     // The order stays in the database (hidden from the customer) so a delayed
     // Paystack success can still be reconciled by the webhook.
-    await admin.entities.Order.update(order.id, {
-      payment_status: "Abandoned",
-      status: "awaiting_payment",
-    });
+    // Only the payment state changes here: fulfilment status is left as it is,
+    // so a cancelled or already-progressing order is never reopened.
+    await admin.entities.Order.update(order.id, { payment_status: "Abandoned" });
 
     return Response.json({ ok: true, abandoned: true, orderId: order.id });
   } catch (error) {
