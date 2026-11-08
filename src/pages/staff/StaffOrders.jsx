@@ -81,7 +81,8 @@ export default function StaffOrders() {
     if (paymentFilter !== 'all' && o.payment_status !== paymentFilter) return false;
     if (search.trim()) {
       const q = search.toLowerCase();
-      const hay = `${o.customer_name || ''} ${o.customer_email || ''} ${o.order_number || ''}`.toLowerCase();
+      const hay =
+        `${o.customer_name || ''} ${o.customer_email || ''} ${o.order_number || ''} ${o.customer_phone || ''} ${o.alternate_phone || ''}`.toLowerCase();
       if (!hay.includes(q)) return false;
     }
     return true;
@@ -105,7 +106,7 @@ export default function StaffOrders() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name, email, or order #"
+            placeholder="Search by customer name, phone, email, or order #"
             className="w-full pl-9 pr-3 h-9 text-sm rounded-lg border border-gray-200 outline-none focus:border-[#2E7D32]"
           />
         </div>

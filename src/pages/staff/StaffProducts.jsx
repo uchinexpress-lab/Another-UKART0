@@ -6,9 +6,13 @@ import { useAuth } from '@/lib/AuthContext';
 import { logStaffAction } from '@/lib/staffAudit';
 import { canAccessPage } from '@/lib/staffRoles';
 import {
-  Search, RefreshCw, Loader2, Plus, Edit, Eye, EyeOff,
+  Search, RefreshCw, Loader2, Plus, Edit, Eye, EyeOff, Trash2,
 } from 'lucide-react';
 import SheetSelect from '@/components/SheetSelect';
+import {
+  AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogFooter,
+  AlertDialogTitle, AlertDialogDescription, AlertDialogAction, AlertDialogCancel,
+} from '@/components/ui/alert-dialog';
 
 export default function StaffProducts() {
   const { user } = useAuth();
@@ -17,6 +21,8 @@ export default function StaffProducts() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [stockFilter, setStockFilter] = useState('all');
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     loadProducts();
@@ -48,6 +54,23 @@ export default function StaffProducts() {
       setProducts((prev) => prev.map((x) => (x.id === p.id ? { ...x, is_hidden: !x.is_hidden } : x)));
     } catch (e) {
       alert('Failed to update product');
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await staffWrite('Product', 'delete', deleteTarget.id, {});
+      await logStaffAction('product_deleted', {
+        entity_type: 'Product', record_id: deleteTarget.id, record_name: deleteTarget.name,
+      });
+      setProducts((prev) => prev.filter((x) => x.id !== deleteTarget.id));
+      setDeleteTarget(null);
+    } catch (e) {
+      alert(e?.message || 'Failed to delete product');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -173,6 +196,13 @@ export default function StaffProducts() {
                           >
                             {p.is_hidden ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                           </button>
+                          <button
+                            onClick={() => setDeleteTarget(p)}
+                            className="p-1.5 rounded hover:bg-red-50 text-red-600"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </td>
                     )}
@@ -183,6 +213,30 @@ export default function StaffProducts() {
           </div>
         )}
       </div>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete “{deleteTarget?.name}”?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes the product from the shop permanently and cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleDelete();
+              }}
+              disabled={deleting}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              {deleting ? 'Deleting…' : 'Delete Product'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
