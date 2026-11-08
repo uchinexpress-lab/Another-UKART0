@@ -76,7 +76,14 @@ export default function Layout() {
   return (
     <TabNavProvider>
     <div className="min-h-screen bg-background flex flex-col relative">
-      {isHome ? <TopNav /> : <BrandedHeader title={getPageTitle(pathname)} />}
+      {isHome ? (
+        <TopNav />
+      ) : (
+        <BrandedHeader
+          title={getPageTitle(pathname)}
+          backTo={pathname.endsWith('/payment-success') ? '/' : null}
+        />
+      )}
       <main
         className={`flex-1 max-w-md mx-auto w-full ${isTab ? 'pb-24' : ''}`}
         style={{ paddingBottom: isTab ? 'calc(env(safe-area-inset-bottom) + 76px)' : undefined }}

@@ -2,18 +2,22 @@ import React from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { ArrowLeft, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
-import { useSmartBack } from '@/lib/navigation';
+import { useSmartBack, useGuardedNavigate } from '@/lib/navigation';
 
 const TAB_ROOTS = ['/packages', '/order', '/wishlist', '/profile'];
 
-export default function BrandedHeader({ title, right = null }) {
+export default function BrandedHeader({ title, right = null, backTo = null }) {
   const location = useLocation();
   const isTabRoot = TAB_ROOTS.includes(location.pathname);
   const { itemCount } = useCart();
   const showCart = location.pathname.startsWith('/package/');
   const rightSlot = right || (showCart ? 'cart' : null);
 
-  const goBack = useSmartBack('/');
+  const smartBack = useSmartBack('/');
+  const guardedNavigate = useGuardedNavigate();
+  // backTo forces a fixed destination (e.g. Home after a completed checkout)
+  // instead of returning through the in-app history.
+  const goBack = backTo ? () => guardedNavigate(backTo, { replace: true }) : smartBack;
 
   return (
     <header className="sticky top-0 z-30 bg-card border-b border-border">
