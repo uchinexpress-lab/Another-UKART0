@@ -180,7 +180,7 @@ export default function Login() {
       <p className="text-center text-sm text-muted-foreground mt-6">
         Don't have an account?{" "}
         <Link
-          to="/register"
+          to={`/register?returnTo=${encodeURIComponent(returnTo)}`}
           className="text-primary font-semibold hover:underline"
         >
           Create Account

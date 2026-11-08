@@ -14,7 +14,6 @@ import { MealKitProvider } from '@/context/MealKitContext';
 import Layout from '@/components/layout/Layout';
 import Splash from '@/components/Splash';
 import RiderSplash from '@/components/rider/RiderSplash';
-import BrowseGuard from '@/components/BrowseGuard';
 import GuestGate from '@/components/GuestGate';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { StaffThemeProvider } from '@/lib/staffTheme.jsx';
@@ -53,7 +52,6 @@ const SupportTickets = lazy(() => import('@/pages/SupportTickets'));
 const About = lazy(() => import('@/pages/About'));
 const SettingsPage = lazy(() => import('@/pages/Settings'));
 const Account = lazy(() => import('@/pages/Account'));
-const Onboarding = lazy(() => import('@/pages/Onboarding'));
 import RiderApp from '@/RiderApp';
 import StaffApp from '@/StaffApp';
 const LiveOrderTracking = lazy(() => import('@/pages/LiveOrderTracking'));
@@ -107,15 +105,13 @@ const AuthenticatedApp = () => {
     <LocationProvider>
       <Suspense fallback={<div className="fixed inset-0 flex items-center justify-center"><div className="w-8 h-8 border-4 border-gray-200 border-t-[#2E7D32] rounded-full animate-spin" /></div>}>
       <Routes>
-          <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           {/* Rider app lives at /rider/* — handled by <RiderApp /> above,
               completely separate from the customer routes below. */}
-          <Route element={<BrowseGuard />}>
-            <Route element={<Layout />}>
+          <Route element={<Layout />}>
               <Route path="/" element={<Home />} />
               <Route path="/package/:id" element={<PackageDetail />} />
               <Route path="/packages" element={<Packages />} />
@@ -125,7 +121,7 @@ const AuthenticatedApp = () => {
               <Route path="/search" element={<SearchResults />} />
               <Route path="/offers" element={<Offers />} />
               <Route path="/cart" element={<Cart />} />
-          <Route path="/order" element={<Order />} />
+              <Route path="/order" element={<Order />} />
               <Route path="/checkout" element={<GuestGate><Checkout /></GuestGate>} />
               <Route path="/payment/callback" element={<PaymentCallback />} />
               <Route path="/orders/:id/payment-success" element={<GuestGate><PaymentSuccess /></GuestGate>} />
@@ -145,7 +141,6 @@ const AuthenticatedApp = () => {
               <Route path="/about" element={<About />} />
               <Route path="/settings" element={<GuestGate><SettingsPage /></GuestGate>} />
               <Route path="/account" element={<GuestGate><Account /></GuestGate>} />
-            </Route>
           </Route>
           <Route path="*" element={<PageNotFound />} />
         </Routes>
