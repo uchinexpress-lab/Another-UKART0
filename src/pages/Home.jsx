@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
 import QuickCategories from '@/components/categories/QuickCategories';
 import PromoBanner from '@/components/home/PromoBanner';
@@ -12,13 +12,15 @@ import CustomerReviews from '@/components/home/CustomerReviews';
 import InfiniteProductGrid from '@/components/home/InfiniteProductGrid';
 import PullToRefresh from '@/components/home/PullToRefresh';
 import BannerSlider from '@/components/banners/BannerSlider';
+import { currentHourSeed, hourlyShuffle } from '@/lib/hourlyShuffle';
 
 export default function Home() {
   const [packages, setPackages] = useState([]);
   const [products, setProducts] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [weeklyDeals, setWeeklyDeals] = useState([]);
-  const [moreToExplore, setMoreToExplore] = useState([]);
+  const [explorePool, setExplorePool] = useState([]);
+  const [hourSeed, setHourSeed] = useState(currentHourSeed);
   const [loading, setLoading] = useState(true);
 
   const loadData = () =>
@@ -27,7 +29,9 @@ export default function Home() {
   base44.entities.Product.list(),
   base44.entities.Review.list(),
   base44.entities.HomepageSection.list()]
-  ).then(([pkgs, prods, revs, hsections]) => {
+  ).then(([pkgs, allProds, revs, hsections]) => {
+    // Products the admin hid stay in the admin panel only.
+    const prods = allProds.filter((p) => !p.is_hidden);
     const sMap = {};
     hsections.forEach(s => { sMap[s.section] = s.product_ids || []; });
     const wdIds = sMap.weekly_deals || [];
@@ -40,13 +44,29 @@ export default function Home() {
     setProducts(prods);
     setReviews(revs);
     setWeeklyDeals(finalWd);
-    setMoreToExplore(finalMte);
+    setExplorePool(finalMte);
     setLoading(false);
   });
 
   useEffect(() => {
     loadData();
   }, []);
+
+  // More to Explore reshuffles itself as each new hour starts.
+  useEffect(() => {
+    const now = Date.now();
+    const nextHour = (Math.floor(now / 3600000) + 1) * 3600000;
+    const timer = setTimeout(
+      () => setHourSeed(currentHourSeed()),
+      Math.max(1000, nextHour - now)
+    );
+    return () => clearTimeout(timer);
+  }, [hourSeed]);
+
+  const moreToExplore = useMemo(
+    () => hourlyShuffle(explorePool, hourSeed),
+    [explorePool, hourSeed]
+  );
 
   if (loading) {
     return (

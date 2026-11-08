@@ -17,6 +17,7 @@ import ProteinOptionCard from './ProteinOptionCard';
 import MealKitIngredients from './MealKitIngredients';
 import MealKitSizes from './MealKitSizes';
 import MealKitAddons from './MealKitAddons';
+import MealKitOptionalItems from './MealKitOptionalItems';
 
 const STOCK_CONFIG = {
   in_stock: {
@@ -199,10 +200,20 @@ export default function MealKitDetail({ pkg }) {
 
       {/* Info card — overlaps hero, is the focus */}
       <div className="relative -mt-6 mx-3 bg-white rounded-3xl shadow-sm border border-gray-50 p-5">
+        {pkg.badge && (
+          <span className="inline-block bg-[#E8F5E9] text-[#2E7D32] text-[10px] font-bold px-2.5 py-1 rounded-full mb-2 tracking-wide">
+            {pkg.badge}
+          </span>
+        )}
         <h1 className="text-xl font-bold text-gray-900 leading-tight">{pkg.name}</h1>
         {pkg.description && (
           <p className="text-sm text-gray-500 leading-relaxed mt-1.5">
             {pkg.description}
+          </p>
+        )}
+        {pkg.description_long && (
+          <p className="text-sm text-gray-500 leading-relaxed mt-2 whitespace-pre-line">
+            {pkg.description_long}
           </p>
         )}
 
@@ -217,6 +228,15 @@ export default function MealKitDetail({ pkg }) {
             <Clock className="w-3.5 h-3.5 text-gray-400" />
             {prepTime}
           </span>
+          {pkg.delivery_time && (
+            <>
+              <span className="w-px h-3 bg-gray-200" />
+              <span className="flex items-center gap-1.5 text-xs font-medium text-gray-600">
+                <ShoppingBag className="w-3.5 h-3.5 text-gray-400" />
+                {pkg.delivery_time}
+              </span>
+            </>
+          )}
         </div>
 
         {/* Base price */}
@@ -252,6 +272,8 @@ export default function MealKitDetail({ pkg }) {
           setSelectedAddons((prev) => ({ ...prev, [index]: !prev[index] }))
         }
       />
+
+      <MealKitOptionalItems items={pkg.optional_items} />
 
       {/* Add Optional Items — protein cards */}
       {proteins.length > 0 && (

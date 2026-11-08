@@ -25,8 +25,9 @@ export default function StaffProducts() {
   const loadProducts = async () => {
     setLoading(true);
     try {
+      // Hidden products stay listed here — hiding only affects the customer app.
       const res = await base44.entities.Product.filter(
-        { is_hidden: { $ne: true } },
+        {},
         { sort: '-created_date', limit: 100 }
       );
       setProducts(res.items || []);
@@ -132,6 +133,11 @@ export default function StaffProducts() {
                           <img src={p.image} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />
                         )}
                         <span className="font-medium text-gray-900">{p.name}</span>
+                        {p.is_hidden && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-gray-200 text-gray-600">
+                            Hidden
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-xs text-gray-600">{p.category_name || '—'}</td>

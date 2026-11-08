@@ -12,7 +12,8 @@ export default function SearchResults() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    base44.entities.Product.list().then((prods) => {
+    base44.entities.Product.list().then((allProds) => {
+      const prods = allProds.filter((p) => !p.is_hidden);
       const q = query.toLowerCase();
       const matched = prods.filter(
         (p) =>

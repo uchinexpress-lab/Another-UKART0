@@ -21,8 +21,9 @@ export default function CategoryProducts() {
       setProducts(
         prods.filter(
           (p) =>
-            p.category_id === id ||
-            (p.category_ids && p.category_ids.includes(id))
+            !p.is_hidden &&
+            (p.category_id === id ||
+              (p.category_ids && p.category_ids.includes(id)))
         )
       );
       setLoading(false);

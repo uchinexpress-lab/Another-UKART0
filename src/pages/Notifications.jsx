@@ -87,7 +87,7 @@ export default function Notifications() {
         base44.entities.Order.list('-created_date', 50),
         base44.entities.DealAlert.list('-created_date', 20),
       ]);
-      setWeeklyDeals(prods.filter((p) => p.is_weekly_deal));
+      setWeeklyDeals(prods.filter((p) => p.is_weekly_deal && !p.is_hidden));
       setDealAlerts(alerts.filter((a) => a.active));
       setOrders(u?.id ? ords.filter((o) => o.created_by_id === u.id) : ords);
     } catch {}

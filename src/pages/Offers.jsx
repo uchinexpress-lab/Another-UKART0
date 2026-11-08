@@ -11,7 +11,7 @@ export default function Offers() {
   const loadOffers = async () => {
     try {
       const prods = await base44.entities.Product.list();
-      setProducts(prods.filter((p) => p.is_weekly_deal));
+      setProducts(prods.filter((p) => p.is_weekly_deal && !p.is_hidden));
     } catch {}
     setLoading(false);
   };

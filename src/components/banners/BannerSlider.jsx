@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { BANNER_LOCATIONS } from '@/lib/bannerConfig';
 
@@ -76,6 +76,7 @@ export default function BannerSlider({ location, className = '', rounded = 'roun
   const [loading, setLoading] = useState(true);
   const [current, setCurrent] = useState(0);
   const navigate = useNavigate();
+  const touchRef = useRef({ x: 0, y: 0, swiped: false });
 
   useEffect(() => {
     let mounted = true;
@@ -112,7 +113,31 @@ export default function BannerSlider({ location, className = '', rounded = 'roun
   const config = BANNER_LOCATIONS[location];
   const aspectRatio = frameAspectRatio ?? config?.aspectRatio ?? 16 / 7;
 
+  const handleTouchStart = (e) => {
+    const t = e.touches[0];
+    touchRef.current = { x: t.clientX, y: t.clientY, swiped: false };
+  };
+
+  // Swipe left / right to move between banners.
+  const handleTouchEnd = (e) => {
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touchRef.current.x;
+    const dy = t.clientY - touchRef.current.y;
+    if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
+    touchRef.current.swiped = true;
+    setCurrent((c) =>
+      dx < 0
+        ? (c + 1) % banners.length
+        : (c - 1 + banners.length) % banners.length
+    );
+  };
+
   const handleClick = (banner) => {
+    // A swipe must not open the banner link.
+    if (touchRef.current.swiped) {
+      touchRef.current.swiped = false;
+      return;
+    }
     if (banner.link) navigate(banner.link);
   };
 
@@ -128,7 +153,9 @@ export default function BannerSlider({ location, className = '', rounded = 'roun
   return (
     <div
       className={`relative ${rounded} overflow-hidden bg-gray-50 ${className}`}
-      style={{ aspectRatio }}
+      style={{ aspectRatio, touchAction: 'pan-y' }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
       {/* Slides */}
       <div
@@ -151,30 +178,9 @@ export default function BannerSlider({ location, className = '', rounded = 'roun
         ))}
       </div>
 
-      {/* Arrows (only if multiple banners) */}
+      {/* Dots — banners are changed by swiping */}
       {banners.length > 1 && (
         <>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setCurrent((c) => (c - 1 + banners.length) % banners.length);
-            }}
-            className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/70 backdrop-blur-sm flex items-center justify-center shadow-sm hover:bg-white/90 active:scale-90 transition-all z-10"
-            aria-label="Previous banner"
-          >
-            <ChevronLeft className="w-4 h-4 text-gray-700" />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setCurrent((c) => (c + 1) % banners.length);
-            }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/70 backdrop-blur-sm flex items-center justify-center shadow-sm hover:bg-white/90 active:scale-90 transition-all z-10"
-            aria-label="Next banner"
-          >
-            <ChevronRight className="w-4 h-4 text-gray-700" />
-          </button>
-
           {/* Dots */}
           <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
             {banners.map((_, idx) => (

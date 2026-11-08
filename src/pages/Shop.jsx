@@ -26,8 +26,9 @@ export default function Shop() {
         setProducts(
           prods.filter(
             (p) =>
-              ids.has(p.category_id) ||
-              (p.category_ids && p.category_ids.some((id) => ids.has(id)))
+              !p.is_hidden &&
+              (ids.has(p.category_id) ||
+                (p.category_ids && p.category_ids.some((id) => ids.has(id))))
           )
         );
         setLoading(false);
