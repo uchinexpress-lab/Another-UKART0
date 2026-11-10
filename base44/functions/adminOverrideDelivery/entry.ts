@@ -1,6 +1,7 @@
 import { createClientFromRequest } from "npm:@base44/sdk@0.8.52";
 import { logDeliveryEvent } from "../../shared/deliveryUtils.ts";
 import { emailShell } from "../../shared/emailBanner.ts";
+import { escapeHtml } from "../../shared/escapeHtml.ts";
 
 export default async function (req: Request): Promise<Response> {
   try {
@@ -93,7 +94,7 @@ export default async function (req: Request): Promise<Response> {
         await base44.integrations.Core.SendEmail({
           to: delivery.customer_email,
           subject: `✅ Your Ukart order has been delivered`,
-          body: emailShell(`<p>Hi ${delivery.customer_name || "Customer"},</p><p>Your order <strong>#${delivery.order_number}</strong> has been delivered. Thank you for shopping with Ukart!</p>`),
+          body: emailShell(`<p>Hi ${escapeHtml(delivery.customer_name) || "Customer"},</p><p>Your order <strong>#${delivery.order_number}</strong> has been delivered. Thank you for shopping with Ukart!</p>`),
         });
       } catch (e) {
         console.error("Override notification failed:", e);
