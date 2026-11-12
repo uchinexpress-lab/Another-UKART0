@@ -32,6 +32,12 @@ function applyFilters(query, filters = {}) {
 }
 
 function applyOptions(q, options = {}) {
+  if (options.sort) {
+    let field = options.sort;
+    let ascending = true;
+    if (field.startsWith('-')) { field = field.slice(1); ascending = false; }
+    q = q.order(field || 'created_date', { ascending, nullsFirst: false });
+  }
   if (options.limit) q = q.limit(options.limit);
   if (options.page && options.limit) {
     q = q.range((options.page - 1) * options.limit, options.page * options.limit - 1);

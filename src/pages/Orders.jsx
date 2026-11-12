@@ -114,12 +114,11 @@ export default function Orders() {
   const loadOrders = async () => {
     try {
       const me = await base44.auth.me();
-      const list = await base44.entities.Order.filter(
+      const result = await base44.entities.Order.filter(
         { customer_email: me?.email || '' },
-        '-created_date',
-        100
+        { sort: '-created_date', limit: 100 }
       );
-      setOrders(list);
+      setOrders(result.items || []);
     } catch {}
     setLoading(false);
   };
