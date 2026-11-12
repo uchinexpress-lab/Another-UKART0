@@ -10,6 +10,7 @@ export default function ProductCard({ product, onImageClick, showOriginalPrice =
   const { addItem } = useCart();
   const { toggleItem, isWishlisted } = useWishlist();
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [addLock, setAddLock] = useState(false);
   const wished = isWishlisted(product.id);
   const comingSoon = respectComingSoon && product.status === 'coming_soon';
   const priceInfo = getDisplayPrice(product);
@@ -23,13 +24,18 @@ export default function ProductCard({ product, onImageClick, showOriginalPrice =
 
   const handleAdd = () => {
     if (comingSoon) return;
+    if (addLock) return;
+    setAddLock(true);
     const hasAddons = getActiveAddons(product).length > 0;
     if (activeVariants.length > 1 || hasAddons) {
       setSheetOpen(true);
+      setTimeout(() => setAddLock(false), 400);
     } else if (singleVariant) {
       addItem(buildCartItem(product, singleVariant));
+      setTimeout(() => setAddLock(false), 400);
     } else {
       addItem(product);
+      setTimeout(() => setAddLock(false), 400);
     }
   };
 

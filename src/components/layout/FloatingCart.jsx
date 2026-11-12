@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 
-const HIDDEN_ON = ["/cart", "/order", "/checkout", "/package/"];
+const HIDDEN_ON = ["/cart", "/checkout", "/order", "/orders/"];
 const POS_KEY = "ukart_cart_fab_pos";
 const WIDTH = 56;
 const HEIGHT = 86; // button + price pill
@@ -93,6 +93,7 @@ export default function FloatingCart() {
   };
 
   const hidden = HIDDEN_ON.some((p) => location.pathname.startsWith(p));
+  const justAdded = bump > 0 && itemCount > prevCount.current;
 
   return (
     <AnimatePresence>
@@ -113,6 +114,8 @@ export default function FloatingCart() {
         >
           <motion.div
             whileTap={{ scale: 0.9 }}
+            animate={justAdded ? { scale: [1, 1.18, 1] } : { scale: 1 }}
+            transition={justAdded ? { duration: 0.35, ease: "easeOut" } : { type: "spring", stiffness: 420, damping: 22 }}
             className="relative w-14 h-14 rounded-full bg-[#2E7D32] shadow-lg shadow-[#2E7D32]/35 flex items-center justify-center"
           >
             <ShoppingBag className="w-6 h-6 text-white" strokeWidth={2.2} />
@@ -125,6 +128,14 @@ export default function FloatingCart() {
             >
               {itemCount}
             </motion.span>
+            {justAdded && (
+              <motion.span
+                initial={{ scale: 0.8, opacity: 0.6 }}
+                animate={{ scale: 1.6, opacity: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="absolute inset-0 rounded-full border-2 border-[#2E7D32]"
+              />
+            )}
           </motion.div>
           <span className="mt-1.5 bg-white text-[#2E7D32] text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
             ₦{total.toLocaleString()}

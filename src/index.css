@@ -219,6 +219,13 @@
   textarea {
     touch-action: manipulation;
   }
+  /* Prevent double-tap zoom on interactive elements */
+  button:not([disabled]):active,
+  a:active,
+  [role="button"]:active {
+    transform: scale(0.97);
+    transition: transform 0.08s ease-out;
+  }
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
