@@ -17,7 +17,6 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import GoogleIcon from "@/components/GoogleIcon";
 import AuthShell from "@/components/auth/AuthShell";
 import { toast } from "@/components/ui/use-toast";
@@ -36,8 +35,6 @@ export default function Register() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
-  const [showOtp, setShowOtp] = useState(false);
-  const [otpCode, setOtpCode] = useState("");
 
   const returnTo = safeReturnTo();
   const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
@@ -76,28 +73,15 @@ export default function Register() {
     setLoading(true);
     try {
       localStorage.removeItem("ukart_guest");
-      await base44.auth.register({ email, password, full_name: fullName });
-      setShowOtp(true);
-    } catch (err) {
-      setError(err.message || "Registration failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerify = async () => {
-    setError("");
-    setLoading(true);
-    try {
-      const result = await base44.auth.verifyOtp({ email, otpCode });
-      if (result?.access_token) {
-        base44.auth.setToken(result.access_token);
+      const result = await base44.auth.register({ email, password, full_name: fullName });
+      if (result?.needsVerification) {
+        setError("Please check your email to confirm your address, then log in.");
+        return;
       }
       try {
         await base44.auth.updateMe({
           phone,
           date_of_birth: dateOfBirth || undefined,
-          referral_code: referralCode || undefined,
         });
       } catch {}
       try {
@@ -131,22 +115,9 @@ export default function Register() {
       } catch {}
       window.location.href = returnTo;
     } catch (err) {
-      setError(err.message || "Invalid verification code");
+      setError(err.message || "Registration failed");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleResend = async () => {
-    setError("");
-    try {
-      await base44.auth.resendOtp(email);
-      toast({
-        title: "Code sent",
-        description: "Check your email for the new code.",
-      });
-    } catch (err) {
-      setError(err.message || "Failed to resend code");
     }
   };
 
@@ -154,63 +125,6 @@ export default function Register() {
     localStorage.removeItem("ukart_guest");
     base44.auth.loginWithProvider("google", returnTo);
   };
-
-  if (showOtp) {
-    return (
-      <AuthShell
-        icon={Mail}
-        title="Verify your email"
-        subtitle={`We sent a code to ${email}`}
-      >
-        {error && (
-          <div className="mb-4 p-3 rounded-xl bg-destructive/10 text-destructive text-sm">
-            {error}
-          </div>
-        )}
-        <div className="flex justify-center mb-6">
-          <InputOTP
-            maxLength={6}
-            value={otpCode}
-            onChange={setOtpCode}
-            autoFocus
-            autoComplete="one-time-code"
-          >
-            <InputOTPGroup>
-              <InputOTPSlot index={0} />
-              <InputOTPSlot index={1} />
-              <InputOTPSlot index={2} />
-              <InputOTPSlot index={3} />
-              <InputOTPSlot index={4} />
-              <InputOTPSlot index={5} />
-            </InputOTPGroup>
-          </InputOTP>
-        </div>
-        <Button
-          className="w-full h-12 font-semibold rounded-xl"
-          onClick={handleVerify}
-          disabled={loading || otpCode.length < 6}
-        >
-          {loading ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Verifying...
-            </>
-          ) : (
-            "Verify"
-          )}
-        </Button>
-        <p className="text-center text-sm text-muted-foreground mt-4">
-          Didn't receive the code?{" "}
-          <button
-            onClick={handleResend}
-            className="text-primary font-medium hover:underline"
-          >
-            Resend
-          </button>
-        </p>
-      </AuthShell>
-    );
-  }
 
   return (
     <AuthShell
