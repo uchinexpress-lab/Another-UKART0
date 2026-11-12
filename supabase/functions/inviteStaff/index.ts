@@ -1,4 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+// verify_jwt is false in config.toml so the "setup" action can be called without a login.
+// All other actions verify the caller's JWT inside the function body.
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
