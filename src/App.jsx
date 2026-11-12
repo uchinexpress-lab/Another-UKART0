@@ -41,6 +41,7 @@ const Login = lazy(() => import('@/pages/Login'));
 const Register = lazy(() => import('@/pages/Register'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
+const OAuthCallback = lazy(() => import('@/pages/OAuthCallback'));
 const Orders = lazy(() => import('@/pages/Orders'));
 const Order = lazy(() => import('@/pages/Order'));
 const OrderDetail = lazy(() => import('@/pages/OrderDetail'));
@@ -107,6 +108,7 @@ const AuthenticatedApp = () => {
       <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/auth/callback" element={<OAuthCallback />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           {/* Rider app lives at /rider/* — handled by <RiderApp /> above,

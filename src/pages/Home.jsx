@@ -45,6 +45,9 @@ export default function Home() {
     setReviews(revs);
     setWeeklyDeals(finalWd);
     setExplorePool(finalMte);
+  }).catch((e) => {
+    console.error('Failed to load home content:', e);
+  }).finally(() => {
     setLoading(false);
   });
 
