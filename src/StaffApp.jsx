@@ -2,7 +2,7 @@ import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
-import { isStaffMember, canAccessPage } from '@/lib/staffRoles';
+import { isStaffMember, canAccessPage, isApprovedAdmin, isPendingAdmin } from '@/lib/staffRoles';
 
 const StaffLogin = lazy(() => import('@/pages/staff/StaffLogin'));
 const StaffLayout = lazy(() => import('@/components/staff/StaffLayout'));
@@ -50,24 +50,23 @@ function StaffNotAuthorized() {
 
   // Check if this user has a staffRole but their Base44 role wasn't promoted
   const hasStaffRole = user?.staffRole && user?.role !== 'admin';
+  const pendingApproval = isPendingAdmin(user);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-8">
       <div className="text-center max-w-md">
-        <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${hasStaffRole ? 'bg-amber-100' : 'bg-red-100'}`}>
-          <svg className={`w-8 h-8 ${hasStaffRole ? 'text-amber-600' : 'text-red-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            {hasStaffRole ? (
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            )}
+        <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${pendingApproval ? 'bg-amber-100' : hasStaffRole ? 'bg-amber-100' : 'bg-red-100'}`}>
+          <svg className={`w-8 h-8 ${pendingApproval ? 'text-amber-600' : hasStaffRole ? 'text-amber-600' : 'text-red-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
-          {hasStaffRole ? 'Staff Account Not Activated' : 'Not Authorized'}
+          {pendingApproval ? 'Awaiting Admin Approval' : hasStaffRole ? 'Staff Account Not Activated' : 'Not Authorized'}
         </h1>
         <p className="text-gray-600 mb-6">
-          {hasStaffRole
+          {pendingApproval
+            ? 'Your admin account is pending approval from a Super Admin. You will be able to access the staff portal once approved.'
+            : hasStaffRole
             ? `Your account has a staff role (${user.staffRole}) but your access level hasn't been promoted yet. Please ask a Super Admin to activate your staff access from Staff Settings.`
             : 'You are not authorized to access Ukart Staff Admin. Only invited staff members can access this portal.'}
         </p>
@@ -137,7 +136,7 @@ export default function StaffApp({ dashboardOnly = false }) {
 
   if (!user) return <Navigate to={`/admin/login?returnTo=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   const section = location.pathname.split('/')[2] || 'dashboard';
-  if (!isStaffMember(user) || !canAccessPage(user, section)) return <StaffNotAuthorized />;
+  if (!isStaffMember(user) || !isApprovedAdmin(user) || !canAccessPage(user, section)) return <StaffNotAuthorized />;
 
   if (dashboardOnly) return <Suspense fallback={<StaffLoading />}><StaffLayout><StaffDashboard /></StaffLayout></Suspense>;
 

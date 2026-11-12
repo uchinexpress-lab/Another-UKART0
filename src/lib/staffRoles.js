@@ -65,6 +65,20 @@ export function isStaffMember(user) {
   return user?.role === 'admin';
 }
 
+// Check if an admin has been approved by a super admin.
+export function isApprovedAdmin(user) {
+  if (!isStaffMember(user)) return false;
+  const status = user?.admin_approval_status;
+  // Super admins and users without the field (legacy/backward compat) are approved.
+  if (resolveStaffRole(user) === 'super_admin') return true;
+  return status === 'approved' || !status;
+}
+
+// Check if an admin is pending approval.
+export function isPendingAdmin(user) {
+  return isStaffMember(user) && user?.admin_approval_status === 'pending';
+}
+
 // Backward-compat alias: checks if a Base44 role string is "admin".
 export function isStaffRole(role) {
   return role === 'admin';

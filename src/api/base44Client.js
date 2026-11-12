@@ -189,6 +189,8 @@ const mapAuthUser = (sessionUser, profile) => ({
   email: sessionUser.email,
   role: profile?.role || 'user',
   staff_role: profile?.staff_role || null,
+  staffRole: profile?.staff_role || null,
+  admin_approval_status: profile?.admin_approval_status || null,
   full_name: profile?.full_name || sessionUser.user_metadata?.full_name || '',
   phone: profile?.phone || sessionUser.phone || '',
   date_of_birth: profile?.date_of_birth || '',

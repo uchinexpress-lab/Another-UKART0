@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { STAFF_ROLE_OPTIONS, getRoleLabel, isSuperAdmin, resolveStaffRole } from '@/lib/staffRoles';
 import { logStaffAction } from '@/lib/staffAudit';
 import {
-  Loader2, UserPlus, Shield, Mail, RefreshCw, Trash2, AlertCircle,
+  Loader2, UserPlus, Shield, Mail, RefreshCw, Trash2, AlertCircle, CheckCircle2, XCircle, Clock,
 } from 'lucide-react';
 import SheetSelect from '@/components/SheetSelect';
 
@@ -111,6 +111,35 @@ export default function StaffSettings() {
     }
   };
 
+  const approveAdmin = async (s) => {
+    try {
+      await base44.functions.invoke('inviteStaff', {
+        action: 'approve',
+        userId: s.id,
+      });
+      setStaff((prev) =>
+        prev.map((x) => (x.id === s.id ? { ...x, admin_approval_status: 'approved' } : x))
+      );
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.data?.error || 'Failed to approve admin';
+      alert(msg);
+    }
+  };
+
+  const rejectAdmin = async (s) => {
+    if (!confirm(`Reject admin access for ${s.email}? They will be demoted to a regular customer.`)) return;
+    try {
+      await base44.functions.invoke('inviteStaff', {
+        action: 'reject',
+        userId: s.id,
+      });
+      setStaff((prev) => prev.filter((x) => x.id !== s.id));
+    } catch (err) {
+      const msg = err?.response?.data?.error || err?.data?.error || 'Failed to reject admin';
+      alert(msg);
+    }
+  };
+
   const deactivate = async (s) => {
     if (!confirm(`Remove staff access for ${s.email}? They will become a regular customer.`)) return;
     try {
@@ -206,6 +235,7 @@ export default function StaffSettings() {
                   <th className="text-left px-4 py-3 font-semibold">Name</th>
                   <th className="text-left px-4 py-3 font-semibold">Email</th>
                   <th className="text-left px-4 py-3 font-semibold">Staff Role</th>
+                  <th className="text-left px-4 py-3 font-semibold">Status</th>
                   <th className="px-4 py-3 font-semibold">Actions</th>
                 </tr>
               </thead>
@@ -255,6 +285,35 @@ export default function StaffSettings() {
                         )}
                       </td>
                       <td className="px-4 py-3">
+                        {(() => {
+                          const status = s.admin_approval_status;
+                          if (isSuper || status === 'approved' || (!status && !needsPromotion)) {
+                            return (
+                              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700 flex items-center gap-1 w-fit">
+                                <CheckCircle2 className="w-3 h-3" /> Approved
+                              </span>
+                            );
+                          }
+                          if (status === 'pending') {
+                            return (
+                              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 flex items-center gap-1 w-fit">
+                                <Clock className="w-3 h-3" /> Pending
+                              </span>
+                            );
+                          }
+                          if (status === 'rejected') {
+                            return (
+                              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 flex items-center gap-1 w-fit">
+                                <XCircle className="w-3 h-3" /> Rejected
+                              </span>
+                            );
+                          }
+                          return (
+                            <span className="text-xs text-gray-400">—</span>
+                          );
+                        })()}
+                      </td>
+                      <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
                           {needsPromotion && (
                             <button
@@ -265,7 +324,25 @@ export default function StaffSettings() {
                               Promote
                             </button>
                           )}
-                          {!isSuper && !needsPromotion && (
+                          {s.admin_approval_status === 'pending' && !needsPromotion && (
+                            <button
+                              onClick={() => approveAdmin(s)}
+                              className="text-xs font-bold text-white bg-green-600 hover:bg-green-700 px-2.5 py-1 rounded"
+                              title="Approve admin access"
+                            >
+                              Approve
+                            </button>
+                          )}
+                          {s.admin_approval_status === 'pending' && !needsPromotion && (
+                            <button
+                              onClick={() => rejectAdmin(s)}
+                              className="text-xs font-bold text-red-600 border border-red-300 hover:bg-red-50 px-2.5 py-1 rounded"
+                              title="Reject admin access"
+                            >
+                              Reject
+                            </button>
+                          )}
+                          {!isSuper && !needsPromotion && s.admin_approval_status !== 'pending' && (
                             <button
                               onClick={() => deactivate(s)}
                               className="text-red-500 hover:text-red-600 p-1.5 rounded hover:bg-red-50"
