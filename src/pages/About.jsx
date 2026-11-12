@@ -9,8 +9,7 @@ import {
 } from '@/components/ui/accordion';
 
 const APP_VERSION = '1.0.0';
-const LOGO_URL =
-  'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/d3261a5c0_EBB75787-5398-4D1A-A981-EDA4D423A4C4.png';
+const LOGO_URL = '/ukart-logo.webp';
 
 const TERMS = `These Terms & Conditions govern your use of the UKART app and your grocery orders within Lagos, Nigeria. By placing an order, you agree to provide accurate delivery details (name, phone number, address and landmark) and to be available to receive your order at the scheduled time. All orders are subject to product availability; if an item is unavailable, we will notify you and adjust your order and total accordingly. Delivery times shown (35–90 minutes on the Island, same-day on the Mainland) are estimates and may be affected by traffic, weather or rider availability. Prices are listed in Nigerian Naira (₦) and include applicable charges unless a delivery fee is separately stated. Payment is currently accepted via Cash on Delivery, payable to the rider upon receipt of your order. You may cancel an order before it is dispatched by contacting support with your order number; orders already out for delivery cannot be cancelled. UKART Fresh Ventures reserves the right to refuse, modify or cancel any order, and to update these terms at any time.`;
 

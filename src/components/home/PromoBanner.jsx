@@ -9,7 +9,7 @@ export default function PromoBanner() {
   return (
     <BannerSlider location="home" rounded="rounded-3xl">
       <div className="relative rounded-3xl overflow-hidden h-44">
-        <img src="https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/bb0ab3609_04724820-6E3F-45F0-B429-BA6C62A01A7A.PNG"
+        <img src="https://images.pexels.com/photos/33624058/pexels-photo-33624058.jpeg?auto=compress&cs=tinysrgb&h=650&w=940"
 
         alt="Fresh grocery shelf"
         className="absolute inset-0 w-full h-full object-cover" />

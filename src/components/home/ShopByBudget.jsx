@@ -6,17 +6,17 @@ const budgets = [
   {
     label: 'Under ₦10,000',
     range: 'under-10000',
-    image: 'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/4d5a60cdb_6B0E7B31-8A6B-4A4C-A3C8-B1021C819EC6.png',
+    image: 'https://images.pexels.com/photos/37321079/pexels-photo-37321079.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
   },
   {
     label: '₦10,000 – ₦20,000',
     range: '10000-20000',
-    image: 'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/8b656a89c_4E0590D9-DDED-42E3-B316-B3771C5FE41D.png',
+    image: 'https://images.pexels.com/photos/8287244/pexels-photo-8287244.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
   },
   {
     label: '₦20,000+',
     range: 'over-20000',
-    image: 'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/df63f1381_A03C7B63-6C24-45CD-8997-AA8633C1C23B.png',
+    image: 'https://images.pexels.com/photos/7363085/pexels-photo-7363085.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
   },
 ];
 

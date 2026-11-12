@@ -1,5 +1,5 @@
-// Delivery pricing (naira), shared by checkout and the server copy in
-// base44/functions/prepareOrder.
+// Delivery pricing by zone and order subtotal.
+//
 //
 // The fees and discount percentages are editable by admins in
 // /admin/settings/notifications (DeliverySetting entity). The defaults below

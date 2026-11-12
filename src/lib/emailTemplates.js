@@ -1,7 +1,6 @@
 // Email template helpers for Ukart order notifications.
-// The full email HTML builders (adminNewOrderEmail, customerConfirmationEmail,
-// statusEmail) now live server-side in base44/shared/orderEmails.ts and are
-// sent by the orderNotifications backend function. This module keeps the small
+// The full email HTML builders live server-side and are sent by the
+// orderNotifications backend function. This module keeps the small
 // display helpers still used by frontend pages.
 
 export function formatCurrency(n) {

@@ -3,8 +3,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Image } from '@/components/ui/image';
 import { useSmartBack } from '@/lib/navigation';
 
-const UKART_LOGO_URL =
-  'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/01b5442de_ukart.jpg';
+const UKART_LOGO_URL = '/ukart-logo.webp';
 
 export default function AuthShell({
   showBack = false,

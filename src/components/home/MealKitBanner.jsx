@@ -4,7 +4,7 @@ import { Image } from '@/components/ui/image';
 import BannerSlider from '@/components/banners/BannerSlider';
 
 const BANNER_URL =
-  'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/3f02716ea_80948D94-EADE-4581-AA25-CA71CF4BA066.png';
+  'https://images.pexels.com/photos/7657072/pexels-photo-7657072.jpeg?auto=compress&cs=tinysrgb&h=650&w=940';
 
 export default function MealKitBanner() {
   const navigate = useNavigate();

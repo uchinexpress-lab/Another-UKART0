@@ -13,7 +13,7 @@ export const BANNER_SEEDS = [
     name: 'No Market Wahala',
     location: 'home',
     image:
-      'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/bb0ab3609_04724820-6E3F-45F0-B429-BA6C62A01A7A.PNG',
+      'https://images.pexels.com/photos/33624058/pexels-photo-33624058.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
     link: '/categories',
     order: 0,
     active: true,
@@ -34,7 +34,7 @@ export const BANNER_SEEDS = [
     name: 'Cook Something Delicious',
     location: 'meal_kits',
     image:
-      'https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/3f02716ea_80948D94-EADE-4581-AA25-CA71CF4BA066.png',
+      'https://images.pexels.com/photos/7657072/pexels-photo-7657072.jpeg?auto=compress&cs=tinysrgb&h=650&w=940',
     link: '/packages#meal-kits',
     order: 0,
     active: true,

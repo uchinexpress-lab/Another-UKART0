@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
-const SPLASH_IMAGE =
-  "https://media.base44.com/images/public/6a5b618b391a439e5e7749cc/73d7699c9_ChatGPTImageAug30202607_47_33AM.png";
+const SPLASH_IMAGE = "/ukart-splash.webp";
 
 export default function Splash({ onDone }) {
   const [leaving, setLeaving] = useState(false);
