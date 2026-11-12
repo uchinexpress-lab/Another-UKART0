@@ -382,6 +382,7 @@ const entityTables = {
   Ticket: 'tickets',
   TicketMessage: 'ticket_messages',
   StaffAuditLog: 'staff_audit_logs',
+  PageContent: 'page_contents',
 };
 
 const entities = Object.fromEntries(

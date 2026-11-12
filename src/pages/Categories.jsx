@@ -2,12 +2,23 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BROAD_CATEGORIES } from '@/lib/broadCategories';
 import { Image } from '@/components/ui/image';
+import { usePageContent } from '@/lib/usePageContent';
 
 export default function Categories() {
   const navigate = useNavigate();
+  const { getField, isSectionVisible } = usePageContent('categories');
+
+  const title = getField('title', 'Shop by Category');
+  const subtitle = getField('subtitle', 'Browse all our grocery categories');
 
   return (
     <div className="uk-page">
+      {isSectionVisible('header', true) && (
+        <div className="mb-3">
+          <h1 className="uk-title mb-0.5">{title}</h1>
+          <p className="uk-sub">{subtitle}</p>
+        </div>
+      )}
       <div className="flex items-center justify-end mb-3">
         <span className="uk-meta-chip">{BROAD_CATEGORIES.length} categories</span>
       </div>

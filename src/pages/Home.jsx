@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { base44 } from '@/api/base44Client';
+import { usePageContent } from '@/lib/usePageContent';
 import QuickCategories from '@/components/categories/QuickCategories';
 import PromoBanner from '@/components/home/PromoBanner';
 import PackageCarousel from '@/components/home/PackageCarousel';
@@ -15,6 +16,7 @@ import BannerSlider from '@/components/banners/BannerSlider';
 import { currentHourSeed, hourlyShuffle } from '@/lib/hourlyShuffle';
 
 export default function Home() {
+  const { isSectionVisible } = usePageContent('home');
   const [packages, setPackages] = useState([]);
   const [products, setProducts] = useState([]);
   const [reviews, setReviews] = useState([]);
@@ -84,19 +86,23 @@ export default function Home() {
   return (
     <PullToRefresh onRefresh={loadData}>
     <div className="space-y-5 pb-4">
-      <div className="px-4 pt-1">
-        <QuickCategories />
-      </div>
-      <div className="px-4">
-        <PromoBanner />
-      </div>
-      <WeeklyDeals products={weeklyDeals} />
-      <MealKitBanner />
-      <PopularMealKits packages={packages} />
-      <PackageCarousel packages={packages} />
-      <FeaturedCategories />
+      {isSectionVisible('categories', true) && (
+        <div className="px-4 pt-1">
+          <QuickCategories />
+        </div>
+      )}
+      {isSectionVisible('promo_banner', true) && (
+        <div className="px-4">
+          <PromoBanner />
+        </div>
+      )}
+      {isSectionVisible('deals', true) && <WeeklyDeals products={weeklyDeals} />}
+      {isSectionVisible('meal_kits', true) && <MealKitBanner />}
+      {isSectionVisible('meal_kits', true) && <PopularMealKits packages={packages} />}
+      {isSectionVisible('packages', true) && <PackageCarousel packages={packages} />}
+      {isSectionVisible('categories', true) && <FeaturedCategories />}
       <BestSellers products={bestSellers} />
-      <CustomerReviews reviews={reviews} />
+      {isSectionVisible('reviews', true) && <CustomerReviews reviews={reviews} />}
       <InfiniteProductGrid products={moreToExplore} />
     </div>
     </PullToRefresh>);

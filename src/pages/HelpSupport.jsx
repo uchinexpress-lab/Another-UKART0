@@ -23,6 +23,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/components/ui/use-toast';
+import { usePageContent } from '@/lib/usePageContent';
 
 const SUPPORT_PHONE = '+2348012345678';
 const SUPPORT_EMAIL = 'ukartfreshventures@gmail.com';
@@ -62,6 +63,10 @@ const TOPICS = [
 export default function HelpSupport() {
   const [report, setReport] = useState('');
   const [query, setQuery] = useState('');
+  const { getField, isSectionVisible } = usePageContent('support');
+
+  const supportPhone = getField('contact_phone', SUPPORT_PHONE);
+  const supportEmail = getField('contact_email', SUPPORT_EMAIL);
 
   const filtered = FAQS.filter((f) => {
     const q = query.trim().toLowerCase();
@@ -76,7 +81,7 @@ export default function HelpSupport() {
     }
     const subject = encodeURIComponent('Ukart Problem Report');
     const body = encodeURIComponent(report.trim());
-    window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
+    window.location.href = `mailto:${supportEmail}?subject=${subject}&body=${body}`;
   };
 
   return (
@@ -93,6 +98,7 @@ export default function HelpSupport() {
       </div>
 
       {/* Popular topics */}
+      {isSectionVisible('faq', true) && (
       <div>
         <h2 className="text-sm font-bold text-[#1a2238] mb-3 px-1">
           Popular Topics
@@ -127,8 +133,10 @@ export default function HelpSupport() {
           })}
         </div>
       </div>
+      )}
 
       {/* FAQ */}
+      {isSectionVisible('faq', true) && (
       <div>
         <h2 className="text-sm font-bold text-[#1a2238] mb-2 px-1">
           Frequently Asked Questions
@@ -162,8 +170,10 @@ export default function HelpSupport() {
           </Accordion>
         )}
       </div>
+      )}
 
       {/* Still need help */}
+      {isSectionVisible('contact', true) && (
       <div>
         <h2 className="text-sm font-bold text-[#1a2238] mb-2 px-1">
           Still need help?
@@ -187,7 +197,7 @@ export default function HelpSupport() {
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </Link>
           <a
-            href={`tel:${SUPPORT_PHONE}`}
+            href={`tel:${supportPhone}`}
             className="flex items-center gap-3 p-4 active:bg-muted/50"
           >
             <div className="w-10 h-10 rounded-xl bg-[#EEF8EE] flex items-center justify-center">
@@ -200,7 +210,7 @@ export default function HelpSupport() {
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </a>
           <a
-            href={`mailto:${SUPPORT_EMAIL}`}
+            href={`mailto:${supportEmail}`}
             className="flex items-center gap-3 p-4 active:bg-muted/50"
           >
             <div className="w-10 h-10 rounded-xl bg-[#EEF8EE] flex items-center justify-center">
@@ -214,6 +224,7 @@ export default function HelpSupport() {
           </a>
         </div>
       </div>
+      )}
 
       {/* Report a problem */}
       <div className="bg-card rounded-2xl border border-border p-4">
@@ -238,10 +249,10 @@ export default function HelpSupport() {
       <p className="text-center text-xs text-gray-400">
         Contact us at{' '}
         <a
-          href={`mailto:${SUPPORT_EMAIL}`}
+          href={`mailto:${supportEmail}`}
           className="text-[#2E7D32] font-medium"
         >
-          {SUPPORT_EMAIL}
+          {supportEmail}
         </a>
       </p>
     </div>

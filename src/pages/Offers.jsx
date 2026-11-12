@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import { Tag } from 'lucide-react';
+import { usePageContent } from '@/lib/usePageContent';
 import ProductCard from '@/components/product/ProductCard';
 import PullToRefresh from '@/components/home/PullToRefresh';
 
 export default function Offers() {
+  const { getField } = usePageContent('offers');
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const title = getField('title', 'Weekly Offers');
+  const subtitle = getField('subtitle', 'Limited time deals on your favourites');
+  const emptyMessage = getField('empty_message', 'No active offers right now');
 
   const loadOffers = async () => {
     try {

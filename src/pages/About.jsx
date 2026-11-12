@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Leaf, Truck, Shield } from 'lucide-react';
 import { Image } from '@/components/ui/image';
+import { usePageContent } from '@/lib/usePageContent';
 import {
   Accordion,
   AccordionContent,
@@ -16,49 +17,68 @@ const TERMS = `These Terms & Conditions govern your use of the UKART app and you
 const PRIVACY = `UKART Fresh Ventures respects your privacy. This Privacy Policy explains how we handle your information when you use the UKART app. We collect your name, email, phone number, and delivery address solely to process your orders, coordinate delivery, and keep you updated on order status. We also store your saved delivery addresses and preferences to make future orders faster. When you save a payment card, only the last four digits and card brand are retained — your full card number is never stored. We do not sell or rent your personal data. Order and delivery information is shared with our delivery riders only as needed to fulfil your order. You may request access to, correction of, or deletion of your personal data at any time by contacting support. By using UKART, you consent to the collection and use of your information as described here.`;
 
 export default function About() {
+  const { getField, isSectionVisible } = usePageContent('about');
+
+  const title = getField('title', 'UKART');
+  const subtitle = getField('subtitle', 'No Market Wahala');
+  const description = getField('description',
+    'UKART is a modern online grocery platform built to make grocery shopping easier across Lagos. Whether customers need everyday groceries or carefully curated grocery packages, UKART delivers fresh products directly to their doorstep. Our mission is simple: No Market Wahala. We help customers save time, shop conveniently, and enjoy reliable delivery through a simple, modern mobile experience.'
+  );
+  const contactEmail = getField('contact_email', 'support@ukart.ng');
+  const contactPhone = getField('contact_phone', '+234 800 UKART');
+  const contactAddress = getField('contact_address', 'Lagos, Nigeria');
+
   return (
     <div className="uk-page space-y-4">
-      <div className="flex flex-col items-center text-center">
-        <Image
-          src={LOGO_URL}
-          fittingType="fit"
-          className="w-32 h-32"
-        />
-        <h1 className="uk-title mt-2">UKART</h1>
-        <p className="text-sm text-muted-foreground">No Market Wahala</p>
-        <span className="mt-2 text-[11px] font-bold text-[#2E7D32] bg-primary/10 px-3 py-1 rounded-full">
-          Version {APP_VERSION}
-        </span>
-      </div>
+      {isSectionVisible('hero', true) && (
+        <div className="flex flex-col items-center text-center">
+          <Image
+            src={LOGO_URL}
+            fittingType="fit"
+            className="w-32 h-32"
+          />
+          <h1 className="uk-title mt-2">{title}</h1>
+          <p className="text-sm text-muted-foreground">{subtitle}</p>
+          <span className="mt-2 text-[11px] font-bold text-[#2E7D32] bg-primary/10 px-3 py-1 rounded-full">
+            Version {APP_VERSION}
+          </span>
+        </div>
+      )}
 
       <div className="bg-card rounded-2xl border border-border p-5">
-        <h2 className="text-sm font-bold text-foreground mb-2">About UKART</h2>
+        <h2 className="text-sm font-bold text-foreground mb-2">About {title}</h2>
         <p className="text-sm text-gray-600 leading-relaxed">
-          UKART is a modern online grocery platform built to make grocery shopping easier
-          across Lagos. Whether customers need everyday groceries or carefully curated grocery
-          packages, UKART delivers fresh products directly to their doorstep. Our mission is
-          simple: No Market Wahala. We help customers save time, shop conveniently, and enjoy
-          reliable delivery through a simple, modern mobile experience.
+          {description}
         </p>
       </div>
 
-      <div className="bg-card rounded-2xl border border-border p-5">
-        <h2 className="text-sm font-bold text-foreground mb-3">Company Information</h2>
-        <div className="space-y-2.5 text-sm">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Company</span>
-            <span className="font-medium text-foreground">UKART Fresh Ventures</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Location</span>
-            <span className="font-medium text-foreground">Lagos, Nigeria</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Version</span>
-            <span className="font-medium text-foreground">{APP_VERSION}</span>
+      {isSectionVisible('contact', true) && (
+        <div className="bg-card rounded-2xl border border-border p-5">
+          <h2 className="text-sm font-bold text-foreground mb-3">Company Information</h2>
+          <div className="space-y-2.5 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Company</span>
+              <span className="font-medium text-foreground">UKART Fresh Ventures</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Location</span>
+              <span className="font-medium text-foreground">{contactAddress}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Email</span>
+              <span className="font-medium text-foreground">{contactEmail}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Phone</span>
+              <span className="font-medium text-foreground">{contactPhone}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Version</span>
+              <span className="font-medium text-foreground">{APP_VERSION}</span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="grid grid-cols-3 gap-3">
         {[

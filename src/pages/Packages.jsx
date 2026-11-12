@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { usePageContent } from '@/lib/usePageContent';
 import PackageCard from '@/components/package/PackageCard';
 import MealKitCard from '@/components/package/MealKitCard';
 import PullToRefresh from '@/components/home/PullToRefresh';
 
 export default function Packages() {
   const location = useLocation();
+  const { getField } = usePageContent('packages');
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('essentials');
+
+  const title = getField('title', 'Grocery Packages');
+  const subtitle = getField('subtitle', 'Curated bundles for every lifestyle');
 
   const loadPackages = async () => {
     try {
@@ -42,8 +47,8 @@ export default function Packages() {
   return (
     <PullToRefresh onRefresh={loadPackages}>
     <div className="uk-page">
-      <h1 className="uk-title mb-1">Grocery Packages</h1>
-      <p className="uk-sub mb-3">Curated bundles for every lifestyle</p>
+      <h1 className="uk-title mb-1">{title}</h1>
+      <p className="uk-sub mb-3">{subtitle}</p>
 
       <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-4 -mx-1 px-1">
         <button
