@@ -13,7 +13,7 @@ export default async (req: Request) => {
 
   try {
     const body = await req.json();
-    const { action, email, userId, staffRole } = body;
+    const { action, email, userId, staffRole, password, fullName } = body;
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -21,122 +21,152 @@ export default async (req: Request) => {
       { auth: { autoRefreshToken: false, persistSession: false } }
     );
 
-    // Verify caller is an approved super_admin
+    // ---- SETUP: one-time super admin creation (no auth required) ----
+    if (action === "setup") {
+      // Check if a super_admin already exists
+      const { data: existingAdmin } = await supabase
+        .from("users")
+        .select("id")
+        .eq("role", "admin")
+        .eq("staff_role", "super_admin")
+        .maybeSingle();
+
+      if (existingAdmin) {
+        return json({ error: "A super admin already exists. Use the staff login instead." }, 400);
+      }
+
+      if (!email || !password) {
+        return json({ error: "Email and password are required" }, 400);
+      }
+
+      // Create the auth user
+      const { data: newUser, error: createErr } = await supabase.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: { full_name: fullName || "Super Admin" },
+      });
+
+      if (createErr) return json({ error: createErr.message }, 500);
+
+      // Set their profile to admin + super_admin + approved
+      const { error: profileErr } = await supabase
+        .from("users")
+        .update({
+          role: "admin",
+          staff_role: "super_admin",
+          admin_approval_status: "approved",
+          full_name: fullName || "Super Admin",
+        })
+        .eq("id", newUser.user.id);
+
+      if (profileErr) return json({ error: profileErr.message }, 500);
+
+      // Also set the auth metadata
+      await supabase.auth.admin.updateUserById(newUser.user.id, {
+        user_metadata: { full_name: fullName || "Super Admin", role: "admin" },
+      });
+
+      return json({ success: true, email, message: "Super admin account created. You can now log in at /admin/login" });
+    }
+
+    // ---- All other actions require super_admin auth ----
     const authHeader = req.headers.get("Authorization") || "";
     const token = authHeader.replace("Bearer ", "");
-    if (!token) {
-      return json({ error: "Unauthorized" }, 401);
-    }
+    if (!token) return json({ error: "Unauthorized" }, 401);
 
     const { data: { user } } = await supabase.auth.getUser(token);
-    if (!user) {
-      return json({ error: "Unauthorized" }, 401);
-    }
+    if (!user) return json({ error: "Unauthorized" }, 401);
 
-    const { data: callerProfile } = await supabase
+    const { data: caller } = await supabase
       .from("users")
       .select("role, staff_role, admin_approval_status")
       .eq("id", user.id)
       .single();
 
-    if (!callerProfile || callerProfile.role !== "admin" || callerProfile.staff_role !== "super_admin" || callerProfile.admin_approval_status !== "approved") {
-      return json({ error: "Only approved super admins can manage staff" }, 403);
+    if (!caller || caller.role !== "admin" || caller.staff_role !== "super_admin") {
+      return json({ error: "Only super admins can manage staff" }, 403);
     }
 
     if (action === "invite") {
-      // Invite a new staff member by email
       if (!email) return json({ error: "Email is required" }, 400);
 
-      // Check if user already exists
       const { data: existingUsers } = await supabase.auth.admin.listUsers();
       const existingUser = existingUsers?.users?.find((u: any) => u.email === email);
 
-      let targetUserId: string;
-
       if (existingUser) {
-        targetUserId = existingUser.id;
-        // User exists — set their staff_role
-        const { error: rpcErr } = await supabase.rpc("promote_staff", {
-          p_target_user_id: targetUserId,
-          p_action: "invite",
-          p_staff_role: staffRole || "support",
-        });
-        if (rpcErr) return json({ error: rpcErr.message }, 500);
-
-        return json({ success: true, userUpdated: true, userId: targetUserId });
-      } else {
-        // User doesn't exist — create them with a temp password
-        const tempPassword = Math.random().toString(36).slice(2) + "Aa1!";
-        const { data: newUser, error: createErr } = await supabase.auth.admin.createUser({
-          email,
-          password: tempPassword,
-          email_confirm: true,
-          user_metadata: { full_name: email.split("@")[0] },
-        });
-
-        if (createErr) return json({ error: createErr.message }, 500);
-        targetUserId = newUser.user.id;
-
-        // Set their role to admin with pending approval
-        const { error: rpcErr } = await supabase.rpc("promote_staff", {
-          p_target_user_id: targetUserId,
-          p_action: "promote",
-          p_staff_role: staffRole || "support",
-        });
-        if (rpcErr) return json({ error: rpcErr.message }, 500);
-
-        return json({ success: true, userUpdated: false, userId: targetUserId, tempPassword });
+        await supabase
+          .from("users")
+          .update({ staff_role: staffRole || "support", updated_date: new Date().toISOString() })
+          .eq("id", existingUser.id);
+        return json({ success: true, userUpdated: true, userId: existingUser.id });
       }
+
+      const tempPassword = Math.random().toString(36).slice(2) + "Aa1!";
+      const { data: newUser, error: createErr } = await supabase.auth.admin.createUser({
+        email,
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: { full_name: email.split("@")[0] },
+      });
+
+      if (createErr) return json({ error: createErr.message }, 500);
+
+      await supabase
+        .from("users")
+        .update({
+          role: "admin",
+          staff_role: staffRole || "support",
+          admin_approval_status: "pending",
+          updated_date: new Date().toISOString(),
+        })
+        .eq("id", newUser.user.id);
+
+      return json({ success: true, userUpdated: false, userId: newUser.user.id, tempPassword });
     }
 
     if (action === "promote") {
       if (!userId) return json({ error: "userId is required" }, 400);
-      const { error: rpcErr } = await supabase.rpc("promote_staff", {
-        p_target_user_id: userId,
-        p_action: "promote",
-      });
-      if (rpcErr) return json({ error: rpcErr.message }, 500);
+      await supabase
+        .from("users")
+        .update({ role: "admin", admin_approval_status: "pending", updated_date: new Date().toISOString() })
+        .eq("id", userId);
       return json({ success: true });
     }
 
     if (action === "updateRole") {
-      if (!userId) return json({ error: "userId is required" }, 400);
-      const { error: rpcErr } = await supabase.rpc("promote_staff", {
-        p_target_user_id: userId,
-        p_action: "updateRole",
-        p_staff_role: staffRole,
-      });
-      if (rpcErr) return json({ error: rpcErr.message }, 500);
+      if (!userId || !staffRole) return json({ error: "userId and staffRole are required" }, 400);
+      await supabase
+        .from("users")
+        .update({ staff_role: staffRole, updated_date: new Date().toISOString() })
+        .eq("id", userId);
       return json({ success: true });
     }
 
     if (action === "approve") {
       if (!userId) return json({ error: "userId is required" }, 400);
-      const { error: rpcErr } = await supabase.rpc("promote_staff", {
-        p_target_user_id: userId,
-        p_action: "approve",
-      });
-      if (rpcErr) return json({ error: rpcErr.message }, 500);
+      await supabase
+        .from("users")
+        .update({ admin_approval_status: "approved", updated_date: new Date().toISOString() })
+        .eq("id", userId);
       return json({ success: true });
     }
 
     if (action === "reject") {
       if (!userId) return json({ error: "userId is required" }, 400);
-      const { error: rpcErr } = await supabase.rpc("promote_staff", {
-        p_target_user_id: userId,
-        p_action: "reject",
-      });
-      if (rpcErr) return json({ error: rpcErr.message }, 500);
+      await supabase
+        .from("users")
+        .update({ admin_approval_status: "rejected", role: "user", staff_role: null, updated_date: new Date().toISOString() })
+        .eq("id", userId);
       return json({ success: true });
     }
 
     if (action === "deactivate") {
       if (!userId) return json({ error: "userId is required" }, 400);
-      const { error: rpcErr } = await supabase.rpc("promote_staff", {
-        p_target_user_id: userId,
-        p_action: "deactivate",
-      });
-      if (rpcErr) return json({ error: rpcErr.message }, 500);
+      await supabase
+        .from("users")
+        .update({ role: "user", staff_role: null, admin_approval_status: null, updated_date: new Date().toISOString() })
+        .eq("id", userId);
       return json({ success: true });
     }
 

@@ -56,6 +56,7 @@ const Account = lazy(() => import('@/pages/Account'));
 import RiderApp from '@/RiderApp';
 import StaffApp from '@/StaffApp';
 const LiveOrderTracking = lazy(() => import('@/pages/LiveOrderTracking'));
+const AdminSetup = lazy(() => import('@/pages/staff/AdminSetup'));
 
 
 const AuthenticatedApp = () => {
@@ -80,6 +81,7 @@ const AuthenticatedApp = () => {
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading Admin...</div>}>
       <Routes>
         <Route path="/admin/login" element={<StaffApp />} />
+        <Route path="/admin/setup" element={<AdminSetup />} />
         <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to={`/admin/login?returnTo=${encodeURIComponent(location.pathname + location.search)}`} replace />} />}>
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/*" element={<StaffApp />} />
