@@ -194,7 +194,7 @@ const handleImageUpload = async (key, file) => {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => handleImageUpload(key, e.target.files?.[0])}
+                onChange={(e) => handleImageUpload(key, e.target.files && e.target.files[0])}
               />
             </label>
           </div>
