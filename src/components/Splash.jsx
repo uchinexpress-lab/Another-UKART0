@@ -31,7 +31,7 @@ export default function Splash({ onDone }) {
       onAnimationComplete={() => {
         if (leaving) onDone();
       }}
-      className="fixed inset-0 z-[200] bg-gradient-to-br from-[#1B7F3A] via-[#2E9E44] to-[#5FCF65]"
+      className="fixed inset-0 z-50 bg-gradient-to-br from-[#1B7F3A] via-[#2E9E44] to-[#5FCF65]"
     >
       <img
         src={splashImage}
