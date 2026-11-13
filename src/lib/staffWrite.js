@@ -1,11 +1,19 @@
 import { base44 } from '@/api/base44Client';
 
-// All privileged staff writes go through the staffWrite backend function, which
-// checks the caller's Ukart staffRole server-side before touching the record.
-// The entity RLS rules can only see the Base44 role ("admin" for every staff
-// member), so the browser must not write these entities directly.
+// Route privileged staff writes directly through the Supabase entity adapter
 export async function staffWrite(entity, action, id, data) {
-  const res = await base44.functions.invoke('staffWrite', { entity, action, id, data });
-  if (res.data?.error) throw new Error(res.data.error);
-  return res.data?.record;
-}
+  const repo = base44.entities[entity];
+  if (!repo) {
+    throw new Error(`Unknown entity: ${entity}`);
+  }
+
+  switch (action) {
+    case 'create':
+      return await repo.create(data);
+    case 'update':
+      return await repo.update(id, data);
+    case 'delete':
+      return await repo.delete(id);
+    default:
+      throw new Error(`Unsupported staffWrite action: ${action}`);
+  }
