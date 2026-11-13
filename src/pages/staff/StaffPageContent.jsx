@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { base44 } from '@/api/base44Client';
+import { supabase } from '@/api/supabaseClient';
 import { clearPageContentCache, setPageContentCache } from '@/lib/usePageContent';
 import {
   Loader2, RefreshCw, Save, Plus, Trash2, Eye, EyeOff,
   FileText, Image as ImageIcon, Type, ToggleLeft, ToggleRight, AlertCircle, Check,
+  FileText, Image as ImageIcon, Type, ToggleLeft, ToggleRight, AlertCircle, Check, Upload,
 } from 'lucide-react';
 
 const PAGE_ICONS = {
@@ -12,6 +14,7 @@ const PAGE_ICONS = {
   wishlist: '❤️', orders: '📦', profile: '👤', support: '🎧',
   notifications: '🔔', track: '📍', packages: '📦', shop: '🏪',
   budget: '💰', 'payment-methods': '💳', settings: '⚙️',
+  splash: '🚀',
 };
 
 export default function StaffPageContent() {
@@ -29,6 +32,24 @@ export default function StaffPageContent() {
   const [newSectionKey, setNewSectionKey] = useState('');
   const [showFieldForm, setShowFieldForm] = useState(false);
   const [showSectionForm, setShowSectionForm] = useState(false);
+  const [uploadingField, setUploadingField] = useState(null);
+
+const handleImageUpload = async (key, file) => {
+  if (!file) return;
+  setUploadingField(key);
+  try {
+    const ext = file.name.split('.').pop() || 'webp';
+    const path = `cms/${selectedKey || 'general'}-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from('uploads').upload(path, file, { upsert: true });
+    if (error) throw error;
+    const { data } = supabase.storage.from('uploads').getPublicUrl(path);
+    if (data?.publicUrl) updateField(key, data.publicUrl);
+  } catch (err) {
+    alert('Image upload failed: ' + (err?.message || 'Unknown error'));
+  } finally {
+    setUploadingField(null);
+  }
+};
 
   useEffect(() => {
     loadPages();
