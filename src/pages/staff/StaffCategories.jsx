@@ -235,3 +235,47 @@ export default function StaffCategories() {
                         <span className="text-xs text-gray-500">{c.subtitle || '—'}</span>
                       )}
 </td>
+                    <td className="px-4 py-3 text-xs text-gray-500">
+                      {editing === c.id ? (
+                        <input
+                          type="number"
+                          value={c.display_order || 1}
+                          onChange={(e) =>
+                            setCategories((prev) =>
+                              prev.map((x) => (x.id === c.id ? { ...x, display_order: e.target.value } : x))
+                            )
+                          }
+                          className="w-14 h-8 px-2 text-sm rounded border border-gray-200 outline-none focus:border-[#2E7D32]"
+                        />
+                      ) : (
+                        c.display_order || '—'
+                      )}
+                    </td>
+                    {canManage && (
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          {editing === c.id ? (
+                            <button onClick={() => handleUpdate(c)} className="text-xs font-bold text-green-600">
+                              Save
+                            </button>
+                          ) : (
+                            <button onClick={() => setEditing(c.id)} className="p-1.5 rounded hover:bg-gray-100 text-gray-600">
+                              <Edit className="w-4 h-4" />
+                            </button>
+                          )}
+                          <button onClick={() => handleDelete(c)} className="p-1.5 rounded hover:bg-gray-100 text-red-500">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
