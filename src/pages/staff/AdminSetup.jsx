@@ -91,7 +91,7 @@ export default function AdminSetup() {
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">Super Admin Ready</h1>
           <p className="text-gray-600 mb-6">
-            Your super admin account is set up. You can now log in to the staff portal.
+            Your super admin account is set up. From now on, just enter your email on the staff login page and we'll send you a secure link to sign in — no password needed.
           </p>
           <a
             href="/admin/login"
