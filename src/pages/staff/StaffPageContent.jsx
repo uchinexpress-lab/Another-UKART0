@@ -176,28 +176,39 @@ const handleImageUpload = async (key, file) => {
     const isLong = typeof value === 'string' && value.length > 60;
     const isImage = isImageUrl(value) && (key.includes('image') || key.includes('logo') || key.includes('banner') || key.includes('photo'));
 
-    if (isImage) {
+       if (isImage) {
       return (
         <div className="flex flex-col gap-2">
-          <input
-            type="text"
-            value={value}
-            onChange={(e) => updateField(key, e.target.value)}
-            className="flex-1 h-9 px-3 text-sm rounded-lg border border-gray-200 outline-none focus:border-[#2E7D32]"
-            placeholder="Image URL"
-          />
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={value}
+              onChange={(e) => updateField(key, e.target.value)}
+              className="flex-1 h-9 px-3 text-sm rounded-lg border border-gray-200 outline-none focus:border-[#2E7D32]"
+              placeholder="Image URL"
+            />
+            <label className="h-9 px-3 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 flex items-center gap-1.5 cursor-pointer hover:bg-gray-50 flex-shrink-0">
+              {uploadingField === key ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+              Upload Photo
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => handleImageUpload(key, e.target.files?.[0])}
+              />
+            </label>
+          </div>
           {value && (
             <img
               src={value}
               alt={key}
-              className="w-full max-w-[200px] h-24 object-cover rounded-lg border border-gray-200"
+              className="w-full max-w-[200px] h-28 object-cover rounded-lg border border-gray-200"
               onError={(e) => { e.target.style.display = 'none'; }}
             />
           )}
         </div>
       );
     }
-
     if (isLong) {
       return (
         <textarea
