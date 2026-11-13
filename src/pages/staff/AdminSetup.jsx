@@ -16,15 +16,27 @@ export default function AdminSetup() {
     setError('');
     setResult(null);
     try {
-      const { data, error: rpcError } = await supabase.rpc('setup_super_admin', {
+      // Step 1: Create the auth user via Supabase's signUp API.
+      // This ensures GoTrue hashes the password correctly so login works.
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: fullName || 'Super Admin' } },
+      });
+
+      if (signUpError) throw new Error(signUpError.message);
+      if (!signUpData?.user) throw new Error('Account creation failed. Please try again.');
+
+      // Step 2: Promote the new user to super_admin via RPC.
+      const { data: rpcData, error: rpcError } = await supabase.rpc('promote_to_super_admin', {
         p_email: email,
-        p_password: password,
         p_full_name: fullName || 'Super Admin',
       });
 
       if (rpcError) throw new Error(rpcError.message);
-      if (data?.error) throw new Error(data.error);
-      setResult(data);
+      if (rpcData?.error) throw new Error(rpcData.error);
+
+      setResult(rpcData || { success: true, email, message: 'Super admin account created' });
     } catch (err) {
       setError(err.message || 'Failed to create admin account');
     } finally {
