@@ -4,7 +4,6 @@ import { supabase } from '@/api/supabaseClient';
 import { clearPageContentCache, setPageContentCache } from '@/lib/usePageContent';
 import {
   Loader2, RefreshCw, Save, Plus, Trash2, Eye, EyeOff,
-  FileText, Image as ImageIcon, Type, ToggleLeft, ToggleRight, AlertCircle, Check,
   FileText, Image as ImageIcon, Type, ToggleLeft, ToggleRight, AlertCircle, Check, Upload,
 } from 'lucide-react';
 
