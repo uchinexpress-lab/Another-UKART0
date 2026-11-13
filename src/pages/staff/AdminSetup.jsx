@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { base44 } from '@/api/base44Client';
+import { supabase } from '@/api/supabaseClient';
 import { Mail, Lock, User, Loader2, ShieldCheck, CheckCircle2, AlertCircle } from 'lucide-react';
 
 export default function AdminSetup() {
@@ -16,16 +16,17 @@ export default function AdminSetup() {
     setError('');
     setResult(null);
     try {
-      const res = await base44.functions.invoke('inviteStaff', {
-        action: 'setup',
-        email,
-        password,
-        fullName: fullName || 'Super Admin',
+      const { data, error: rpcError } = await supabase.rpc('setup_super_admin', {
+        p_email: email,
+        p_password: password,
+        p_full_name: fullName || 'Super Admin',
       });
-      if (res?.error) throw new Error(res.error);
-      setResult(res);
+
+      if (rpcError) throw new Error(rpcError.message);
+      if (data?.error) throw new Error(data.error);
+      setResult(data);
     } catch (err) {
-      setError(err.message || err.data?.error || 'Failed to create admin account');
+      setError(err.message || 'Failed to create admin account');
     } finally {
       setLoading(false);
     }
