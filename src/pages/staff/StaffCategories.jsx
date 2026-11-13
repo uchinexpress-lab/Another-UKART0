@@ -234,3 +234,4 @@ export default function StaffCategories() {
                       ) : (
                         <span className="text-xs text-gray-500">{c.subtitle || '—'}</span>
                       )}
+</td>
