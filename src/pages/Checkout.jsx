@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
 import { base44 } from '@/api/base44Client';
+import { supabase } from '@/api/supabaseClient';
 import { Clock, MapPin, Navigation, Phone, User, Loader2, ShoppingBag, Tag, History, X, CreditCard, Lock, Truck } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { getServiceFee } from '@/lib/fees';
@@ -15,8 +16,31 @@ import {
 
 const REWARD_AMOUNT = 1000;
 
+const PAYSTACK_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
+if (!PAYSTACK_KEY) {
+  console.warn('[Ukart] VITE_PAYSTACK_PUBLIC_KEY is missing — Paystack checkout will not work. Add it to your .env file.');
+}
+
+function loadPaystackScript() {
+  return new Promise((resolve, reject) => {
+    if (window.PaystackPop) return resolve(window.PaystackPop);
+    const script = document.createElement('script');
+    script.src = 'https://js.paystack.co/v1/inline.js';
+    script.async = true;
+    script.onload = () => resolve(window.PaystackPop);
+    script.onerror = () => reject(new Error('Could not load Paystack. Check your internet connection.'));
+    document.head.appendChild(script);
+  });
+}
+
+function generateReference() {
+  const ts = Date.now().toString(36);
+  const rand = Math.random().toString(36).slice(2, 8);
+  return `ukart-${ts}-${rand}`;
+}
+
 export default function Checkout() {
-  const { items, total } = useCart();
+  const { items, total, clearCart } = useCart();
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -31,7 +55,6 @@ export default function Checkout() {
   const [voucherCode, setVoucherCode] = useState('');
   const [voucher, setVoucher] = useState(null);
   const [voucherError, setVoucherError] = useState('');
-  const [createdOrderId, setCreatedOrderId] = useState(null);
   const [promoSettings, setPromoSettings] = useState(null);
   const [isFirstOrder, setIsFirstOrder] = useState(false);
   const [deliverySettings, setDeliverySettings] = useState(null);
@@ -57,8 +80,8 @@ export default function Checkout() {
           referrer_rewarded: false,
         });
         if (asReferrer.length > 0) {
-          setReferralDiscount(asReferrer[0].reward_amount || REWARD_AMOUNT);
-          setRewardRef({ id: asReferrer[0].id, type: 'referrer' });
+          setReferralDiscount(asReferred[0].reward_amount || REWARD_AMOUNT);
+          setRewardRef({ id: asReferred[0].id, type: 'referrer' });
         }
       } catch {}
     })();
@@ -112,19 +135,6 @@ export default function Checkout() {
     })();
   }, []);
 
-  // A previous attempt that was left at Paystack is closed as abandoned. The
-  // cart is untouched, so the customer simply starts again.
-  useEffect(() => {
-    let stale = null;
-    try {
-      stale = sessionStorage.getItem('ukart_pending_order');
-      if (stale) sessionStorage.removeItem('ukart_pending_order');
-    } catch {}
-    if (stale) {
-      base44.functions.invoke('abandonCheckout', { orderId: stale }).catch(() => {});
-    }
-  }, []);
-
   const firstOrderEligible = isFirstOrder && promoSettings?.first_order_enabled !== false;
   const firstOrderDiscount = firstOrderEligible ? (promoSettings?.first_order_discount || 500) : 0;
 
@@ -156,8 +166,6 @@ export default function Checkout() {
     setVoucherError('');
     if (!voucherCode.trim()) return;
     try {
-      // Validated server-side: the voucher's assigned email is a private field
-      // the browser must not be trusted with (or able to read).
       const res = await base44.functions.invoke('validateVoucher', {
         code: voucherCode.trim(),
       });
@@ -181,72 +189,131 @@ export default function Checkout() {
 
   const placeOrder = async () => {
     if (!canPlace) return;
+    if (!PAYSTACK_KEY) {
+      alert('Payment is not configured. Please contact support.');
+      return;
+    }
     setPlacing(true);
     try {
-      let orderId = createdOrderId;
+      // 1. Get the current user's email
+      const me = await base44.auth.me();
+      if (!me?.email) {
+        throw new Error('Please sign in to place an order.');
+      }
 
-      if (!orderId) {
-        // The server authors the order — prices, totals, voucher and referral
-        // validation all happen server-side. The client only sends the cart
-        // (product_id + variant + quantity), voucher code, and delivery details.
-        const res = await base44.functions.invoke('prepareOrder', {
-          items: items.map((i) => {
-            // Meal kits are Package records. Older carts stored only the
-            // "mealkit-<packageId>" id, so recover the package id from it.
-            const packageId =
-              i.package_id || (String(i.id).startsWith('mealkit-') ? String(i.id).slice(8).split('-')[0] : '');
-            return {
-              product_id: packageId ? '' : i.product_id || (i.id || '').split('__')[0],
-              package_id: packageId,
-              size_label: i.size_label || '',
-              protein_names: i.protein_names || [],
-              selections: i.selections || [],
-              variant_label: packageId ? '' : i.variant_label || i.details || '',
-              quantity: i.quantity,
-              addon_ids: packageId
-                ? i.addon_ids || []
-                : (i.addons || []).map((a) => a.id),
-            };
-          }),
-          voucherCode: voucher ? voucher.code : '',
+      // 2. Create the pending order directly in Supabase
+      const orderItems = items.map((i) => {
+        const packageId =
+          i.package_id || (String(i.id).startsWith('mealkit-') ? String(i.id).slice(8).split('-')[0] : '');
+        return {
+          product_id: packageId ? '' : i.product_id || (i.id || '').split('__')[0],
+          package_id: packageId || '',
+          name: i.name || '',
+          price: i.price || 0,
+          unit: i.variant_label || i.details || i.size_label || '',
+          variant_label: packageId ? '' : i.variant_label || i.details || '',
+          size_label: i.size_label || '',
+          protein_names: i.protein_names || [],
+          selections: i.selections || [],
+          quantity: i.quantity,
+          addons_total: i.addons_total || 0,
+          addon_ids: packageId
+            ? i.addon_ids || []
+            : (i.addons || []).map((a) => a.id),
+          image: i.image || '',
+        };
+      });
+
+      const reference = generateReference();
+      const orderNumber = `UK-${Date.now().toString().slice(-8)}`;
+
+      const { data: order, error: insertError } = await supabase
+        .from('orders')
+        .insert({
+          order_number: orderNumber,
+          items: orderItems,
+          subtotal: total,
+          delivery_fee: deliveryFee,
+          service_fee: serviceFee,
+          discount: appliedDiscount,
+          voucher_code: voucher ? voucher.code : null,
+          voucher_id: voucher ? voucher.id : null,
+          total: grandTotal,
           customer_name: name,
+          customer_email: me.email,
           customer_phone: phone,
           alternate_phone: altPhone,
           customer_address: address,
           landmark,
           delivery_zone: zone,
-        });
-        orderId = res.data?.orderId;
-        if (!orderId) {
-          throw new Error(res.data?.error || 'Could not prepare order');
-        }
-        setCreatedOrderId(orderId);
-        // Remember the attempt so a return from Paystack can resolve it.
-        try {
-          sessionStorage.setItem('ukart_pending_order', orderId);
-        } catch {}
+          payment_method: 'Pay Online',
+          payment_status: 'Pending',
+          status: 'awaiting_payment',
+          is_first_order: isFirstOrder,
+          first_order_discount: firstOrderDiscount,
+          referral_id: rewardRef ? rewardRef.id : null,
+          referral_type: rewardRef ? rewardRef.type : null,
+        })
+        .select()
+        .single();
 
-        const serverTotal = res.data?.total;
-        if (serverTotal != null && serverTotal !== grandTotal) {
-          toast({ title: 'Order total adjusted', description: `Final total: ₦${serverTotal.toLocaleString()}` });
-        }
-
-        // No email here. Confirmation is sent server-side only after Paystack
-        // has verified the payment.
+      if (insertError) {
+        throw new Error(insertError.message || 'Could not create order');
       }
 
-      // Initiate Paystack payment — amount is recalculated server-side from the stored order
-      const callbackUrl = `${window.location.origin}/payment/callback`;
-      const res = await base44.functions.invoke('initiatePaystackPayment', { orderId, callbackUrl });
+      // 3. Launch Paystack Inline checkout
+      const totalInKobo = Math.round(grandTotal * 100);
+      const PaystackPop = await loadPaystackScript();
 
-      if (res.data?.authorization_url) {
-        window.location.href = res.data.authorization_url;
-      } else {
-        throw new Error('Could not initialize payment');
-      }
+      const handler = new PaystackPop();
+      handler.newTransaction({
+        key: PAYSTACK_KEY,
+        email: me.email,
+        amount: totalInKobo,
+        reference,
+        currency: 'NGN',
+        metadata: {
+          custom_fields: [
+            { display_name: 'Order Number', variable_name: 'order_number', value: orderNumber },
+            { display_name: 'Customer Name', variable_name: 'customer_name', value: name },
+          ],
+        },
+        onSuccess: async (transaction) => {
+          try {
+            // 4. Mark the order as paid
+            const { error: rpcError } = await supabase.rpc('mark_order_paid', {
+              p_order_id: order.id,
+              p_reference: transaction.reference,
+              p_transaction_id: transaction.transaction_id || null,
+            });
+            if (rpcError) throw rpcError;
+
+            // 5. Clear cart and navigate to order confirmation
+            clearCart();
+            navigate(`/orders/${order.id}/payment-success`, { replace: true });
+          } catch (err) {
+            console.error('Failed to mark order paid:', err);
+            setPlacing(false);
+            alert('Payment succeeded but we could not confirm it. Your order is saved. Please check your orders.');
+            navigate(`/orders/${order.id}`, { replace: true });
+          }
+        },
+        onCancel: () => {
+          setPlacing(false);
+          toast({
+            title: 'Payment cancelled',
+            description: 'Your order is saved. You can retry payment from your orders.',
+          });
+        },
+        onError: (error) => {
+          console.error('Paystack error:', error);
+          setPlacing(false);
+          alert('Payment failed: ' + (error?.message || 'Please try again.'));
+        },
+      });
     } catch (e) {
       setPlacing(false);
-      const msg = e?.response?.data?.error || e?.message || 'Could not start payment. Please try again.';
+      const msg = e?.message || 'Could not start payment. Please try again.';
       alert(msg);
     }
   };
