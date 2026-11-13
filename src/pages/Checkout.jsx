@@ -261,16 +261,14 @@ export default function Checkout() {
         throw new Error(insertError.message || 'Could not create order');
       }
 
-      // 3. Launch Paystack Inline checkout
+            // 3. Launch Paystack Inline checkout
       const totalInKobo = Math.round(grandTotal * 100);
       const PaystackPop = await loadPaystackScript();
-
-      const handler = new PaystackPop();
-      handler.newTransaction({
+      const handler = PaystackPop.setup({
         key: PAYSTACK_KEY,
         email: me.email,
         amount: totalInKobo,
-        reference,
+        ref: reference,
         currency: 'NGN',
         metadata: {
           custom_fields: [
@@ -278,39 +276,37 @@ export default function Checkout() {
             { display_name: 'Customer Name', variable_name: 'customer_name', value: name },
           ],
         },
-        onSuccess: async (transaction) => {
-          try {
-            // 4. Mark the order as paid
-            const { error: rpcError } = await supabase.rpc('mark_order_paid', {
-              p_order_id: order.id,
-              p_reference: transaction.reference,
-              p_transaction_id: transaction.transaction_id || null,
-            });
-            if (rpcError) throw rpcError;
+        callback: function (transaction) {
+          (async () => {
+            try {
+              // 4. Mark the order as paid
+              const { error: rpcError } = await supabase.rpc('mark_order_paid', {
+                p_order_id: order.id,
+                p_reference: transaction.reference,
+                p_transaction_id: transaction.transaction_id || null,
+              });
+              if (rpcError) throw rpcError;
 
-            // 5. Clear cart and navigate to order confirmation
-            clearCart();
-            navigate(`/orders/${order.id}/payment-success`, { replace: true });
-          } catch (err) {
-            console.error('Failed to mark order paid:', err);
-            setPlacing(false);
-            alert('Payment succeeded but we could not confirm it. Your order is saved. Please check your orders.');
-            navigate(`/orders/${order.id}`, { replace: true });
-          }
+              // 5. Clear cart and navigate to order confirmation
+              clearCart();
+              navigate(`/orders/${order.id}/payment-success`, { replace: true });
+            } catch (err) {
+              console.error('Failed to mark order paid:', err);
+              setPlacing(false);
+              alert('Payment succeeded but we could not confirm it. Your order is saved. Please check your orders.');
+              navigate(`/orders/${order.id}`, { replace: true });
+            }
+          })();
         },
-        onCancel: () => {
+        onClose: function () {
           setPlacing(false);
           toast({
             title: 'Payment cancelled',
             description: 'Your order is saved. You can retry payment from your orders.',
           });
         },
-        onError: (error) => {
-          console.error('Paystack error:', error);
-          setPlacing(false);
-          alert('Payment failed: ' + (error?.message || 'Please try again.'));
-        },
       });
+      handler.openIframe();
     } catch (e) {
       setPlacing(false);
       const msg = e?.message || 'Could not start payment. Please try again.';
