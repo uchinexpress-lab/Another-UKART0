@@ -74,7 +74,7 @@ export default function FloatingCart() {
     if (!d) return;
     const dx = e.clientX - d.startX;
     const dy = e.clientY - d.startY;
-    if (!d.moved && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) d.moved = true;
+    if (!d.moved && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) d.moved = true;
     if (d.moved) setPos(clampPos({ x: d.originX + dx, y: d.originY + dy }));
   };
 
@@ -86,9 +86,14 @@ export default function FloatingCart() {
       navigate("/cart");
       return;
     }
+    // Snap to nearest horizontal edge for a native feel.
     setPos((p) => {
-      if (p) localStorage.setItem(POS_KEY, JSON.stringify(p));
-      return p;
+      if (!p) return p;
+      const vw = window.innerWidth;
+      const snapX = p.x + WIDTH / 2 < vw / 2 ? MARGIN : vw - WIDTH - MARGIN;
+      const snapped = clampPos({ x: snapX, y: p.y });
+      localStorage.setItem(POS_KEY, JSON.stringify(snapped));
+      return snapped;
     });
   };
 
@@ -103,7 +108,12 @@ export default function FloatingCart() {
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0, opacity: 0 }}
           transition={{ type: "spring", stiffness: 420, damping: 22 }}
-          style={{ left: pos.x, top: pos.y, touchAction: "none" }}
+          style={{
+            left: pos.x,
+            top: pos.y,
+            touchAction: "none",
+            transition: drag.current ? "none" : "left 0.25s cubic-bezier(0.16,1,0.3,1), top 0.25s cubic-bezier(0.16,1,0.3,1)",
+          }}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
@@ -113,10 +123,9 @@ export default function FloatingCart() {
           aria-label="View cart"
         >
           <motion.div
-            whileTap={{ scale: 0.9 }}
             animate={justAdded ? { scale: [1, 1.18, 1] } : { scale: 1 }}
             transition={justAdded ? { duration: 0.35, ease: "easeOut" } : { type: "spring", stiffness: 420, damping: 22 }}
-            className="relative w-14 h-14 rounded-full bg-[#2E7D32] shadow-lg shadow-[#2E7D32]/35 flex items-center justify-center"
+            className="relative w-14 h-14 rounded-full bg-[#2E7D32] shadow-lg shadow-[#2E7D32]/35 flex items-center justify-center active:scale-90 transition-transform"
           >
             <ShoppingBag className="w-6 h-6 text-white" strokeWidth={2.2} />
             <motion.span
