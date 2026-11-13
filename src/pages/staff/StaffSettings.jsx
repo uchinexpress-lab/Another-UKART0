@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
+import { supabase } from '@/api/supabaseClient';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { STAFF_ROLE_OPTIONS, getRoleLabel, isSuperAdmin, resolveStaffRole } from '@/lib/staffRoles';
@@ -45,14 +46,15 @@ export default function StaffSettings() {
 
   const promote = async (s) => {
     try {
-      await base44.functions.invoke('inviteStaff', {
-        action: 'promote',
-        userId: s.id,
+      const { data, error: rpcError } = await supabase.rpc('manage_staff', {
+        p_action: 'promote',
+        p_user_id: s.id,
       });
+      if (rpcError) throw rpcError;
+      if (data?.error) throw new Error(data.error);
       loadStaff();
     } catch (err) {
-      const msg = err?.response?.data?.error || err?.data?.error || 'Failed to promote staff';
-      alert(msg);
+      alert(err.message || 'Failed to promote staff');
     }
   };
 
@@ -74,22 +76,23 @@ export default function StaffSettings() {
     setInviting(true);
     setInviteMsg(null);
     try {
-      const response = await base44.functions.invoke('inviteStaff', {
-        action: 'invite',
-        email: inviteEmail.trim(),
-        staffRole: inviteRole,
+      const { data, error: rpcError } = await supabase.rpc('manage_staff', {
+        p_action: 'invite',
+        p_email: inviteEmail.trim(),
+        p_staff_role: inviteRole,
       });
-      const data = response.data || response;
+      if (rpcError) throw rpcError;
+      if (data?.error) throw new Error(data.error);
       if (data.userUpdated) {
-        setInviteMsg(`Invitation sent to ${inviteEmail.trim()} as ${getRoleLabel(inviteRole)}. Role assigned.`);
+        setInviteMsg(`Invited ${inviteEmail.trim()} as ${getRoleLabel(inviteRole)}. Their existing account was updated.`);
       } else {
-        setInviteMsg(`Invitation sent to ${inviteEmail.trim()} as ${getRoleLabel(inviteRole)}. They will appear in the staff list after they accept the invitation — then assign their role.`);
+        const pass = data.tempPassword ? ` Temporary password: ${data.tempPassword}` : '';
+        setInviteMsg(`Invited ${inviteEmail.trim()} as ${getRoleLabel(inviteRole)}.${pass}`);
       }
       setInviteEmail('');
       loadStaff();
     } catch (err) {
-      const msg = err?.response?.data?.error || err?.data?.error || err.message || 'Unknown error';
-      setInviteMsg(`Failed to invite: ${msg}`);
+      setInviteMsg(`Failed to invite: ${err.message || 'Unknown error'}`);
     } finally {
       setInviting(false);
     }
@@ -97,60 +100,64 @@ export default function StaffSettings() {
 
   const changeRole = async (s, newStaffRole) => {
     try {
-      await base44.functions.invoke('inviteStaff', {
-        action: 'updateRole',
-        userId: s.id,
-        staffRole: newStaffRole,
+      const { data, error: rpcError } = await supabase.rpc('manage_staff', {
+        p_action: 'updateRole',
+        p_user_id: s.id,
+        p_staff_role: newStaffRole,
       });
+      if (rpcError) throw rpcError;
+      if (data?.error) throw new Error(data.error);
       setStaff((prev) =>
         prev.map((x) => (x.id === s.id ? { ...x, staffRole: newStaffRole } : x))
       );
     } catch (err) {
-      const msg = err?.response?.data?.error || err?.data?.error || 'Failed to change role';
-      alert(msg);
+      alert(err.message || 'Failed to change role');
     }
   };
 
   const approveAdmin = async (s) => {
     try {
-      await base44.functions.invoke('inviteStaff', {
-        action: 'approve',
-        userId: s.id,
+      const { data, error: rpcError } = await supabase.rpc('manage_staff', {
+        p_action: 'approve',
+        p_user_id: s.id,
       });
+      if (rpcError) throw rpcError;
+      if (data?.error) throw new Error(data.error);
       setStaff((prev) =>
         prev.map((x) => (x.id === s.id ? { ...x, admin_approval_status: 'approved' } : x))
       );
     } catch (err) {
-      const msg = err?.response?.data?.error || err?.data?.error || 'Failed to approve admin';
-      alert(msg);
+      alert(err.message || 'Failed to approve admin');
     }
   };
 
   const rejectAdmin = async (s) => {
     if (!confirm(`Reject admin access for ${s.email}? They will be demoted to a regular customer.`)) return;
     try {
-      await base44.functions.invoke('inviteStaff', {
-        action: 'reject',
-        userId: s.id,
+      const { data, error: rpcError } = await supabase.rpc('manage_staff', {
+        p_action: 'reject',
+        p_user_id: s.id,
       });
+      if (rpcError) throw rpcError;
+      if (data?.error) throw new Error(data.error);
       setStaff((prev) => prev.filter((x) => x.id !== s.id));
     } catch (err) {
-      const msg = err?.response?.data?.error || err?.data?.error || 'Failed to reject admin';
-      alert(msg);
+      alert(err.message || 'Failed to reject admin');
     }
   };
 
   const deactivate = async (s) => {
     if (!confirm(`Remove staff access for ${s.email}? They will become a regular customer.`)) return;
     try {
-      await base44.functions.invoke('inviteStaff', {
-        action: 'deactivate',
-        userId: s.id,
+      const { data, error: rpcError } = await supabase.rpc('manage_staff', {
+        p_action: 'deactivate',
+        p_user_id: s.id,
       });
+      if (rpcError) throw rpcError;
+      if (data?.error) throw new Error(data.error);
       setStaff((prev) => prev.filter((x) => x.id !== s.id));
     } catch (err) {
-      const msg = err?.response?.data?.error || err?.data?.error || 'Failed to deactivate staff';
-      alert(msg);
+      alert(err.message || 'Failed to deactivate staff');
     }
   };
 
