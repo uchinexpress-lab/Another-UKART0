@@ -207,6 +207,24 @@ export default function StaffOrders() {
                               <p className="flex items-center gap-1.5 text-gray-600">
                                 <Phone className="w-3 h-3" /> {o.customer_phone}
                               </p>
+                              {o.customer_phone && (
+  <div className="flex items-center gap-2 pt-1">
+    <a
+      href={buildWhatsAppUrl(o)}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="px-2.5 py-1 rounded bg-[#25D366] text-white text-[11px] font-bold hover:opacity-90"
+    >
+      WhatsApp Update
+    </a>
+    <a
+      href={buildSmsUrl(o)}
+      className="px-2.5 py-1 rounded bg-gray-800 text-white text-[11px] font-bold hover:opacity-90"
+    >
+      SMS Fallback
+    </a>
+  </div>
+)}
                               <p className="flex items-start gap-1.5 text-gray-600">
                                 <MapPin className="w-3 h-3 mt-0.5" /> {o.customer_address}
                               </p>
