@@ -5,7 +5,7 @@ import { logStaffAction } from '@/lib/staffAudit';
 import { canAccessPage } from '@/lib/staffRoles';
 import { useAuth } from '@/lib/AuthContext';
 import AssignRiderSheet from '@/components/admin/AssignRiderSheet';
-import { notifyOrderStatusChanged } from '@/lib/notifications';
+import { notifyOrderStatusChanged, buildWhatsAppUrl, buildSmsUrl } from '@/lib/notifications';
 import {
   Search, ChevronDown, ChevronUp, Bike, RefreshCw, Loader2,
   Mail, Phone, MapPin,
