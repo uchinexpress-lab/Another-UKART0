@@ -35,6 +35,7 @@ export default function AdminProductEdit() {
     description_long: '',
     product_type: 'grocery',
     category_id: '',
+    category_ids: [],
     subcategory: '',
     images: [],
     variants: [],
@@ -63,6 +64,11 @@ export default function AdminProductEdit() {
           description_long: p.description_long || '',
           product_type: p.product_type || 'grocery',
           category_id: p.category_id || '',
+          category_ids: Array.isArray(p.category_ids) && p.category_ids.length
+  ? p.category_ids
+  : p.category_id
+    ? [p.category_id]
+    : [],
           subcategory: p.subcategory || '',
           images: p.images || (p.image ? [p.image] : []),
           variants: p.variants || [],
@@ -92,7 +98,10 @@ export default function AdminProductEdit() {
         display_order: categories.length,
       });
       setCategories([...categories, cat]);
-      set({ category_id: cat.id });
+      set({
+  category_id: form.category_id || cat.id,
+  category_ids: [...new Set([...(form.category_ids || []), cat.id])],
+});
       setNewCatName('');
       setShowNewCat(false);
       toast({ title: 'Category created' });
@@ -103,7 +112,13 @@ export default function AdminProductEdit() {
     if (!form.name.trim()) { toast({ title: 'Product name is required', variant: 'destructive' }); return; }
     setSaving(true);
     try {
-      const category = categories.find((c) => c.id === form.category_id);
+      const selectedIds = form.category_ids?.length
+  ? form.category_ids
+  : form.category_id
+    ? [form.category_id]
+    : [];
+const primaryCatId = selectedIds[0] || '';
+const category = categories.find((c) => c.id === primaryCatId);
       const basePrice = form.variants.length ? form.variants[0].price : (Number(form.stock_quantity) || 0);
       const primaryImage = form.images[0] || '';
       const unit = form.variants.length
@@ -115,7 +130,8 @@ export default function AdminProductEdit() {
         description: form.description,
         description_long: form.description_long,
         product_type: form.product_type,
-        category_id: form.category_id,
+        category_id: primaryCatId,
+category_ids: selectedIds,
         category_name: category?.name || '',
         subcategory: form.subcategory,
         images: form.images,
@@ -191,25 +207,56 @@ export default function AdminProductEdit() {
             triggerClassName="w-full flex items-center justify-between text-sm border border-gray-200 rounded-lg px-3 py-2.5 bg-card"
           />
         </div>
-        <div>
-          <label className="text-xs font-medium text-muted-foreground">Category</label>
-          <div className="flex gap-2">
-            <SheetSelect
-              value={form.category_id}
-              onChange={(v) => set({ category_id: v })}
-              options={[{ value: '', label: 'Select category…' }, ...categories.map((c) => ({ value: c.id, label: c.name }))]}
-              title="Category"
-              triggerClassName="w-full flex items-center justify-between text-sm border border-gray-200 rounded-lg px-3 py-2.5 bg-card"
-            />
-            <button onClick={() => setShowNewCat((s) => !s)} className="px-3 rounded-lg bg-muted text-foreground shrink-0"><Plus className="w-4 h-4" /></button>
-          </div>
-          {showNewCat && (
-            <div className="flex gap-2 mt-2">
-              <input value={newCatName} onChange={(e) => setNewCatName(e.target.value)} placeholder="New category name" className={inputCls} />
-              <button onClick={createCategory} className="px-3 rounded-lg bg-[#2E7D32] text-white text-sm font-semibold shrink-0">Add</button>
-            </div>
-          )}
-        </div>
+<div>
+  <div className="flex items-center justify-between mb-1.5">
+    <label className="text-xs font-medium text-muted-foreground">
+      Categories (tap one or more)
+    </label>
+    <button
+      type="button"
+      onClick={() => setShowNewCat((s) => !s)}
+      className="text-xs font-semibold text-[#2E7D32] flex items-center gap-1"
+    >
+      <Plus className="w-3.5 h-3.5" /> New Category
+    </button>
+  </div>
+
+  <div className="flex flex-wrap gap-2">
+    {categories.map((c) => {
+      const active = (form.category_ids || []).includes(c.id);
+      return (
+        <button
+          key={c.id}
+          type="button"
+          onClick={() => {
+            const current = form.category_ids || [];
+            const next = active
+              ? current.filter((cid) => cid !== c.id)
+              : [...current, c.id];
+            set({
+              category_ids: next,
+              category_id: next[0] || '',
+            });
+          }}
+          className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+            active
+              ? 'bg-[#2E7D32] text-white border-[#2E7D32]'
+              : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+          }`}
+        >
+          {c.name}
+        </button>
+      );
+    })}
+  </div>
+
+  {showNewCat && (
+    <div className="flex gap-2 mt-2">
+      <input value={newCatName} onChange={(e) => setNewCatName(e.target.value)} placeholder="New category name" className={inputCls} />
+      <button type="button" onClick={createCategory} className="px-3 rounded-lg bg-[#2E7D32] text-white text-sm font-semibold shrink-0">Add</button>
+    </div>
+  )}
+</div>
         <div>
           <label className="text-xs font-medium text-muted-foreground">Subcategory</label>
           <input value={form.subcategory} onChange={(e) => set({ subcategory: e.target.value })} placeholder="e.g. Cooking Oil" className={inputCls} />
