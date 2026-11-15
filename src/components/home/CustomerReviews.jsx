@@ -56,7 +56,6 @@ export default function CustomerReviews({ reviews: initialReviews = [] }) {
       setUploading(false);
     }
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim() || !text.trim()) return;
@@ -179,7 +178,6 @@ export default function CustomerReviews({ reviews: initialReviews = [] }) {
           </div>
         )}
       </div>
-
       {/* Add Review + Photo Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
@@ -255,3 +253,37 @@ export default function CustomerReviews({ reviews: initialReviews = [] }) {
             <div>
               <label className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#2E7D32] border border-[#2E7D32]/30 bg-[#E8F5E9]/50 px-3 py-2 rounded-xl cursor-pointer">
                 {uploading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Camera className="w-4 h-4" />
+                )}
+                {photoUrl ? 'Change Photo' : 'Add Delivery Photo (Optional)'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => handlePhotoUpload(e.target.files?.[0])}
+                />
+              </label>
+              {photoUrl && (
+                <img
+                  src={photoUrl}
+                  alt="Preview"
+                  className="mt-2 w-full max-h-28 object-cover rounded-xl border border-gray-200"
+                />
+              )}
+            </div>
+
+            <button
+              type="submit"
+              disabled={submitting || uploading}
+              className="w-full h-11 rounded-xl bg-[#2E7D32] text-white font-bold text-sm disabled:opacity-50"
+            >
+              {submitting ? 'Posting...' : 'Post Review'}
+            </button>
+          </form>
+        </div>
+      )}
+    </section>
+  );
+}
