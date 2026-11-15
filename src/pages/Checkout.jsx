@@ -13,6 +13,7 @@ import {
   getDeliveryDiscountPercent,
   resolveDeliverySettings,
 } from '@/lib/delivery';
+import { notifyOrderCreated } from '@/lib/notifications';
 
 const REWARD_AMOUNT = 1000;
 
