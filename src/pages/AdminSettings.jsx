@@ -151,6 +151,11 @@ const uploadEmailAsset = async (file, kind) => {
         payload.discount_percent = Number(alertForm.discount_percent) || 10;
       }
       await base44.entities.DealAlert.create(payload);
+            base44.functions.invoke('sendPushBroadcast', {
+        title: alertForm.title.trim(),
+        body: alertForm.body.trim(),
+        url: 'https://ukartapp.com',
+      }).catch((err) => console.warn('Push broadcast skipped:', err));
       toast({ title: 'Deal alert broadcast to all users' });
       setAlertForm({ title: '', body: '', type: 'announcement', voucher_code: '', discount_percent: '' });
       loadAlerts();
