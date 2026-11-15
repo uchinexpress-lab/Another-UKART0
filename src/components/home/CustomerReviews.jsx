@@ -80,7 +80,7 @@ export default function CustomerReviews({ reviews: initialReviews = [] }) {
         return;
       }
 
-      verifiedOrder = matchedOrders[0];
+      const verifiedOrder = matchedOrders[0];
       const { error } = await supabase.from('customer_reviews').insert({
         customer_name: name.trim(),
         customer_contact: contact.trim(),
@@ -313,7 +313,7 @@ export default function CustomerReviews({ reviews: initialReviews = [] }) {
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={(e) => handlePhotoUpload(e.target.files?.[0])}
+                  onChange={(e) => handlePhotoUpload(e.target.files && e.target.files[0])}
                 />
               </label>
               {photoUrl && (
