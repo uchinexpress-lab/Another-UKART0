@@ -236,6 +236,10 @@ const uploadEmailAsset = async (file, kind) => {
         enable_business_email: settings.enable_business_email,
         enable_customer_confirmation: settings.enable_customer_confirmation,
         enable_customer_status_emails: settings.enable_customer_status_emails,
+              header_image_url: headerImageUrl.trim() || null,
+      attachment_url: attachmentUrl.trim() || null,
+      attachment_name: attachmentName.trim() || null,
+      templates,
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
