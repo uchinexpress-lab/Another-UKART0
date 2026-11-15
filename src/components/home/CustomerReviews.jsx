@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Star, ChevronLeft, ChevronRight, Plus, Camera, X, Loader2 } from 'lucide-react';
+import { Star, ChevronLeft, ChevronRight, Plus, Camera, X, Loader2, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/api/supabaseClient';
 
 export default function CustomerReviews({ reviews: initialReviews = [] }) {
@@ -7,8 +7,10 @@ export default function CustomerReviews({ reviews: initialReviews = [] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [submittedNotice, setSubmittedNotice] = useState(false);
 
   const [name, setName] = useState('');
+  const [contact, setContact] = useState('');
   const [location, setLocation] = useState('Lekki, Lagos');
   const [rating, setRating] = useState(5);
   const [text, setText] = useState('');
@@ -56,27 +58,49 @@ export default function CustomerReviews({ reviews: initialReviews = [] }) {
       setUploading(false);
     }
   };
-  const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name.trim() || !text.trim()) return;
+    if (!name.trim() || !text.trim() || !contact.trim()) return;
     setSubmitting(true);
     try {
+      const q = contact.trim().toLowerCase();
+      const { data: matchedOrders, error: orderErr } = await supabase
+        .from('orders')
+        .select('id, order_number, customer_email, customer_phone, payment_status')
+        .eq('payment_status', 'paid')
+        .or(`customer_email.ilike.%${q}%,customer_phone.ilike.%${q}%`)
+        .limit(1);
+
+      if (orderErr) throw orderErr;
+      if (!matchedOrders || matchedOrders.length === 0) {
+        alert(
+          'Only verified customers with a completed order can post a review. Please enter the email or phone number you used at checkout.'
+        );
+        setSubmitting(false);
+        return;
+      }
+
+      verifiedOrder = matchedOrders[0];
       const { error } = await supabase.from('customer_reviews').insert({
         customer_name: name.trim(),
+        customer_contact: contact.trim(),
+        order_number: verifiedOrder.order_number || null,
         location: location.trim() || 'Lagos',
         rating,
         text: text.trim(),
         photo_url: photoUrl || null,
-        is_approved: true,
+        is_approved: false,
       });
       if (error) throw error;
-      await loadLiveReviews();
-      setActiveIndex(0);
+
       setName('');
+      setContact('');
       setText('');
       setPhotoUrl('');
       setRating(5);
       setShowModal(false);
+      setSubmittedNotice(true);
+      setTimeout(() => setSubmittedNotice(false), 6000);
     } catch (err) {
       alert('Could not post review: ' + (err?.message || 'Please try again'));
     } finally {
@@ -104,6 +128,13 @@ export default function CustomerReviews({ reviews: initialReviews = [] }) {
         </button>
       </div>
 
+      {submittedNotice && (
+        <div className="mb-2.5 px-3 py-2 rounded-xl bg-green-50 border border-green-200 text-xs text-[#2E7D32] font-medium flex items-center gap-1.5">
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          Thank you! Your review has been submitted and will appear once approved by our team.
+        </div>
+      )}
+
       {/* Single Auto-Rotating Card */}
       <div className="bg-white rounded-2xl border border-gray-100 p-3.5 shadow-sm transition-all">
         <div className="flex items-center justify-between gap-2 mb-2">
@@ -115,8 +146,15 @@ export default function CustomerReviews({ reviews: initialReviews = [] }) {
               {(current.customer_name || 'U').charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0">
-              <div className="font-semibold text-sm text-gray-900 truncate">
-                {current.customer_name}
+              <div className="flex items-center gap-1.5">
+                <span className="font-semibold text-sm text-gray-900 truncate">
+                  {current.customer_name}
+                </span>
+                {current.order_number && (
+                  <span className="text-[10px] font-semibold text-[#2E7D32] bg-green-50 px-1.5 py-0.5 rounded-full shrink-0">
+                    Verified Buyer
+                  </span>
+                )}
               </div>
               <div className="text-xs text-gray-500 truncate">{current.location}</div>
             </div>
@@ -178,12 +216,12 @@ export default function CustomerReviews({ reviews: initialReviews = [] }) {
           </div>
         )}
       </div>
-      {/* Add Review + Photo Modal */}
+      {/* Verified Buyer Review + Photo Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <form
             onSubmit={handleSubmit}
-            className="bg-white rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-xl"
+            className="bg-white rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-xl max-h-[90vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-base text-gray-900">Share Your Feedback</h3>
@@ -239,6 +277,19 @@ export default function CustomerReviews({ reviews: initialReviews = [] }) {
             </div>
 
             <div>
+              <label className="text-xs font-medium text-gray-600">
+                Checkout Email or Phone Number (Verified Buyers Only) *
+              </label>
+              <input
+                required
+                value={contact}
+                onChange={(e) => setContact(e.target.value)}
+                placeholder="Enter email or phone used on your order"
+                className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 mt-1 outline-none focus:border-[#2E7D32]"
+              />
+            </div>
+
+            <div>
               <label className="text-xs font-medium text-gray-600">Your Review *</label>
               <textarea
                 required
@@ -279,7 +330,7 @@ export default function CustomerReviews({ reviews: initialReviews = [] }) {
               disabled={submitting || uploading}
               className="w-full h-11 rounded-xl bg-[#2E7D32] text-white font-bold text-sm disabled:opacity-50"
             >
-              {submitting ? 'Posting...' : 'Post Review'}
+              {submitting ? 'Verifying Order & Posting...' : 'Submit Review'}
             </button>
           </form>
         </div>
