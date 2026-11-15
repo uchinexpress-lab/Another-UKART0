@@ -24,7 +24,7 @@ function classify(rawName) {
       return {
         area: m.name,
         zone: 'island',
-        line2: '🛵 Estimated delivery: 35–90 mins',
+        line2: '🛵 Estimated delivery: 30 mins',
       };
     }
   }
