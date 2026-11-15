@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { supabase } from '@/api/supabaseClient';
 import {
   getNotificationSettings,
   updateNotificationSettings,
@@ -17,6 +18,9 @@ import {
   Trash2,
   Tag,
   Percent,
+    Upload,
+  Image as ImageIcon,
+  Paperclip,
 } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import AdminNav from '@/components/admin/AdminNav';
@@ -47,6 +51,58 @@ export default function AdminSettings() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [businessEmail, setBusinessEmail] = useState('');
+  const DEFAULT_TEMPLATES = {
+  new: {
+    subject: 'Your Ukart Order #{{order_number}} is Confirmed!',
+    body: 'Hi {{customer_name}}, we have received your order #{{order_number}} ({{total}}) and are getting your groceries ready.',
+  },
+  processing: {
+    subject: 'Ukart Order #{{order_number}} — Being Prepared',
+    body: 'Hi {{customer_name}}, our team is carefully packing your items for order #{{order_number}}.',
+  },
+  ready: {
+    subject: 'Ukart Order #{{order_number}} — Ready for Delivery',
+    body: 'Hi {{customer_name}}, your order #{{order_number}} is packed and ready for dispatch.',
+  },
+  on_the_way: {
+    subject: 'Ukart Order #{{order_number}} — Out for Delivery!',
+    body: 'Hi {{customer_name}}, your Ukart rider is on the way to {{address}} with order #{{order_number}}!',
+  },
+  delivered: {
+    subject: 'Ukart Order #{{order_number}} — Delivered',
+    body: 'Hi {{customer_name}}, your order #{{order_number}} has been delivered. Thank you for shopping with Ukart!',
+  },
+};
+
+const [headerImageUrl, setHeaderImageUrl] = useState('');
+const [attachmentUrl, setAttachmentUrl] = useState('');
+const [attachmentName, setAttachmentName] = useState('');
+const [templates, setTemplates] = useState(DEFAULT_TEMPLATES);
+const [activeStage, setActiveStage] = useState('new');
+const [uploadingAsset, setUploadingAsset] = useState(null);
+
+const uploadEmailAsset = async (file, kind) => {
+  if (!file) return;
+  setUploadingAsset(kind);
+  try {
+    const ext = file.name.split('.').pop() || 'bin';
+    const path = `email-assets/${kind}-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from('uploads').upload(path, file, { upsert: true });
+    if (error) throw error;
+    const { data } = supabase.storage.from('uploads').getPublicUrl(path);
+    if (data?.publicUrl) {
+      if (kind === 'banner') setHeaderImageUrl(data.publicUrl);
+      if (kind === 'attachment') {
+        setAttachmentUrl(data.publicUrl);
+        setAttachmentName(file.name);
+      }
+    }
+  } catch (err) {
+    alert('Upload failed: ' + (err?.message || 'Unknown error'));
+  } finally {
+    setUploadingAsset(null);
+  }
+};
   const [alerts, setAlerts] = useState([]);
   const [alertForm, setAlertForm] = useState({
     title: '',
@@ -120,6 +176,10 @@ export default function AdminSettings() {
       const s = await getNotificationSettings();
       setSettings(s);
       setBusinessEmail(s.business_email || '');
+          setHeaderImageUrl(s.header_image_url || '');
+    setAttachmentUrl(s.attachment_url || '');
+    setAttachmentName(s.attachment_name || '');
+    setTemplates({ ...DEFAULT_TEMPLATES, ...(s.templates || {}) });
     } catch (e) {
       console.error(e);
     } finally {
