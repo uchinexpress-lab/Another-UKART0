@@ -204,7 +204,7 @@ export default function PaymentSuccess() {
         delivery={
           delivery?.estimated_minutes
             ? `Est. ${delivery.estimated_minutes} mins`
-            : 'Est. 35–90 mins'
+            : 'Est. 15–30 mins'
         }
       />
 
