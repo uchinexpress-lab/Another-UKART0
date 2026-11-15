@@ -467,7 +467,7 @@ const uploadEmailAsset = async (file, kind) => {
           </div>
         </div>
       </div>
-
+<ReviewModerationCard />
       {/* Save button */}
       <button
         onClick={handleSave}
