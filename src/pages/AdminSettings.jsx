@@ -333,6 +333,125 @@ const uploadEmailAsset = async (file, kind) => {
           ))}
         </div>
       </div>
+      {/* Email Branding, Attachment & Templates */}
+      <div className="bg-card rounded-2xl border border-border p-4 mb-4 space-y-4">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+            <ImageIcon className="w-4 h-4 text-[#2E7D32]" />
+          </div>
+          <div>
+            <h2 className="text-sm font-bold text-foreground">Email Banner, Attachment & Templates</h2>
+            <p className="text-xs text-muted-foreground">Customize pictures, attachments, and messages sent to customers.</p>
+          </div>
+        </div>
+
+        {/* Header Banner Upload */}
+        <div className="space-y-2 pt-2 border-t border-gray-100">
+          <label className="text-xs font-semibold text-foreground block">Header Banner Picture</label>
+          <div className="flex items-center gap-2">
+            <label className="h-9 px-3 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 flex items-center gap-1.5 cursor-pointer hover:bg-gray-50">
+              {uploadingAsset === 'banner' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+              Upload Banner Image
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => uploadEmailAsset(e.target.files && e.target.files[0], 'banner')}
+              />
+            </label>
+            {headerImageUrl && (
+              <button
+                type="button"
+                onClick={() => setHeaderImageUrl('')}
+                className="text-xs text-red-500 font-semibold"
+              >
+                Remove
+              </button>
+            )}
+          </div>
+          {headerImageUrl && (
+            <img src={headerImageUrl} alt="Email banner" className="w-full max-h-36 object-cover rounded-xl border border-gray-200" />
+          )}
+        </div>
+
+        {/* File Attachment Upload */}
+        <div className="space-y-2 pt-2 border-t border-gray-100">
+          <label className="text-xs font-semibold text-foreground block">Default Email Attachment (PDF Flyer, Menu, or Image)</label>
+          <div className="flex items-center gap-2 flex-wrap">
+            <label className="h-9 px-3 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 flex items-center gap-1.5 cursor-pointer hover:bg-gray-50">
+              {uploadingAsset === 'attachment' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Paperclip className="w-3.5 h-3.5" />}
+              Upload Attachment
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                className="hidden"
+                onChange={(e) => uploadEmailAsset(e.target.files && e.target.files[0], 'attachment')}
+              />
+            </label>
+            {attachmentUrl && (
+              <div className="flex items-center gap-2 text-xs bg-green-50 text-[#2E7D32] px-2.5 py-1.5 rounded-lg font-medium">
+                <span>{attachmentName || 'Attached file'}</span>
+                <button type="button" onClick={() => { setAttachmentUrl(''); setAttachmentName(''); }} className="text-red-500 font-bold">×</button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Stage Selector & Message Editor */}
+        <div className="space-y-3 pt-2 border-t border-gray-100">
+          <div className="flex gap-1.5 flex-wrap">
+            {[
+              { key: 'new', label: 'Order Confirmed' },
+              { key: 'processing', label: 'Preparing' },
+              { key: 'ready', label: 'Ready' },
+              { key: 'on_the_way', label: 'Out for Delivery' },
+              { key: 'delivered', label: 'Delivered' },
+            ].map((st) => (
+              <button
+                key={st.key}
+                type="button"
+                onClick={() => setActiveStage(st.key)}
+                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border ${
+                  activeStage === st.key ? 'bg-[#2E7D32] text-white border-[#2E7D32]' : 'bg-white text-gray-600 border-gray-200'
+                }`}
+              >
+                {st.label}
+              </button>
+            ))}
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-muted-foreground">Email Subject</label>
+            <input
+              value={templates[activeStage]?.subject || ''}
+              onChange={(e) =>
+                setTemplates((prev) => ({
+                  ...prev,
+                  [activeStage]: { ...prev[activeStage], subject: e.target.value },
+                }))
+              }
+              className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-[#2E7D32] mt-1"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-muted-foreground">
+              Message Body (Tags: {'{{customer_name}}'}, {'{{order_number}}'}, {'{{total}}'}, {'{{address}}'})
+            </label>
+            <textarea
+              rows={3}
+              value={templates[activeStage]?.body || ''}
+              onChange={(e) =>
+                setTemplates((prev) => ({
+                  ...prev,
+                  [activeStage]: { ...prev[activeStage], body: e.target.value },
+                }))
+              }
+              className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-[#2E7D32] mt-1"
+            />
+          </div>
+        </div>
+      </div>
 
       {/* Save button */}
       <button
