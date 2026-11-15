@@ -102,7 +102,7 @@ export default function TopNav() {
   }, [firstName]);
 
   const areaDisplay = location?.area ?? 'your area';
-  const deliveryShort = location?.zone === 'island' ? '35–90 mins' : 'Today';
+  const deliveryShort = location?.zone === 'island' ? '30 mins' : 'Today';
 
   const handleSearch = (e) => {
     e.preventDefault();
