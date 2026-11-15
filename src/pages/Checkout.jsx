@@ -287,7 +287,7 @@ export default function Checkout() {
                 p_transaction_id: transaction.transaction_id || null,
               });
               if (rpcError) throw rpcError;
-
+notifyOrderCreated(order.id);
               // 5. Clear cart and navigate to order confirmation
               clearCart();
               navigate(`/orders/${order.id}/payment-success`, { replace: true });
