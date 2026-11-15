@@ -20,31 +20,47 @@ export default function AdminHomepage() {
   const [pickerSection, setPickerSection] = useState(null);
   const [search, setSearch] = useState('');
 
-  const loadData = useCallback(async () => {
-    const [sectionRecs, products] = await Promise.all([
-      base44.entities.HomepageSection.list(),
-      base44.entities.Product.list(),
-    ]);
-    if (sectionRecs.length === 0) {
-      const wdIds = products.filter(p => p.is_weekly_deal).map(p => p.id);
-      const mteIds = products.filter(p => !p.is_hidden && p.status !== 'coming_soon').map(p => p.id);
-      await base44.entities.HomepageSection.bulkCreate([
-        { section: 'weekly_deals', product_ids: wdIds },
-        { section: 'more_to_explore', product_ids: mteIds },
+   const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [sectionRecs, products] = await Promise.all([
+        base44.entities.HomepageSection.list().catch(() => []),
+        base44.entities.Product.list(),
       ]);
-      const fresh = await base44.entities.HomepageSection.list();
-      const sMap = {}, idMap = {};
-      fresh.forEach(s => { sMap[s.section] = s.product_ids || []; idMap[s.section] = s.id; });
-      setSections(sMap);
-      setSectionIds(idMap);
-    } else {
-      const sMap = {}, idMap = {};
-      sectionRecs.forEach(s => { sMap[s.section] = s.product_ids || []; idMap[s.section] = s.id; });
-      setSections(sMap);
-      setSectionIds(idMap);
+      setAllProducts(products || []);
+
+      if (!sectionRecs || sectionRecs.length === 0) {
+        const wdIds = (products || []).filter((p) => p.is_weekly_deal).map((p) => p.id);
+        const mteIds = (products || [])
+          .filter((p) => !p.is_hidden && p.status !== 'coming_soon')
+          .map((p) => p.id);
+        const created = await base44.entities.HomepageSection.bulkCreate([
+          { section: 'weekly_deals', product_ids: wdIds },
+          { section: 'more_to_explore', product_ids: mteIds },
+        ]);
+        const sMap = {},
+          idMap = {};
+        (created || []).forEach((s) => {
+          sMap[s.section] = s.product_ids || [];
+          idMap[s.section] = s.id;
+        });
+        setSections(sMap);
+        setSectionIds(idMap);
+      } else {
+        const sMap = {},
+          idMap = {};
+        sectionRecs.forEach((s) => {
+          sMap[s.section] = s.product_ids || [];
+          idMap[s.section] = s.id;
+        });
+        setSections(sMap);
+        setSectionIds(idMap);
+      }
+    } catch (e) {
+      console.error('Failed to load homepage sections:', e);
+    } finally {
+      setLoading(false);
     }
-    setAllProducts(products);
-    setLoading(false);
   }, []);
 
   useEffect(() => { loadData(); }, [loadData]);
