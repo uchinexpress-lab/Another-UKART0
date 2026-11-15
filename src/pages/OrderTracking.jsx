@@ -28,10 +28,10 @@ const STEPS = [
 const STEP_ORDER = ['new', 'processing', 'ready', 'on_the_way', 'delivered'];
 
 const ETA_BY_STATUS = {
-  new: '45–90 mins',
-  processing: '30–75 mins',
-  ready: '20–45 mins',
-  on_the_way: '15–40 mins',
+  new: '30–45 mins',
+  processing: '1–5 mins',
+  ready: '5–15 mins',
+  on_the_way: '15–30 mins',
   delivered: 'Delivered',
 };
 
