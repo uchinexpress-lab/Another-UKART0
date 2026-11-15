@@ -146,7 +146,7 @@ export default function TopNav() {
               <div className="overflow-y-auto px-4 pb-8 space-y-4">
                 <div>
                   <p className="text-xs font-bold text-[#2E9E44] uppercase mb-2">
-                    Lagos Island · 35–90 mins
+                    Lagos Island · 30 mins
                   </p>
                   <div className="grid grid-cols-2 gap-2">
                     {LAGOS_AREAS.island.map((area) => (
