@@ -94,11 +94,11 @@ export default function CustomerReviews({ reviews: initialReviews = [] }) {
         return;
       }
 
-      const verifiedOrder = matchedOrders;
+            const verifiedOrder = matchedOrders[0];
       const { error } = await supabase.from('customer_reviews').insert({
         customer_name: name.trim(),
         customer_contact: raw,
-        order_number: verifiedOrder.order_number || null,
+        order_number: verifiedOrder?.order_number || null,
         location: location.trim() || 'Lagos',
         rating,
         text: text.trim(),
