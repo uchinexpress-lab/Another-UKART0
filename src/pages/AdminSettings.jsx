@@ -254,7 +254,7 @@ const uploadEmailAsset = async (file, kind) => {
     } catch (e) {
       console.error('Save settings error:', e);
       alert('Failed to save settings: ' + (e?.message || 'Please try again.'));
-    } finally {
+      } finally {
       setSaving(false);
     }
   };
