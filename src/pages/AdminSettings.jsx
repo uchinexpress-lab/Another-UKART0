@@ -685,3 +685,149 @@ const uploadEmailAsset = async (file, kind) => {
     </div>
   );
 }
+
+function ReviewModerationCard() {
+  const [reviews, setReviews] = React.useState([]);
+  const [editingId, setEditingId] = React.useState(null);
+  const [editText, setEditText] = React.useState('');
+
+  const loadReviews = async () => {
+    const { data } = await supabase
+      .from('customer_reviews')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50);
+    if (Array.isArray(data)) setReviews(data);
+  };
+
+  React.useEffect(() => {
+    loadReviews();
+  }, []);
+
+  const toggleApprove = async (rev) => {
+    await supabase
+      .from('customer_reviews')
+      .update({ is_approved: !rev.is_approved })
+      .eq('id', rev.id);
+    loadReviews();
+  };
+
+  const saveEdit = async (id) => {
+    await supabase.from('customer_reviews').update({ text: editText.trim() }).eq('id', id);
+    setEditingId(null);
+    loadReviews();
+  };
+
+  const deleteReview = async (id) => {
+    if (!window.confirm('Delete this review permanently?')) return;
+    await supabase.from('customer_reviews').delete().eq('id', id);
+    loadReviews();
+  };
+
+  return (
+    <div className="bg-card rounded-2xl border border-border p-4 mb-4 space-y-3">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-sm font-bold text-foreground">Customer Reviews Moderation</h2>
+          <p className="text-xs text-muted-foreground">
+            Approve, edit, or delete verified buyer reviews before they appear on the Home page.
+          </p>
+        </div>
+        <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-muted">
+          {reviews.length} total
+        </span>
+      </div>
+
+      {reviews.length === 0 ? (
+        <p className="text-xs text-muted-foreground py-3 text-center">No submitted reviews yet.</p>
+      ) : (
+        <div className="space-y-2.5 max-h-96 overflow-y-auto">
+          {reviews.map((r) => (
+            <div key={r.id} className="p-3 rounded-xl border border-gray-200 bg-white space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <span className="text-xs font-bold text-gray-900">{r.customer_name}</span>
+                  {r.order_number && (
+                    <span className="ml-1.5 text-[11px] font-semibold text-[#2E7D32] bg-green-50 px-2 py-0.5 rounded-full">
+                      Order #{r.order_number}
+                    </span>
+                  )}
+                  <div className="text-[11px] text-gray-500">
+                    {r.location} · {r.rating}★ {r.customer_contact ? `· ${r.customer_contact}` : ''}
+                  </div>
+                </div>
+                <span
+                  className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                    r.is_approved ? 'bg-green-100 text-[#2E7D32]' : 'bg-amber-100 text-amber-800'
+                  }`}
+                >
+                  {r.is_approved ? 'Visible' : 'Pending'}
+                </span>
+              </div>
+
+              {editingId === r.id ? (
+                <div className="space-y-2">
+                  <textarea
+                    rows={2}
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    className="w-full text-xs border border-gray-300 rounded-lg p-2"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => saveEdit(r.id)}
+                      className="px-3 py-1 rounded-lg bg-[#2E7D32] text-white text-xs font-semibold"
+                    >
+                      Save Text
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditingId(null)}
+                      className="px-3 py-1 rounded-lg border text-xs"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-gray-700">&ldquo;{r.text}&rdquo;</p>
+              )}
+
+              {r.photo_url && (
+                <img src={r.photo_url} alt="" className="w-20 h-20 object-cover rounded-lg border" />
+              )}
+
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => toggleApprove(r)}
+                  className="px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-xs font-semibold"
+                >
+                  {r.is_approved ? 'Hide' : 'Approve & Show'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingId(r.id);
+                    setEditText(r.text || '');
+                  }}
+                  className="px-2.5 py-1 rounded-lg border text-xs font-semibold"
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => deleteReview(r.id)}
+                  className="px-2.5 py-1 rounded-lg text-red-600 text-xs font-semibold ml-auto"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
