@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Star, ChevronLeft, ChevronRight, Plus, Camera, X, Loader2, CheckCircle2 } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { supabase } from '@/api/supabaseClient';
 
 export default function CustomerReviews({ reviews: initialReviews = [] }) {
@@ -155,38 +156,52 @@ export default function CustomerReviews({ reviews: initialReviews = [] }) {
       )}
 
       {/* Compact Mini Review Card (~1/3 original height) */}
-      <div className="bg-white rounded-xl border border-gray-100 px-3 py-2 shadow-sm flex items-center gap-2.5">
-        <div
-          className="w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0"
-          style={{ background: 'linear-gradient(135deg, #76C237, #2E7D32)' }}
-        >
-          {(current.customer_name || 'U').charAt(0).toUpperCase()}
-        </div>
+         {/* Smooth Animated Mini Review Card */}
+      <div className="bg-white rounded-xl border border-gray-100 px-3 py-2 shadow-sm flex items-center gap-2.5 overflow-hidden">
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={current.id || activeIndex}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className="flex items-center gap-2.5"
+            >
+              <div
+                className="w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0"
+                style={{ background: 'linear-gradient(135deg, #76C237, #2E7D32)' }}
+              >
+                {(current.customer_name || 'U').charAt(0).toUpperCase()}
+              </div>
 
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5">
-            <span className="font-semibold text-xs text-gray-900 truncate">
-              {current.customer_name}
-            </span>
-            <span className="text-[10px] text-amber-500 shrink-0">
-              {'★'.repeat(Math.min(5, Math.max(1, current.rating || 5)))}
-            </span>
-            {current.order_number && (
-              <span className="text-[9px] font-semibold text-[#2E7D32] bg-green-50 px-1.5 rounded-full shrink-0">
-                Verified
-              </span>
-            )}
-          </div>
-          <p className="text-xs text-gray-600 line-clamp-1">&ldquo;{current.text}&rdquo;</p>
-        </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-semibold text-xs text-gray-900 truncate">
+                    {current.customer_name}
+                  </span>
+                  <span className="text-[10px] text-amber-500 shrink-0">
+                    {'★'.repeat(Math.min(5, Math.max(1, current.rating || 5)))}
+                  </span>
+                  {current.order_number && (
+                    <span className="text-[9px] font-semibold text-[#2E7D32] bg-green-50 px-1.5 rounded-full shrink-0">
+                      Verified
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-gray-600 line-clamp-1">&ldquo;{current.text}&rdquo;</p>
+              </div>
 
-        {current.photo_url && (
-          <img
-            src={current.photo_url}
-            alt=""
-            className="w-9 h-9 rounded-lg object-cover border border-gray-100 shrink-0"
-          />
-        )}
+              {current.photo_url && (
+                <img
+                  src={current.photo_url}
+                  alt=""
+                  className="w-9 h-9 rounded-lg object-cover border border-gray-100 shrink-0"
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
         {allReviews.length > 1 && (
           <div className="flex items-center gap-1 shrink-0">
@@ -195,14 +210,14 @@ export default function CustomerReviews({ reviews: initialReviews = [] }) {
               onClick={() =>
                 setActiveIndex((prev) => (prev - 1 + allReviews.length) % allReviews.length)
               }
-              className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center text-gray-500"
+              className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 active:scale-90 transition-transform"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
             </button>
             <button
               type="button"
               onClick={() => setActiveIndex((prev) => (prev + 1) % allReviews.length)}
-              className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center text-gray-500"
+              className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 active:scale-90 transition-transform"
             >
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
