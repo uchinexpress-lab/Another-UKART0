@@ -251,7 +251,7 @@ export default function CustomerReviews({ reviews: initialReviews = [] }) {
             <div>
               <label className="text-xs font-medium text-gray-600">Rating</label>
               <div className="flex gap-1 mt-1">
-                {[1, 2, 3, 4, 5].map((star) => (
+                [1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
                     type="button"
@@ -327,7 +327,7 @@ export default function CustomerReviews({ reviews: initialReviews = [] }) {
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={(e) => handlePhotoUpload(e.target.files && e.target.files[0])}
+                  onChange={(e) => handlePhotoUpload(e.target.files?.[0])}
                 />
               </label>
               {photoUrl && (
