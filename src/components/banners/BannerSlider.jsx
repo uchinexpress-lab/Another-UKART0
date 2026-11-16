@@ -4,11 +4,6 @@ import { ArrowRight } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { BANNER_LOCATIONS } from '@/lib/bannerConfig';
 
-/**
- * Renders the text overlay (gradient + badge + heading + subheading + CTA)
- * for banners that have overlay content. Matches the original hardcoded
- * PromoBanner design so migration is visually seamless.
- */
 function BannerOverlay({ banner, onCtaClick }) {
   const hasOverlay =
     banner.show_overlay ||
@@ -16,7 +11,6 @@ function BannerOverlay({ banner, onCtaClick }) {
     banner.badge_text ||
     banner.cta_text;
   if (!hasOverlay) return null;
-
   return (
     <>
       {banner.show_overlay && (
@@ -60,18 +54,13 @@ function BannerOverlay({ banner, onCtaClick }) {
   );
 }
 
-/**
- * Customer-facing banner slider.
- * Loads active banners for a location from the Banner entity and displays them
- * as a carousel with auto-slide, arrows, and dots.
- *
- * Falls back to children if no banners exist for the location (preserves
- * existing hardcoded banners until the admin adds managed ones).
- *
- * Uses saved zoom/position/fit settings for consistent responsive display.
- * Renders text overlay (heading, CTA, badge) when the banner has overlay fields.
- */
-export default function BannerSlider({ location, className = '', rounded = 'rounded-3xl', aspectRatio: frameAspectRatio, children }) {
+export default function BannerSlider({
+  location,
+  className = '',
+  rounded = 'rounded-3xl',
+  aspectRatio: frameAspectRatio,
+  children,
+}) {
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [current, setCurrent] = useState(0);
@@ -92,13 +81,14 @@ export default function BannerSlider({ location, className = '', rounded = 'roun
       .catch(() => {
         if (mounted) setLoading(false);
       });
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [location]);
 
-  // Auto-slide
   useEffect(() => {
     if (banners.length <= 1) return;
-    const first = banners[0];
+    const first = banners;
     if (!first.auto_slide) return;
     const duration = (first.slide_duration || 5) * 1000;
     const timer = setInterval(() => {
@@ -107,33 +97,31 @@ export default function BannerSlider({ location, className = '', rounded = 'roun
     return () => clearInterval(timer);
   }, [banners, current]);
 
-  if (loading) return null;
+  if (loading) {
+    return <div className={`w-full h-44 ${rounded} bg-gray-100 animate-pulse ${className}`} />;
+  }
   if (banners.length === 0) return children;
 
   const config = BANNER_LOCATIONS[location];
   const aspectRatio = frameAspectRatio ?? config?.aspectRatio ?? 16 / 7;
 
   const handleTouchStart = (e) => {
-    const t = e.touches[0];
+    const t = e.touches;
     touchRef.current = { x: t.clientX, y: t.clientY, swiped: false };
   };
 
-  // Swipe left / right to move between banners.
   const handleTouchEnd = (e) => {
-    const t = e.changedTouches[0];
+    const t = e.changedTouches;
     const dx = t.clientX - touchRef.current.x;
     const dy = t.clientY - touchRef.current.y;
     if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
     touchRef.current.swiped = true;
     setCurrent((c) =>
-      dx < 0
-        ? (c + 1) % banners.length
-        : (c - 1 + banners.length) % banners.length
+      dx < 0 ? (c + 1) % banners.length : (c - 1 + banners.length) % banners.length
     );
   };
 
   const handleClick = (banner) => {
-    // A swipe must not open the banner link.
     if (touchRef.current.swiped) {
       touchRef.current.swiped = false;
       return;
@@ -141,35 +129,38 @@ export default function BannerSlider({ location, className = '', rounded = 'roun
     if (banner.link) navigate(banner.link);
   };
 
-  const getBgStyle = (banner) => ({
-    backgroundImage: `url(${banner.image})`,
-    backgroundSize: banner.zoom > 1
-      ? `${banner.zoom * 100}%`
-      : banner.fit_mode === 'contain' ? 'contain' : 'cover',
-    backgroundPosition: `${banner.pos_x || 50}% ${banner.pos_y || 50}%`,
-    backgroundRepeat: 'no-repeat',
-  });
-
   return (
     <div
-      className={`relative ${rounded} overflow-hidden bg-gray-50 ${className}`}
+      className={`relative w-full max-h-[220px] ${rounded} overflow-hidden bg-gray-100 ${className}`}
       style={{ aspectRatio, touchAction: 'pan-y' }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Slides */}
       <div
         className="flex h-full transition-transform duration-500 ease-out"
         style={{ transform: `translateX(-${current * 100}%)` }}
       >
-        {banners.map((banner) => (
+        {banners.map((banner, idx) => (
           <div
             key={banner.id}
             className="relative w-full h-full flex-shrink-0"
             onClick={() => handleClick(banner)}
             role={banner.link ? 'button' : undefined}
           >
-            <div className="absolute inset-0" style={getBgStyle(banner)} />
+            <img
+              src={banner.image}
+              alt={banner.heading || 'Ukart Promo'}
+              loading={idx === 0 ? 'eager' : 'lazy'}
+              fetchPriority={idx === 0 ? 'high' : 'auto'}
+              decoding="async"
+              className={`absolute inset-0 w-full h-full ${
+                banner.fit_mode === 'contain' ? 'object-contain' : 'object-cover'
+              }`}
+              style={{
+                objectPosition: `${banner.pos_x || 50}% ${banner.pos_y || 50}%`,
+                transform: banner.zoom > 1 ? `scale(${banner.zoom})` : undefined,
+              }}
+            />
             <BannerOverlay
               banner={banner}
               onCtaClick={() => navigate(banner.link || '/categories')}
@@ -178,26 +169,22 @@ export default function BannerSlider({ location, className = '', rounded = 'roun
         ))}
       </div>
 
-      {/* Dots — banners are changed by swiping */}
       {banners.length > 1 && (
-        <>
-          {/* Dots */}
-          <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-            {banners.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setCurrent(idx);
-                }}
-                className={`h-1.5 rounded-full transition-all ${
-                  idx === current ? 'w-5 bg-white' : 'w-1.5 bg-white/50'
-                }`}
-                aria-label={`Go to slide ${idx + 1}`}
-              />
-            ))}
-          </div>
-        </>
+        <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+          {banners.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={(e) => {
+                e.stopPropagation();
+                setCurrent(idx);
+              }}
+              className={`h-1.5 rounded-full transition-all ${
+                idx === current ? 'w-5 bg-white' : 'w-1.5 bg-white/50'
+              }`}
+              aria-label={`Go to slide ${idx + 1}`}
+            />
+          ))}
+        </div>
       )}
     </div>
   );
