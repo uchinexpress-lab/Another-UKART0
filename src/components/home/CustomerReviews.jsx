@@ -125,108 +125,87 @@ export default function CustomerReviews({ reviews: initialReviews = [] }) {
   if (!allReviews.length) return null;
   const current = allReviews[activeIndex % allReviews.length];
 
-  return (
+    return (
     <section
       className="px-4"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-lg font-bold text-gray-900">Customer Reviews</h2>
+      <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-bold text-gray-900">Customer Reviews</h2>
+          <span className="text-[11px] font-semibold text-amber-600 flex items-center gap-0.5">
+            ★ 4.9 ({allReviews.length})
+          </span>
+        </div>
         <button
           type="button"
           onClick={() => setShowModal(true)}
-          className="text-xs font-semibold text-[#2E7D32] bg-[#E8F5E9] px-2.5 py-1.5 rounded-full flex items-center gap-1 active:scale-95"
+          className="text-[11px] font-semibold text-[#2E7D32] bg-[#E8F5E9] px-2 py-0.5 rounded-full flex items-center gap-0.5 active:scale-95"
         >
-          <Plus className="w-3.5 h-3.5" /> Add Review
+          <Plus className="w-3 h-3" /> Add
         </button>
       </div>
 
       {submittedNotice && (
-        <div className="mb-2.5 px-3 py-2 rounded-xl bg-green-50 border border-green-200 text-xs text-[#2E7D32] font-medium flex items-center gap-1.5">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
-          Thank you! Your review has been submitted and will appear once approved by our team.
+        <div className="mb-1.5 px-2.5 py-1.5 rounded-lg bg-green-50 border border-green-200 text-[11px] text-[#2E7D32] font-medium flex items-center gap-1">
+          <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+          Submitted! Your review will appear once approved.
         </div>
       )}
 
-      {/* Single Auto-Rotating Card */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-3.5 shadow-sm transition-all">
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div
-              className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0"
-              style={{ background: 'linear-gradient(135deg, #76C237, #2E7D32)' }}
-            >
-              {(current.customer_name || 'U').charAt(0).toUpperCase()}
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="font-semibold text-sm text-gray-900 truncate">
-                  {current.customer_name}
-                </span>
-                {current.order_number && (
-                  <span className="text-[10px] font-semibold text-[#2E7D32] bg-green-50 px-1.5 py-0.5 rounded-full shrink-0">
-                    Verified Buyer
-                  </span>
-                )}
-              </div>
-              <div className="text-xs text-gray-500 truncate">{current.location}</div>
-            </div>
-          </div>
-
-          <div className="flex gap-0.5 shrink-0">
-            {[...Array(Math.min(5, Math.max(1, current.rating || 5)))].map((_, i) => (
-              <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-            ))}
-          </div>
+      {/* Compact Mini Review Card (~1/3 original height) */}
+      <div className="bg-white rounded-xl border border-gray-100 px-3 py-2 shadow-sm flex items-center gap-2.5">
+        <div
+          className="w-7 h-7 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0"
+          style={{ background: 'linear-gradient(135deg, #76C237, #2E7D32)' }}
+        >
+          {(current.customer_name || 'U').charAt(0).toUpperCase()}
         </div>
 
-        <p className="text-sm text-gray-600 leading-relaxed">&ldquo;{current.text}&rdquo;</p>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <span className="font-semibold text-xs text-gray-900 truncate">
+              {current.customer_name}
+            </span>
+            <span className="text-[10px] text-amber-500 shrink-0">
+              {'★'.repeat(Math.min(5, Math.max(1, current.rating || 5)))}
+            </span>
+            {current.order_number && (
+              <span className="text-[9px] font-semibold text-[#2E7D32] bg-green-50 px-1.5 rounded-full shrink-0">
+                Verified
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-gray-600 line-clamp-1">&ldquo;{current.text}&rdquo;</p>
+        </div>
 
         {current.photo_url && (
           <img
             src={current.photo_url}
-            alt={`Review by ${current.customer_name}`}
-            className="mt-2.5 w-full max-h-44 object-cover rounded-xl border border-gray-100"
+            alt=""
+            className="w-9 h-9 rounded-lg object-cover border border-gray-100 shrink-0"
           />
         )}
 
-        {/* Carousel Controls & Dots */}
         {allReviews.length > 1 && (
-          <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-50">
-            <div className="flex items-center gap-1.5">
-              {allReviews.slice(0, 8).map((_, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setActiveIndex(idx)}
-                  aria-label={`Review ${idx + 1}`}
-                  className={`h-1.5 rounded-full transition-all ${
-                    idx === activeIndex % allReviews.length
-                      ? 'w-4 bg-[#2E7D32]'
-                      : 'w-1.5 bg-gray-200'
-                  }`}
-                />
-              ))}
-            </div>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() =>
-                  setActiveIndex((prev) => (prev - 1 + allReviews.length) % allReviews.length)
-                }
-                className="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveIndex((prev) => (prev + 1) % allReviews.length)}
-                className="w-7 h-7 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              type="button"
+              onClick={() =>
+                setActiveIndex((prev) => (prev - 1 + allReviews.length) % allReviews.length)
+              }
+              className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center text-gray-500"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveIndex((prev) => (prev + 1) % allReviews.length)}
+              className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center text-gray-500"
+            >
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
           </div>
         )}
       </div>
