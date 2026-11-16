@@ -69,18 +69,19 @@ export default function SupportTickets() {
     loadTickets();
   }, []);
 
-  // Load messages when entering a chat
+    // Load messages when entering a chat
   useEffect(() => {
     if (view === 'chat' && activeTicketId) {
       base44.entities.TicketMessage
-        .filter({ ticket_id: activeTicketId })
-        .then((msgs) =>
+        .filter({ ticket_id: activeTicketId }, { sort: 'created_date', limit: 200 })
+        .then((res) => {
+          const list = Array.isArray(res) ? res : res?.items || [];
           setMessages(
-            msgs.sort(
-              (a, b) => new Date(a.created_date) - new Date(b.created_date)
-            )
-          )
-        )
+            list
+              .filter((m) => !m.internal)
+              .sort((a, b) => new Date(a.created_date) - new Date(b.created_date))
+          );
+        })
         .catch(() => setMessages([]));
     } else {
       setMessages([]);
@@ -91,7 +92,7 @@ export default function SupportTickets() {
   useEffect(() => {
     if (!activeTicketId) return;
     const unsub = base44.entities.TicketMessage.subscribe((event) => {
-      if (event.data?.ticket_id !== activeTicketId) return;
+      if (event.data?.ticket_id !== activeTicketId || event.data?.internal) return;
       if (event.type === 'create') {
         setMessages((prev) =>
           prev.some((m) => m.id === event.data.id) ? prev : [...prev, event.data]
