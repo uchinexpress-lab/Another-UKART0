@@ -15,7 +15,6 @@ import {
   resolveDeliverySettings,
 } from '@/lib/delivery';
 import { notifyOrderCreated } from '@/lib/notifications';
-
 const REWARD_AMOUNT = 1000;
 
 const PAYSTACK_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
