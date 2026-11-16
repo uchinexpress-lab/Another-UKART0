@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import AddressAutocomplete from '@/components/checkout/AddressAutocomplete';
+import AddressPickerMap from '@/components/delivery/AddressPickerMap';
 import { useCart } from '@/context/CartContext';
 import { base44 } from '@/api/base44Client';
 import { supabase } from '@/api/supabaseClient';
 import { Clock, MapPin, Navigation, Phone, User, Loader2, ShoppingBag, Tag, History, X, CreditCard, Lock, Truck } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { getServiceFee } from '@/lib/fees';
-import AddressAutocomplete from '@/components/checkout/AddressAutocomplete';
 import {
   getDeliveryFee,
   getDeliveryBase,
