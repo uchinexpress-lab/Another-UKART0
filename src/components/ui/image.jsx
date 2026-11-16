@@ -21,7 +21,8 @@ const ResponsiveImage = React.forwardRef(
         <img
           ref={ref}
           src={src}
-          loading="lazy"
+          loading="eager"
+decoding="async"
           className={cn(
             "w-full h-full inset-0 absolute",
             fittingType === "fit" ? "object-contain" : "object-cover"
