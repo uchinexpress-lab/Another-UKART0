@@ -258,20 +258,6 @@ const uploadEmailAsset = async (file, kind) => {
       setSaving(false);
     }
   };
-      if (settings?.id) {
-        const updated = await updateNotificationSettings(settings.id, payload);
-        setSettings(updated);
-      } else {
-        const created = await base44.entities.NotificationSetting.create(payload);
-        setSettings(created);
-      }
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } catch (e) {
-      console.error('Toggle save error:', e);
-      alert('Could not save toggle: ' + (e?.message || 'Please try again.'));
-    }
-  };
   if (!user || loading) {
     return (
       <div className="p-8 text-center">
