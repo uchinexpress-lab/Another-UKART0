@@ -63,7 +63,8 @@ const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, user } = useAuth();
   const location = useLocation();
   const isRiderPath = location.pathname.startsWith('/rider');
-  const isStaffPath = location.pathname.startsWith('/admin');
+  const isStaffPath =
+  location.pathname.startsWith('/admin') || location.pathname.startsWith('/staff');
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
