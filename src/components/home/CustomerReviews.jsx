@@ -58,8 +58,12 @@ export default function CustomerReviews({ reviews: initialReviews = [] }) {
       setUploading(false);
     }
   };
-    const handleSubmit = async (e) => {
-         const raw = contact.trim();
+      const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!name.trim() || !text.trim() || !contact.trim()) return;
+    setSubmitting(true);
+    try {
+      const raw = contact.trim();
       const digits = raw.replace(/\D/g, '').slice(-10);
       const isEmail = raw.includes('@');
 
@@ -90,10 +94,10 @@ export default function CustomerReviews({ reviews: initialReviews = [] }) {
         return;
       }
 
-      const verifiedOrder = matchedOrders[0];
+      const verifiedOrder = matchedOrders;
       const { error } = await supabase.from('customer_reviews').insert({
         customer_name: name.trim(),
-        customer_contact: contact.trim(),
+        customer_contact: raw,
         order_number: verifiedOrder.order_number || null,
         location: location.trim() || 'Lagos',
         rating,
