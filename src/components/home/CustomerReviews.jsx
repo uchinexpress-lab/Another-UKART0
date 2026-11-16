@@ -59,23 +59,33 @@ export default function CustomerReviews({ reviews: initialReviews = [] }) {
     }
   };
     const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!name.trim() || !text.trim() || !contact.trim()) return;
-    setSubmitting(true);
-    try {
-      const q = contact.trim().toLowerCase();
-      const { data: matchedOrders, error: orderErr } = await supabase
+         const raw = contact.trim();
+      const digits = raw.replace(/\D/g, '').slice(-10);
+      const isEmail = raw.includes('@');
+
+      if (!isEmail && digits.length < 10) {
+        alert('Please enter the exact email address or 10/11-digit phone number used on your paid order.');
+        setSubmitting(false);
+        return;
+      }
+
+      let query = supabase
         .from('orders')
         .select('id, order_number, customer_email, customer_phone, payment_status')
         .eq('payment_status', 'paid')
-        .or(`customer_email.ilike.%${q}%,customer_phone.ilike.%${q}%`)
         .limit(1);
+
+      if (isEmail) {
+        query = query.ilike('customer_email', raw);
+      } else {
+        query = query.ilike('customer_phone', `%${digits}`);
+      }
+
+      const { data: matchedOrders, error: orderErr } = await query;
 
       if (orderErr) throw orderErr;
       if (!matchedOrders || matchedOrders.length === 0) {
-        alert(
-          'Only verified customers with a completed order can post a review. Please enter the email or phone number you used at checkout.'
-        );
+        alert('Only verified customers with a paid order can submit feedback.');
         setSubmitting(false);
         return;
       }
