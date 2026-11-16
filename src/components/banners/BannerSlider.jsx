@@ -54,13 +54,7 @@ function BannerOverlay({ banner, onCtaClick }) {
   );
 }
 
-export default function BannerSlider({
-  location,
-  className = '',
-  rounded = 'rounded-3xl',
-  aspectRatio: frameAspectRatio,
-  children,
-}) {
+export default function BannerSlider({ location, className = '', rounded = 'rounded-3xl', aspectRatio: frameAspectRatio, children }) {
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [current, setCurrent] = useState(0);
@@ -81,14 +75,12 @@ export default function BannerSlider({
       .catch(() => {
         if (mounted) setLoading(false);
       });
-    return () => {
-      mounted = false;
-    };
+    return () => { mounted = false; };
   }, [location]);
 
   useEffect(() => {
     if (banners.length <= 1) return;
-    const first = banners;
+    const first = banners[0];
     if (!first.auto_slide) return;
     const duration = (first.slide_duration || 5) * 1000;
     const timer = setInterval(() => {
@@ -97,27 +89,27 @@ export default function BannerSlider({
     return () => clearInterval(timer);
   }, [banners, current]);
 
-  if (loading) {
-    return <div className={`w-full h-44 ${rounded} bg-gray-100 animate-pulse ${className}`} />;
-  }
+  if (loading) return null;
   if (banners.length === 0) return children;
 
   const config = BANNER_LOCATIONS[location];
   const aspectRatio = frameAspectRatio ?? config?.aspectRatio ?? 16 / 7;
 
   const handleTouchStart = (e) => {
-    const t = e.touches;
+    const t = e.touches[0];
     touchRef.current = { x: t.clientX, y: t.clientY, swiped: false };
   };
 
   const handleTouchEnd = (e) => {
-    const t = e.changedTouches;
+    const t = e.changedTouches[0];
     const dx = t.clientX - touchRef.current.x;
     const dy = t.clientY - touchRef.current.y;
     if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
     touchRef.current.swiped = true;
     setCurrent((c) =>
-      dx < 0 ? (c + 1) % banners.length : (c - 1 + banners.length) % banners.length
+      dx < 0
+        ? (c + 1) % banners.length
+        : (c - 1 + banners.length) % banners.length
     );
   };
 
@@ -129,9 +121,18 @@ export default function BannerSlider({
     if (banner.link) navigate(banner.link);
   };
 
+  const getBgStyle = (banner) => ({
+    backgroundImage: `url(${banner.image})`,
+    backgroundSize: banner.zoom > 1
+      ? `${banner.zoom * 100}%`
+      : banner.fit_mode === 'contain' ? 'contain' : 'cover',
+    backgroundPosition: `${banner.pos_x || 50}% ${banner.pos_y || 50}%`,
+    backgroundRepeat: 'no-repeat',
+  });
+
   return (
     <div
-      className={`relative w-full max-h-[220px] ${rounded} overflow-hidden bg-gray-100 ${className}`}
+      className={`relative ${rounded} overflow-hidden bg-gray-50 ${className}`}
       style={{ aspectRatio, touchAction: 'pan-y' }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
@@ -140,27 +141,14 @@ export default function BannerSlider({
         className="flex h-full transition-transform duration-500 ease-out"
         style={{ transform: `translateX(-${current * 100}%)` }}
       >
-        {banners.map((banner, idx) => (
+        {banners.map((banner) => (
           <div
             key={banner.id}
             className="relative w-full h-full flex-shrink-0"
             onClick={() => handleClick(banner)}
             role={banner.link ? 'button' : undefined}
           >
-            <img
-              src={banner.image}
-              alt={banner.heading || 'Ukart Promo'}
-              loading={idx === 0 ? 'eager' : 'lazy'}
-              fetchPriority={idx === 0 ? 'high' : 'auto'}
-              decoding="async"
-              className={`absolute inset-0 w-full h-full ${
-                banner.fit_mode === 'contain' ? 'object-contain' : 'object-cover'
-              }`}
-              style={{
-                objectPosition: `${banner.pos_x || 50}% ${banner.pos_y || 50}%`,
-                transform: banner.zoom > 1 ? `scale(${banner.zoom})` : undefined,
-              }}
-            />
+            <div className="absolute inset-0" style={getBgStyle(banner)} />
             <BannerOverlay
               banner={banner}
               onCtaClick={() => navigate(banner.link || '/categories')}
