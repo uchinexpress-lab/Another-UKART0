@@ -86,6 +86,7 @@ const AuthenticatedApp = () => {
         <Route element={<ProtectedRoute unauthenticatedElement={<Navigate to={`/admin/login?returnTo=${encodeURIComponent(location.pathname + location.search)}`} replace />} />}>
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/*" element={<StaffApp />} />
+          <Route path="/staff/*" element={<StaffApp />} />
         </Route>
       </Routes>
     </Suspense>
@@ -175,7 +176,7 @@ function AppShell() {
   };
   const location = useLocation();
   const isRiderPath = location.pathname.startsWith('/rider');
-  const isStaffPath = location.pathname.startsWith('/admin');
+  const isStaffPath = location.pathname.startsWith('/admin') || location.pathname.startsWith('/staff');
   useEffect(() => {
     const ref = new URLSearchParams(window.location.search).get('ref');
     if (ref) {
