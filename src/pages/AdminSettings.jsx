@@ -228,21 +228,36 @@ const uploadEmailAsset = async (file, kind) => {
     setSavingPromo(false);
   };
 
-    const handleToggle = async (key) => {
-    const nextValue = !settings?.[key];
-    const nextSettings = { ...(settings || {}), [key]: nextValue };
-    setSettings(nextSettings);
+      const handleSave = async () => {
+    setSaving(true);
+    setSaved(false);
     try {
       const payload = {
         business_email: businessEmail.trim() || 'ukartfreshventures@gmail.com',
-        enable_business_email: nextSettings.enable_business_email ?? true,
-        enable_customer_confirmation: nextSettings.enable_customer_confirmation ?? true,
-        enable_customer_status_emails: nextSettings.enable_customer_status_emails ?? true,
+        enable_business_email: settings?.enable_business_email ?? true,
+        enable_customer_confirmation: settings?.enable_customer_confirmation ?? true,
+        enable_customer_status_emails: settings?.enable_customer_status_emails ?? true,
         header_image_url: headerImageUrl.trim() || null,
         attachment_url: attachmentUrl.trim() || null,
         attachment_name: attachmentName.trim() || null,
         templates,
       };
+      if (settings?.id) {
+        const updated = await updateNotificationSettings(settings.id, payload);
+        setSettings(updated);
+      } else {
+        const created = await base44.entities.NotificationSetting.create(payload);
+        setSettings(created);
+      }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (e) {
+      console.error('Save settings error:', e);
+      alert('Failed to save settings: ' + (e?.message || 'Please try again.'));
+    } finally {
+      setSaving(false);
+    }
+  };
       if (settings?.id) {
         const updated = await updateNotificationSettings(settings.id, payload);
         setSettings(updated);
