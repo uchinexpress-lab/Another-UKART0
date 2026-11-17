@@ -27,13 +27,13 @@ export default function AddressPickerMap({ onConfirmLocation }) {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [coords, setCoords] = useState(DEFAULT_CENTER);
-  const [zone, setZone] = useState('Island');
+  const [zone, setZone] = useState('island');
 
   // Auto-detect Mainland vs Island from coordinates
   const detectLagosZone = (lat, lng) => {
     // Rough boundary: South of Lagos Lagoon & East of Five Cowrie Creek/Falomo
     const isIsland = lat < 6.485 && lng > 3.405;
-    return isIsland ? 'Island' : 'Mainland';
+    return isIsland ? 'island' : 'mainland';
   };
 
   const updatePosition = (lat, lng, label) => {
