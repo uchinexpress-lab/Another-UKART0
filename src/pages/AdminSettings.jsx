@@ -204,6 +204,12 @@ const uploadEmailAsset = async (file, kind) => {
         .catch(() => {});
     }
   }, [user]);
+    const handleToggle = (key) => {
+    setSettings((prev) => ({
+      ...(prev || {}),
+      [key]: !(prev?.[key] ?? true),
+    }));
+  };
 
   const handleSavePromo = async () => {
     if (!promoSettings) return;
@@ -328,12 +334,12 @@ const uploadEmailAsset = async (file, kind) => {
               <button
                 onClick={() => handleToggle(field.key)}
                 className={`relative w-11 h-6 rounded-full transition-colors flex-shrink-0 ${
-                  settings[field.key] ? 'bg-[#2E7D32]' : 'bg-gray-200'
+                  (settings?.[field.key] ?? true) ? 'bg-[#2E7D32]' : 'bg-gray-200'
                 }`}
               >
                 <span
                   className={`absolute top-0.5 w-5 h-5 rounded-full bg-card shadow-sm transition-transform ${
-                    settings[field.key] ? 'translate-x-5' : 'translate-x-0.5'
+                  (settings?.[field.key] ?? true) ? 'translate-x-5' : 'translate-x-0.5'
                   }`}
                 />
               </button>
@@ -460,7 +466,6 @@ const uploadEmailAsset = async (file, kind) => {
           </div>
         </div>
       </div>
-<ReviewModerationCard />
       {/* Save button */}
       <button
         onClick={handleSave}
@@ -481,7 +486,7 @@ const uploadEmailAsset = async (file, kind) => {
           </>
         )}
       </button>
-
+<ReviewModerationCard />
       {/* First Order Promotion Settings */}
       <div className="mt-8">
         <h1 className="text-xl font-bold text-foreground mb-4">First Order Promotion</h1>
