@@ -452,6 +452,7 @@ notifyOrderCreated(order.id);
                 setCoords({ lat, lng });
               }}
             />
+            </div>
           </div>
         <div>
           <label className={labelClass}>
