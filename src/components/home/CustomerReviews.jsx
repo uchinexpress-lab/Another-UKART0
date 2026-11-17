@@ -253,10 +253,10 @@ export default function CustomerReviews({ reviews: initialReviews = [] }) {
                     className="p-0.5"
                   >
                                 <Star
-                className={`w-6 h-6 ${
-                  star <= rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300'
-                `}
-              />
+             className={`w-6 h-6 ${
+               star <= rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300'
+             }`}
+           />
                   </button>
                 ))}
               </div>
