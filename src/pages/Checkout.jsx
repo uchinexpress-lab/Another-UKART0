@@ -228,7 +228,6 @@ export default function Checkout() {
 
       const reference = generateReference();
       const orderNumber = `UK-${Date.now().toString().slice(-8)}`;
-
       const { data: order, error: insertError } = await supabase
         .from('orders')
         .insert({
@@ -248,6 +247,8 @@ export default function Checkout() {
           customer_address: address,
           landmark,
           delivery_zone: zone,
+        delivery_lat: coords.lat,
+        delivery_lng: coords.lng,
           payment_method: 'Pay Online',
           payment_status: 'Pending',
           status: 'awaiting_payment',
