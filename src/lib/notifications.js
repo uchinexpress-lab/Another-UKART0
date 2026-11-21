@@ -81,7 +81,11 @@ export async function notifyOrderStatusChanged(orderId, newStatus) {
     last_status_notified: newStatus,
   });
 
-  // 2. Fire background email notification (never blocks status update)
+  // 2. Send customer status emails only for key delivery milestones.
+  // Processing and Ready remain valid order statuses, but do not send emails.
+  // Cancellation is also an important customer update and must send an email.
+  if (!['on_the_way', 'delivered', 'cancelled'].includes(newStatus)) return;
+
   try {
     await base44.functions.invoke('orderNotifications', {
       type: 'status',
