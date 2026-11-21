@@ -240,11 +240,18 @@ const auth = {
     return currentUser();
   },
 
-  async register({ email, password, full_name }) {
+  async register({ email, password, full_name, phone, date_of_birth, referral_code }) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: full_name || '' } },
+      options: {
+        data: {
+          full_name: full_name || '',
+          phone: phone || '',
+          date_of_birth: date_of_birth || '',
+          referral_code: referral_code || '',
+        },
+      },
     });
     if (error) throw error;
     // The DB trigger auto-creates the profile row.
@@ -293,7 +300,7 @@ const auth = {
   },
 
   async verifyOtp({ email, otpCode }) {
-    const { data, error } = await supabase.auth.verifyOtp({ email, token: otpCode, type: 'email' });
+    const { data, error } = await supabase.auth.verifyOtp({ email, token: otpCode, type: 'signup' });
     if (error) throw error;
     if (data.user) {
       const profile = await fetchProfile(data.user.id);
