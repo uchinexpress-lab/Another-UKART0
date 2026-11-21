@@ -26,12 +26,12 @@ import { toast } from '@/components/ui/use-toast';
 import { usePageContent } from '@/lib/usePageContent';
 
 const SUPPORT_PHONE = '+2348012345678';
-const SUPPORT_EMAIL = 'ukartfreshventures@gmail.com';
+const SUPPORT_EMAIL = 'hello@ukartapp.com';
 
 const FAQS = [
   {
     q: 'How long does delivery take?',
-    a: 'Island areas typically receive orders within 35–90 minutes. Mainland areas are delivered same-day. You can check your delivery zone in the location selector on the home screen.',
+    a: 'Island areas typically receive orders within 30–45 minutes. Mainland areas are delivered same-day. You can check your delivery zone in the location selector on the home screen.',
   },
   {
     q: 'What are the delivery fees?',
@@ -43,7 +43,7 @@ const FAQS = [
   },
   {
     q: 'What payment methods are accepted?',
-    a: 'We currently accept Cash on Delivery. Secure online payments via Paystack are coming soon.',
+    a: 'We currently accept only Secure online payments via Paystack are coming soon.',
   },
   {
     q: 'Can I cancel an order?',
