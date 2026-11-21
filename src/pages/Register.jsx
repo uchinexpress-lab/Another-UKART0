@@ -35,6 +35,9 @@ export default function Register() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
+  const [otpStep, setOtpStep] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [resending, setResending] = useState(false);
 
   const returnTo = safeReturnTo();
   const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
@@ -73,9 +76,17 @@ export default function Register() {
     setLoading(true);
     try {
       localStorage.removeItem("ukart_guest");
-      const result = await base44.auth.register({ email, password, full_name: fullName });
+      const result = await base44.auth.register({
+        email: email.trim(),
+        password,
+        full_name: fullName,
+        phone,
+        date_of_birth: dateOfBirth || "",
+        referral_code: referralCode.trim(),
+      });
       if (result?.needsVerification) {
-        setError("Please check your email to confirm your address, then log in.");
+        setOtpStep(true);
+        setError("");
         return;
       }
       try {
@@ -121,6 +132,83 @@ export default function Register() {
     }
   };
 
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setError("");
+    const code = otpCode.trim();
+    if (!/^\d{6}$/.test(code)) {
+      setError("Enter the six-digit code sent to your email.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const verified = await base44.auth.verifyOtp({ email: email.trim(), otpCode: code });
+      if (!verified?.user) throw new Error("We couldn't verify that code. Please try again.");
+
+      // Complete the profile only after Supabase has verified the email.
+      await base44.auth.updateMe({
+        full_name: fullName,
+        phone,
+        date_of_birth: dateOfBirth || undefined,
+      });
+
+      if (dateOfBirth) {
+        try {
+          const me = await base44.auth.me();
+          const existing = await base44.entities.CustomerDOB.filter(
+            { customer_id: me.id },
+            { limit: 1 }
+          );
+          if (existing.items && existing.items.length > 0) {
+            await base44.entities.CustomerDOB.update(existing.items[0].id, {
+              date_of_birth: dateOfBirth,
+              customer_name: me.full_name,
+            });
+          } else {
+            await base44.entities.CustomerDOB.create({
+              customer_id: me.id,
+              customer_email: me.email,
+              customer_name: me.full_name,
+              date_of_birth: dateOfBirth,
+            });
+          }
+        } catch (dobError) {
+          console.warn("Birthday profile setup skipped:", dobError?.message || dobError);
+        }
+      }
+
+      try {
+        const ref = localStorage.getItem("ukart_ref");
+        if (ref) {
+          await base44.functions.invoke("recordReferral", { referrerId: ref });
+          localStorage.removeItem("ukart_ref");
+        }
+      } catch (refError) {
+        console.warn("Referral recording skipped:", refError?.message || refError);
+      }
+
+      localStorage.removeItem("ukart_guest");
+      window.location.href = returnTo;
+    } catch (err) {
+      setError(err.message || "Email verification failed. Check the code and try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setError("");
+    setResending(true);
+    try {
+      await base44.auth.resendOtp(email.trim());
+      toast({ title: "New code sent", description: "Check your email for a fresh six-digit code." });
+    } catch (err) {
+      setError(err.message || "We couldn't resend the code. Please try again shortly.");
+    } finally {
+      setResending(false);
+    }
+  };
+
   const handleGoogle = () => {
     localStorage.removeItem("ukart_guest");
     base44.auth.loginWithProvider("google", returnTo);
@@ -138,6 +226,39 @@ export default function Register() {
         </div>
       )}
 
+      {otpStep ? (
+        <form onSubmit={handleVerifyOtp} className="space-y-4">
+          <div className="text-center space-y-2 mb-5">
+            <Mail className="w-9 h-9 text-primary mx-auto" />
+            <h2 className="text-xl font-semibold">Verify your email</h2>
+            <p className="text-sm text-muted-foreground">
+              We sent a six-digit code to <strong>{email}</strong>. Enter it below to activate your Ukart account.
+            </p>
+          </div>
+          <div>
+            <Label className="mb-1.5 block">Six-digit verification code</Label>
+            <Input
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              placeholder="000000"
+              value={otpCode}
+              onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              className="h-14 rounded-xl text-center text-2xl tracking-[0.5em] font-semibold"
+              required
+            />
+          </div>
+          <Button type="submit" className="w-full h-12 rounded-xl font-semibold" disabled={loading || otpCode.length !== 6}>
+            {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Verifying...</> : "Verify email and continue"}
+          </Button>
+          <Button type="button" variant="outline" className="w-full h-11 rounded-xl" onClick={handleResendOtp} disabled={resending || loading}>
+            {resending ? "Sending..." : "Resend code"}
+          </Button>
+          <button type="button" className="w-full text-sm text-muted-foreground hover:text-primary" onClick={() => { setOtpStep(false); setOtpCode(""); setError(""); }}>
+            Back to registration
+          </button>
+        </form>
+      ) : <>
       <Button
         variant="outline"
         className="w-full h-12 text-sm font-medium rounded-xl mb-4"
@@ -325,6 +446,7 @@ export default function Register() {
           Log in
         </Link>
       </p>
+      </>}
     </AuthShell>
   );
 }
