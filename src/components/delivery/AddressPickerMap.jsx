@@ -7,17 +7,99 @@ import {
   useMap,
   useMapEvents
 } from 'react-leaflet';
-import L from 'leaflet';
+import { useLocation } from '@/context/LocationContext';
 
-// Default map position: Lekki/Ajah
-const DEFAULT_CENTER = [6.4698, 3.5852];
+// Approximate map centres for homepage delivery areas.
+const AREA_CENTRES = {
+  'ajah': [6.4698, 3.5852],
+  'lekki phase 1': [6.4474, 3.4723],
+  'victoria island': [6.4281, 3.4219],
+  'ikoyi': [6.4549, 3.4357],
+  'chevron': [6.4430, 3.5360],
+  'vgc': [6.4570, 3.5660],
+  'sangotedo': [6.4690, 3.6480],
+  'abraham adesanya': [6.4670, 3.5980],
+  'ikate': [6.4380, 3.5030],
+  'oniru': [6.4330, 3.4380],
+  'yaba': [6.5095, 3.3711],
+  'surulere': [6.4969, 3.3580],
+  'ikeja': [6.6018, 3.3515],
+  'maryland': [6.5700, 3.3670],
+  'gbagada': [6.5580, 3.3900],
+  'ikorodu': [6.6194, 3.5105],
+  'festac': [6.4698, 3.2820],
+  'isolo': [6.5330, 3.3080],
+  'egbeda': [6.5900, 3.2870],
+  'agege': [6.6210, 3.3250],
+  'oshodi': [6.5550, 3.3430],
+  'mushin': [6.5270, 3.3500],
+  'ketu': [6.6000, 3.3950],
+  'ogudu': [6.5710, 3.3900],
+  'magodo': [6.6220, 3.3770]
+};
+
+const ISLAND_AREAS = [
+  'ajah',
+  'lekki phase 1',
+  'lekki',
+  'victoria island',
+  'ikoyi',
+  'chevron',
+  'vgc',
+  'victoria garden city',
+  'sangotedo',
+  'abraham adesanya',
+  'ikate',
+  'oniru',
+  'eti-osa',
+  'etiosa'
+];
+
+const MAINLAND_AREAS = [
+  'yaba',
+  'surulere',
+  'ikeja',
+  'maryland',
+  'gbagada',
+  'ikorodu',
+  'festac',
+  'isolo',
+  'egbeda',
+  'agege',
+  'oshodi',
+  'mushin',
+  'ketu',
+  'ogudu',
+  'magodo'
+];
+
+function classifyAddress(address, fallbackZone = 'mainland') {
+  const text = (address || '').toLowerCase();
+
+  const islandMatch = ISLAND_AREAS.find(area => text.includes(area));
+  if (islandMatch) {
+    return { zone: 'island', area: islandMatch };
+  }
+
+  const mainlandMatch = MAINLAND_AREAS.find(area => text.includes(area));
+  if (mainlandMatch) {
+    return { zone: 'mainland', area: mainlandMatch };
+  }
+
+  return { zone: fallbackZone, area: null };
+}
+
+function getInitialCentre(location) {
+  const area = (location?.area || '').toLowerCase();
+  return AREA_CENTRES[area] || [6.5244, 3.3792];
+}
 
 function MapController({ center, onLocationSelect }) {
   const map = useMap();
 
   useEffect(() => {
     if (center) {
-      map.flyTo(center, 16, { duration: 0.8 });
+      map.flyTo(center, 15, { duration: 0.8 });
     }
   }, [center, map]);
 
@@ -31,10 +113,17 @@ function MapController({ center, onLocationSelect }) {
 }
 
 export default function AddressPickerMap({ onConfirmLocation }) {
+  const {
+    location: selectedLocation,
+    setManual
+  } = useLocation();
+
+  const initialCentre = getInitialCentre(selectedLocation);
+
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
-  const [coords, setCoords] = useState(DEFAULT_CENTER);
-  const [zone, setZone] = useState('island');
+  const [coords, setCoords] = useState(initialCentre);
+  const [zone, setZone] = useState(selectedLocation?.zone || 'mainland');
   const [searching, setSearching] = useState(false);
   const [locating, setLocating] = useState(false);
   const [message, setMessage] = useState('');
@@ -42,11 +131,23 @@ export default function AddressPickerMap({ onConfirmLocation }) {
   const timer = useRef(null);
   const controller = useRef(null);
 
-  // Approximate delivery-zone classification.
-  const detectLagosZone = (lat, lng) => {
-    const isIsland = lat < 6.485 && lng > 3.405;
-    return isIsland ? 'island' : 'mainland';
-  };
+  // Follow changes made to the homepage location selector.
+  useEffect(() => {
+    if (!selectedLocation) return;
+
+    const centre = getInitialCentre(selectedLocation);
+
+    setCoords(centre);
+    setZone(selectedLocation.zone || 'mainland');
+    setQuery('');
+
+    onConfirmLocation?.({
+      address: '',
+      lat: null,
+      lng: null,
+      zone: selectedLocation.zone || 'mainland'
+    });
+  }, [selectedLocation?.area, selectedLocation?.zone]);
 
   const formatAddress = (p) => {
     const parts = [
@@ -61,7 +162,6 @@ export default function AddressPickerMap({ onConfirmLocation }) {
     return [...new Set(parts)].join(', ');
   };
 
-  // Get an address from selected GPS/map coordinates.
   const reverseLookup = async (lat, lng) => {
     try {
       const params = new URLSearchParams({
@@ -79,38 +179,55 @@ export default function AddressPickerMap({ onConfirmLocation }) {
       const data = await response.json();
       const feature = data.features?.[0];
 
-      return feature
-        ? formatAddress(feature.properties || {})
-        : '';
+      return feature ? formatAddress(feature.properties || {}) : '';
     } catch {
       return '';
     }
   };
 
   const updatePosition = async (lat, lng, label = '') => {
-    const newCoords = [lat, lng];
-    const detectedZone = detectLagosZone(lat, lng);
-
-    setCoords(newCoords);
-    setZone(detectedZone);
+    setCoords([lat, lng]);
     setSuggestions([]);
     setMessage('');
 
     const resolvedAddress = label || await reverseLookup(lat, lng);
+    const classification = classifyAddress(
+      resolvedAddress,
+      selectedLocation?.zone || zone
+    );
+
+    setZone(classification.zone);
 
     if (resolvedAddress) {
       setQuery(resolvedAddress);
     }
 
+    // Keep the homepage location context consistent when a known area is found.
+    if (classification.area) {
+      const displayArea = classification.area === 'lekki'
+        ? 'Lekki Phase 1'
+        : classification.area;
+
+      setManual(
+        displayArea.replace(/\b\w/g, char => char.toUpperCase())
+      );
+    }
+
     onConfirmLocation?.({
-      address: resolvedAddress || query,
+      address: resolvedAddress || label || '',
       lat,
       lng,
-      zone: detectedZone
+      zone: classification.zone
     });
+
+    if (!classification.area) {
+      setMessage(
+        'We could not identify this neighbourhood automatically. Please confirm your delivery area.'
+      );
+    }
   };
 
-  // Search for places using Photon.
+  // Search addresses using Photon / OpenStreetMap.
   useEffect(() => {
     clearTimeout(timer.current);
     controller.current?.abort();
@@ -129,11 +246,11 @@ export default function AddressPickerMap({ onConfirmLocation }) {
 
       try {
         const params = new URLSearchParams({
-          q: query.trim(),
-          limit: '5',
+          q: `${query.trim()}, Lagos, Nigeria`,
+          limit: '6',
           lang: 'en',
-          lat: '6.5244',
-          lon: '3.3792'
+          lat: String(coords[0]),
+          lon: String(coords[1])
         });
 
         const response = await fetch(
@@ -142,13 +259,13 @@ export default function AddressPickerMap({ onConfirmLocation }) {
         );
 
         if (!response.ok) {
-          throw new Error('Search failed');
+          throw new Error('Address search failed');
         }
 
         const data = await response.json();
 
         const results = (data.features || [])
-          .map((feature) => {
+          .map(feature => {
             const p = feature.properties || {};
             const address = formatAddress(p);
             const coordinates = feature.geometry?.coordinates;
@@ -177,7 +294,7 @@ export default function AddressPickerMap({ onConfirmLocation }) {
     }, 500);
 
     return () => clearTimeout(timer.current);
-  }, [query]);
+  }, [query, coords]);
 
   const handleUseCurrentLocation = () => {
     setMessage('');
@@ -190,14 +307,14 @@ export default function AddressPickerMap({ onConfirmLocation }) {
     setLocating(true);
 
     navigator.geolocation.getCurrentPosition(
-      async (position) => {
+      async position => {
         await updatePosition(
           position.coords.latitude,
           position.coords.longitude
         );
         setLocating(false);
       },
-      (error) => {
+      error => {
         setLocating(false);
 
         if (error.code === 1) {
@@ -222,8 +339,8 @@ export default function AddressPickerMap({ onConfirmLocation }) {
         <input
           type="text"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Type street, estate, or landmark in Lagos..."
+          onChange={e => setQuery(e.target.value)}
+          placeholder={`Search for an address around ${selectedLocation?.area || 'Lagos'}...`}
           className="w-full p-3 border rounded-xl text-sm"
           autoComplete="off"
         />
@@ -236,7 +353,7 @@ export default function AddressPickerMap({ onConfirmLocation }) {
 
         {suggestions.length > 0 && (
           <ul className="absolute z-50 w-full bg-white border rounded-xl shadow-lg mt-1 max-h-48 overflow-y-auto">
-            {suggestions.map((item) => (
+            {suggestions.map(item => (
               <li key={item.id}>
                 <button
                   type="button"
@@ -266,12 +383,12 @@ export default function AddressPickerMap({ onConfirmLocation }) {
         </button>
 
         <span className="px-2 py-1 bg-gray-100 rounded-md font-medium">
-          Detected Zone: {zone}
+          Detected Zone: {zone === 'island' ? 'Island' : 'Mainland'}
         </span>
       </div>
 
       {message && (
-        <p className="text-xs text-red-600">{message}</p>
+        <p className="text-xs text-amber-700">{message}</p>
       )}
 
       <MapContainer
@@ -288,7 +405,7 @@ export default function AddressPickerMap({ onConfirmLocation }) {
           position={coords}
           draggable={true}
           eventHandlers={{
-            dragend: (e) => {
+            dragend: e => {
               const { lat, lng } = e.target.getLatLng();
               updatePosition(lat, lng);
             }
@@ -302,7 +419,7 @@ export default function AddressPickerMap({ onConfirmLocation }) {
       </MapContainer>
 
       <p className="text-xs text-gray-500">
-        Drag the pin or tap the map to select your exact delivery location.
+        Drag the pin or tap the map to select your delivery location.
         You can also use your current GPS location.
       </p>
     </div>
