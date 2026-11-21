@@ -449,7 +449,7 @@ notifyOrderCreated(order.id);
           <p className="text-[11px] text-muted-foreground mt-1.5">
             Pick the suggestion so we find your exact street, then add your house or flat number.
           </p>
-                              <div className="mt-3">
+               <div className="mt-3">
             <AddressPickerMap
               onConfirmLocation={({ address: pickedAddress, lat, lng, zone: detectedZone }) => {
                 if (pickedAddress) setAddress(pickedAddress);
