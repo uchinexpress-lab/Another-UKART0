@@ -34,7 +34,7 @@ export default function Cart() {
 
       <div className="uk-banner mb-4">
         <Bike className="w-4 h-4 shrink-0" />
-        <span>Your order will arrive 15–30 min after sorting!</span>
+        <span>Your order will arrive in 30-45 min after sorting!</span>
       </div>
 
       <div className="space-y-2.5">
