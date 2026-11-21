@@ -12,7 +12,7 @@ import {
 const APP_VERSION = '1.0.0';
 const LOGO_URL = '/ukart-logo.webp';
 
-const TERMS = `These Terms & Conditions govern your use of the UKART app and your grocery orders within Lagos, Nigeria. By placing an order, you agree to provide accurate delivery details (name, phone number, address and landmark) and to be available to receive your order at the scheduled time. All orders are subject to product availability; if an item is unavailable, we will notify you and adjust your order and total accordingly. Delivery times shown (35–90 minutes on the Island, same-day on the Mainland) are estimates and may be affected by traffic, weather or rider availability. Prices are listed in Nigerian Naira (₦) and include applicable charges unless a delivery fee is separately stated. Payment is currently accepted via Cash on Delivery, payable to the rider upon receipt of your order. You may cancel an order before it is dispatched by contacting support with your order number; orders already out for delivery cannot be cancelled. UKART Fresh Ventures reserves the right to refuse, modify or cancel any order, and to update these terms at any time.`;
+const TERMS = `These Terms & Conditions govern your use of the UKART app and your grocery orders within Lagos, Nigeria. By placing an order, you agree to provide accurate delivery details (name, phone number, address and landmark) and to be available to receive your order at the scheduled time. All orders are subject to product availability; if an item is unavailable, we will notify you and adjust your order and total accordingly. Delivery times shown (30 minutes on the Island, same-day on the Mainland) are estimates and may be affected by traffic, weather or rider availability. Prices are listed in Nigerian Naira (₦) and include applicable charges unless a delivery fee is separately stated. Payment is currently accepted online. You may cancel an order before it is dispatched by contacting support with your order number; orders already out for delivery cannot be cancelled. UKART Fresh Ventures reserves the right to refuse, modify or cancel any order, and to update these terms at any time.`;
 
 const PRIVACY = `UKART Fresh Ventures respects your privacy. This Privacy Policy explains how we handle your information when you use the UKART app. We collect your name, email, phone number, and delivery address solely to process your orders, coordinate delivery, and keep you updated on order status. We also store your saved delivery addresses and preferences to make future orders faster. When you save a payment card, only the last four digits and card brand are retained — your full card number is never stored. We do not sell or rent your personal data. Order and delivery information is shared with our delivery riders only as needed to fulfil your order. You may request access to, correction of, or deletion of your personal data at any time by contacting support. By using UKART, you consent to the collection and use of your information as described here.`;
 
@@ -24,8 +24,8 @@ export default function About() {
   const description = getField('description',
     'UKART is a modern online grocery platform built to make grocery shopping easier across Lagos. Whether customers need everyday groceries or carefully curated grocery packages, UKART delivers fresh products directly to their doorstep. Our mission is simple: No Market Wahala. We help customers save time, shop conveniently, and enjoy reliable delivery through a simple, modern mobile experience.'
   );
-  const contactEmail = getField('contact_email', 'support@ukart.ng');
-  const contactPhone = getField('contact_phone', '+234 800 UKART');
+  const contactEmail = getField('contact_email', 'hello@ukart.ng');
+  const contactPhone = getField('contact_phone', '+2349067384517');
   const contactAddress = getField('contact_address', 'Lagos, Nigeria');
 
   return (
