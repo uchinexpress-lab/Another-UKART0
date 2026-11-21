@@ -434,13 +434,18 @@ notifyOrderCreated(order.id);
           <label className={labelClass}>
             <MapPin className="w-3.5 h-3.5" /> House Address
           </label>
-          <AddressAutocomplete
-            value={address}
-            onChange={setAddress}
-            onResolved={(d) => d?.zone && setZone(d.zone)}
-            placeholder="Start typing your street or estate"
-            className={fieldClass}
-          />
+         <AddressAutocomplete
+  value={address}
+  onChange={setAddress}
+  onResolved={(d) => {
+    if (d?.zone) setZone(d.zone);
+    if (d?.lat != null && d?.lng != null) {
+      setCoords({ lat: d.lat, lng: d.lng });
+    }
+  }}
+  placeholder="Start typing your street or estate"
+  className={fieldClass}
+/>
           <p className="text-[11px] text-muted-foreground mt-1.5">
             Pick the suggestion so we find your exact street, then add your house or flat number.
           </p>
