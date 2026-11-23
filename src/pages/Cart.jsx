@@ -1,13 +1,19 @@
+
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
 import { Trash2, Minus, Plus, ShoppingBag, ArrowRight, Bike } from 'lucide-react';
 import { Image } from '@/components/ui/image';
 
+const MINIMUM_ORDER = 5000;
+
 export default function Cart() {
   const { items, updateQuantity, removeItem, total } = useCart();
   const navigate = useNavigate();
   const itemCount = items.reduce((s, i) => s + i.quantity, 0);
+
+  const meetsMinimum = total >= MINIMUM_ORDER;
+  const remaining = Math.max(0, MINIMUM_ORDER - total);
 
   if (items.length === 0) {
     return (
@@ -113,9 +119,31 @@ export default function Cart() {
         </div>
       </div>
 
+      {!meetsMinimum && (
+        <div className="mt-4 p-3 rounded-xl bg-amber-50 border border-amber-200">
+          <p className="text-sm font-semibold text-amber-900">
+            Minimum order: ₦5,000
+          </p>
+          <p className="text-xs text-amber-800 mt-1">
+            Add ₦{remaining.toLocaleString()} more to your cart to proceed to checkout.
+          </p>
+          <div className="w-full h-2 rounded-full bg-amber-200 mt-3 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-amber-600 transition-all"
+              style={{ width: `${Math.min(100, (total / MINIMUM_ORDER) * 100)}%` }}
+            />
+          </div>
+        </div>
+      )}
+
       <div className="uk-cta" style={{ bottom: 0, paddingBottom: 'calc(env(safe-area-inset-bottom) + 12px)' }}>
-        <button onClick={() => navigate('/checkout')} className="uk-btn">
-          Proceed to Checkout <ArrowRight className="w-4 h-4" />
+        <button
+          onClick={() => navigate('/checkout')}
+          disabled={!meetsMinimum}
+          className="uk-btn disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {meetsMinimum ? 'Proceed to Checkout' : `Add ₦${remaining.toLocaleString()} more`}
+          <ArrowRight className="w-4 h-4" />
         </button>
       </div>
     </div>
