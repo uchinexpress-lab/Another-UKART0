@@ -16,7 +16,8 @@ import {
 } from '@/lib/delivery';
 import { notifyOrderCreated } from '@/lib/notifications';
 import { useLocation } from '@/context/LocationContext';
-const REWARD_AMOUNT = 1000;
+const REWARD_AMOUNT = 550;
+const MINIMUM_ORDER = 5000;
 
 const PAYSTACK_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
 if (!PAYSTACK_KEY) {
@@ -192,7 +193,15 @@ export default function Checkout() {
   const serviceFee = getServiceFee(total);
   const grandTotal = total - appliedDiscount + deliveryFee + serviceFee;
 
-  const canPlace = name.trim() && phone.trim() && address.trim() && landmark.trim() && !placing;
+  const meetsMinimumOrder = total >= MINIMUM_ORDER;
+
+const canPlace =
+  meetsMinimumOrder &&
+  name.trim() &&
+  phone.trim() &&
+  address.trim() &&
+  landmark.trim() &&
+  !placing;
 
   const applyVoucher = async () => {
     setVoucherError('');
@@ -223,7 +232,13 @@ export default function Checkout() {
   };
 
   const placeOrder = async () => {
-    if (!canPlace) return;
+  if (total < MINIMUM_ORDER) {
+    alert('Ukart requires a minimum order of ₦5,000. Please add more items to your cart.');
+    navigate('/cart');
+    return;
+  }
+
+  if (!canPlace) return;
     if (!PAYSTACK_KEY) {
       alert('Payment is not configured. Please contact support.');
       return;
@@ -374,7 +389,22 @@ notifyOrderCreated(order.id);
       <div className="flex items-center justify-between mb-3">
         <h2 className="uk-title">Checkout</h2>
       </div>
-
+{!meetsMinimumOrder && (
+  <div className="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200">
+    <p className="text-sm font-semibold text-amber-900">
+      Minimum order: ₦5,000
+    </p>
+    <p className="text-xs text-amber-800 mt-1">
+      Add ₦{(MINIMUM_ORDER - total).toLocaleString()} more to continue.
+    </p>
+    <button
+      onClick={() => navigate('/cart')}
+      className="text-xs font-bold text-amber-900 underline mt-2"
+    >
+      Return to cart
+    </button>
+  </div>
+)}
       {/* Cart summary */}
       <div className="uk-card p-3.5 mb-4">
         <div className="flex items-center justify-between text-sm mb-2">
