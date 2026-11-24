@@ -1,7 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
+import { supabase } from '@/api/supabaseClient';
 import { useCart } from '@/context/CartContext';
 import { toast } from '@/components/ui/use-toast';
 import {
@@ -32,15 +33,11 @@ const TABS = [
   { key: 'cancelled', label: 'Cancelled' },
 ];
 
-function money(value) {
-  return `₦${Number(value || 0).toLocaleString('en-NG')}`;
-}
-
-function formatDate(date) {
-  if (!date) return '';
+function formatDate(value) {
+  if (!value) return '';
 
   try {
-    return new Date(date).toLocaleDateString('en-NG', {
+    return new Date(value).toLocaleDateString('en-NG', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -48,6 +45,25 @@ function formatDate(date) {
   } catch {
     return '';
   }
+}
+
+function money(value) {
+  return `₦${Number(value || 0).toLocaleString('en-NG')}`;
+}
+
+function normalizeItems(items) {
+  if (Array.isArray(items)) return items;
+
+  if (typeof items === 'string') {
+    try {
+      const parsed = JSON.parse(items);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  return [];
 }
 
 function StatusBadge({ status }) {
@@ -100,8 +116,7 @@ export default function Orders() {
       0
     );
 
-  // Load only successfully paid customer orders.
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     setLoading(true);
 
     try {
@@ -112,77 +127,108 @@ export default function Orders() {
         return;
       }
 
-      const result = await base44.entities.Order.filter(
-        { customer_email: me.email },
-        {
-          sort: '-created_date',
-          limit: 100,
-        }
-      );
+      // Orders are now created by the secure Supabase payment function.
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('customer_email', me.email)
+        .eq('payment_status', 'Paid');
 
-      const fetchedOrders = Array.isArray(result)
-        ? result
-        : result?.items || [];
+      if (error) throw error;
 
-      const paidOrders = fetchedOrders.filter(
-        (order) =>
-          String(order.payment_status || '').toLowerCase() === 'paid'
-      );
+      const paidOrders = (data || [])
+        .map(order => ({
+          ...order,
+          items: normalizeItems(order.items),
+        }))
+        .sort((a, b) => {
+          const dateA = new Date(
+            a.created_at || a.created_date || 0
+          ).getTime();
+
+          const dateB = new Date(
+            b.created_at || b.created_date || 0
+          ).getTime();
+
+          return dateB - dateA;
+        });
 
       setOrders(paidOrders);
     } catch (error) {
-      console.error('Failed to load customer orders:', error);
+      console.error('Unable to load Supabase orders:', error);
       setOrders([]);
+
+      toast({
+        title: 'Could not load orders',
+        description: error?.message || 'Please refresh and try again.',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadOrders();
-  }, []);
+  }, [loadOrders]);
 
-  // Reorder a previously purchased order.
-  const reorder = (order) => {
-    const cartItems = (order.items || []).map((item, index) => ({
-      ...item,
-      id:
-        item.id ||
-        item.product_id ||
-        item.package_id ||
-        `${item.name || 'item'}-${index}`,
-      name: item.name || item.title || 'Item',
-      price: Number(item.price || 0),
-      quantity: Number(item.quantity || 1),
-    }));
+  const reorder = (event, order) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const orderItems = normalizeItems(order.items);
+
+    const cartItems = orderItems
+      .filter(item => item && Number(item.quantity || 0) > 0)
+      .map(item => {
+        const packageId = item.package_id || null;
+        const productId = item.product_id || null;
+
+        return {
+          ...item,
+          id:
+            item.id ||
+            (packageId
+              ? `package-${packageId}`
+              : productId || item.name),
+          product_id: productId,
+          package_id: packageId,
+          name: item.name || item.title || 'Ukart item',
+          price: Number(item.price || 0),
+          quantity: Number(item.quantity || 1),
+          unit: item.unit || item.variant_label || item.size_label || '',
+          variant_label: item.variant_label || '',
+          size_label: item.size_label || '',
+          protein_names: item.protein_names || [],
+          selections: item.selections || [],
+          addon_ids: item.addon_ids || [],
+          addons_total: Number(item.addons_total || 0),
+        };
+      });
 
     if (cartItems.length === 0) {
-      toast({ title: 'No items available to reorder' });
+      toast({ title: 'No items to reorder' });
       return;
     }
 
     addItems(cartItems);
 
     toast({
-      title: `Added ${cartItems.length} item${cartItems.length === 1 ? '' : 's'} to cart`,
+      title: 'Items added to cart',
+      description: 'Review your cart before checking out.',
     });
 
     navigate('/cart');
   };
 
-  // Filter order history by selected tab.
-  const filteredOrders = orders.filter((order) => {
+  const filtered = orders.filter(order => {
     const status = String(order.status || '').toLowerCase();
 
-    if (tab === 'active') {
-      return ACTIVE.includes(status);
-    }
+    if (tab === 'active') return ACTIVE.includes(status);
+    if (tab === 'delivered') return status === 'delivered';
+    if (tab === 'cancelled') return status === 'cancelled';
 
-    if (tab === 'delivered') {
-      return status === 'delivered';
-    }
-
-    return status === 'cancelled';
+    return false;
   });
 
   return (
@@ -192,13 +238,11 @@ export default function Orders() {
         {/* CURRENT CART */}
         {cartHasItems && (
           <section className="mb-5">
-
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h2 className="text-base font-extrabold text-foreground">
                   Your Cart
                 </h2>
-
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Items you've selected and are ready to order
                 </p>
@@ -210,11 +254,9 @@ export default function Orders() {
             </div>
 
             <div className="uk-card overflow-hidden">
-
               <div className="divide-y divide-border">
                 {items.map((item, index) => {
                   const quantity = Number(item.quantity || 1);
-
                   const unitPrice =
                     Number(item.price || 0) +
                     Number(item.addons_total || 0);
@@ -248,7 +290,6 @@ export default function Orders() {
               </div>
 
               <div className="border-t border-border bg-secondary/40 px-3.5 py-3">
-
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-[13px] font-semibold text-muted-foreground">
                     Cart subtotal
@@ -268,16 +309,14 @@ export default function Orders() {
                   Continue to Checkout
                   <ArrowRight className="w-4 h-4" />
                 </button>
-
               </div>
             </div>
           </section>
         )}
 
         {/* ORDER HISTORY */}
-        <section>
-
-          <div className="mb-3">
+        <div className="flex items-center justify-between mb-3">
+          <div>
             <h2 className="text-base font-extrabold text-foreground">
               Order History
             </h2>
@@ -287,92 +326,87 @@ export default function Orders() {
             </p>
           </div>
 
-          {/* ORDER TABS */}
-          <div className="uk-tabs mb-4">
-            {TABS.map((t) => (
-              <button
-                key={t.key}
-                type="button"
-                onClick={() => setTab(t.key)}
-                className={`uk-tab ${
-                  tab === t.key ? 'uk-tab-active' : ''
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
+          <button
+            type="button"
+            onClick={loadOrders}
+            disabled={loading}
+            className="text-xs font-semibold text-retail"
+          >
+            Refresh
+          </button>
+        </div>
+
+        <div className="uk-tabs mb-4">
+          {TABS.map(t => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`uk-tab ${
+                tab === t.key ? 'uk-tab-active' : ''
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-16">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
           </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-14">
+            <ShoppingBag className="w-9 h-9 text-muted-foreground/40 mx-auto mb-2.5" />
 
-          {/* LOADING */}
-          {loading ? (
-            <div className="flex justify-center py-16">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-            </div>
+            <p className="uk-sub">
+              No {tab} orders yet.
+            </p>
 
-          ) : filteredOrders.length === 0 ? (
+            <Link
+              to="/"
+              className="inline-block mt-3.5 bg-retail text-retail-foreground text-[13px] font-bold px-5 py-2.5 rounded-lg"
+            >
+              Start Shopping
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {filtered.map(order => {
+              const status = String(order.status || '').toLowerCase();
+              const isActive = ACTIVE.includes(status);
+              const stepIdx = ACTIVE_STEP_INDEX[status] ?? -1;
 
-            /* EMPTY STATE */
-            <div className="text-center py-14">
-              <ShoppingBag className="w-9 h-9 text-muted-foreground/40 mx-auto mb-2.5" />
+              const progressPct =
+                stepIdx >= 0 ? ((stepIdx + 1) / 5) * 100 : 100;
 
-              <p className="uk-sub">
-                No {tab} orders yet.
-              </p>
-
-              <Link
-                to="/"
-                className="inline-block mt-3.5 bg-retail text-retail-foreground text-[13px] font-bold px-5 py-2.5 rounded-lg"
-              >
-                Start Shopping
-              </Link>
-            </div>
-
-          ) : (
-
-            /* PAID ORDER LIST */
-            <div className="space-y-3">
-              {filteredOrders.map((order) => {
-                const status = String(order.status || '').toLowerCase();
-
-                const isActive = ACTIVE.includes(status);
-
-                const stepIdx =
-                  ACTIVE_STEP_INDEX[status] ?? -1;
-
-                const progressPct =
-                  stepIdx >= 0
-                    ? ((stepIdx + 1) / 5) * 100
-                    : 100;
-
-                const orderItemCount =
-                  order.items?.length || 0;
-
-                return (
-                  <div
-                    key={order.id}
-                    className="uk-card px-3.5 py-3"
+              return (
+                <div key={order.id} className="uk-card px-3.5 py-3">
+                  <Link
+                    to={
+                      isActive
+                        ? `/track?id=${order.id}`
+                        : `/orders/${order.id}`
+                    }
+                    className="block active:opacity-70 transition-opacity"
                   >
-
                     <div className="flex items-start justify-between gap-2">
-
-                      <div className="min-w-0 flex-1">
+                      <div className="min-w-0">
                         <p className="text-[13px] font-bold text-foreground truncate">
-                          {order.order_number}
+                          {order.order_number || order.id}
                         </p>
 
                         <p className="uk-list-sub">
-                          {formatDate(order.created_date)} ·{' '}
-                          {orderItemCount} item
-                          {orderItemCount === 1 ? '' : 's'}
+                          {formatDate(order.created_at || order.created_date)}
+                          {' · '}
+                          {order.items.length} item
+                          {order.items.length === 1 ? '' : 's'}
                         </p>
                       </div>
 
                       <StatusBadge status={status} />
-
                     </div>
 
                     <div className="flex items-end justify-between gap-2 mt-2.5">
-
                       <div>
                         <p className="text-[15px] font-bold text-foreground">
                           {money(order.total)}
@@ -384,63 +418,43 @@ export default function Orders() {
                         </p>
                       </div>
 
-                      <div className="flex items-center gap-2">
-
-                        {isActive ? (
-                          <Link
-                            to={`/track?id=${order.id}`}
-                            className="flex items-center gap-1 text-[11px] font-bold text-retail pb-0.5"
-                          >
-                            Track Order
-                            <ChevronRight className="w-3.5 h-3.5" />
-                          </Link>
-                        ) : (
-                          <>
-                            {orderItemCount > 0 && (
-                              <button
-                                type="button"
-                                onClick={() => reorder(order)}
-                                className="flex items-center gap-1.5 border border-retail text-retail text-[11px] font-bold px-3 py-1.5 rounded-lg active:scale-95 transition-transform"
-                              >
-                                <RotateCw className="w-3 h-3" />
-                                Reorder
-                              </button>
-                            )}
-
-                            <Link
-                              to={`/orders/${order.id}`}
-                              className="flex items-center gap-1 text-[11px] font-bold text-muted-foreground"
-                            >
-                              Details
-                              <ChevronRight className="w-3.5 h-3.5" />
-                            </Link>
-                          </>
-                        )}
-
-                      </div>
+                      {isActive ? (
+                        <span className="flex items-center gap-1 text-[11px] font-bold text-retail pb-0.5">
+                          Track Order
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </span>
+                      ) : order.items.length > 0 ? (
+                        <button
+                          onClick={event => reorder(event, order)}
+                          className="flex items-center gap-1.5 border border-retail text-retail text-[11px] font-bold px-3 py-1.5 rounded-lg active:scale-95 transition-transform"
+                        >
+                          <RotateCw className="w-3 h-3" />
+                          Reorder
+                        </button>
+                      ) : (
+                        <span className="flex items-center gap-1 text-[11px] font-bold text-muted-foreground pb-0.5">
+                          Details
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </span>
+                      )}
                     </div>
 
-                    {/* ORDER PROGRESS */}
                     {isActive && (
                       <div className="mt-2.5">
                         <div className="h-1 rounded-full bg-muted overflow-hidden">
                           <div
                             className="h-full rounded-full bg-retail transition-all duration-500"
-                            style={{
-                              width: `${progressPct}%`,
-                            }}
+                            style={{ width: `${progressPct}%` }}
                           />
                         </div>
                       </div>
                     )}
-
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-        </section>
+                  </Link>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </PullToRefresh>
   );
