@@ -1,10 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { notifyOrderStatusChanged } from '@/lib/notifications';
 import SheetSelect from '@/components/SheetSelect';
+import { getStatusLabel } from '@/lib/emailTemplates';
 import {
+  ArrowLeft,
   Loader2,
   Lock,
   Mail,
@@ -15,37 +16,30 @@ import {
   Calendar,
   Star,
   X,
-  Bike,
-} from 'lucide-react';
+  Bike } from
+'lucide-react';
 import AssignRiderSheet from '@/components/admin/AssignRiderSheet';
 
 const STATUSES = [
-  { value: 'new', label: 'Order Placed', color: 'bg-muted text-gray-700' },
-  { value: 'processing', label: 'Being Prepared', color: 'bg-amber-100 text-amber-700' },
-  { value: 'ready', label: 'Ready for Delivery', color: 'bg-blue-100 text-blue-700' },
-  { value: 'on_the_way', label: 'Out for Delivery', color: 'bg-purple-100 text-purple-700' },
-  { value: 'delivered', label: 'Delivered', color: 'bg-green-100 text-green-700' },
-  { value: 'cancelled', label: 'Cancelled', color: 'bg-red-100 text-red-700' },
-];
+{ value: 'awaiting_payment', label: 'Awaiting Payment', color: 'bg-amber-100 text-amber-700' },
+{ value: 'new', label: 'Order Placed', color: 'bg-muted text-gray-700' },
+{ value: 'processing', label: 'Being Prepared', color: 'bg-amber-100 text-amber-700' },
+{ value: 'ready', label: 'Ready for Delivery', color: 'bg-blue-100 text-blue-700' },
+{ value: 'on_the_way', label: 'Out for Delivery', color: 'bg-purple-100 text-purple-700' },
+{ value: 'delivered', label: 'Delivered', color: 'bg-green-100 text-green-700' },
+{ value: 'cancelled', label: 'Cancelled', color: 'bg-red-100 text-red-700' }];
+
 
 function StatusBadge({ status }) {
   const s = STATUSES.find((x) => x.value === status) || STATUSES[0];
-
   return (
     <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${s.color}`}>
       {s.label}
-    </span>
-  );
+    </span>);
+
 }
 
-function OrderCard({
-  order,
-  onStatusChange,
-  updatingId,
-  highlighted,
-  onViewCustomer,
-  onAssignRider,
-}) {
+function OrderCard({ order, onStatusChange, updatingId, highlighted, onViewCustomer, onAssignRider }) {
   const [expanded, setExpanded] = useState(highlighted);
   const [review, setReview] = useState(null);
   const [reviewLoaded, setReviewLoaded] = useState(false);
@@ -63,46 +57,40 @@ function OrderCard({
   return (
     <div
       className={`bg-card rounded-2xl border p-4 ${
-        highlighted
-          ? 'border-[#2E7D32] ring-1 ring-[#2E7D32]/20'
-          : 'border-border'
-      }`}
-    >
+      highlighted ? 'border-[#2E7D32] ring-1 ring-[#2E7D32]/20' : 'border-border'}`
+      }>
+      
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between"
-      >
+        className="w-full flex items-center justify-between">
+        
         <div className="text-left">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <span className="text-sm font-bold text-foreground">
-              {order.order_number}
-            </span>
+            <span className="text-sm font-bold text-foreground">{order.order_number}</span>
             <StatusBadge status={order.status} />
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-green-100 text-green-700">
-              PAID
-            </span>
+            {order.payment_status === 'Paid' ? (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-green-100 text-green-700">PAID</span>
+            ) : (
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">{(order.payment_status || 'PENDING').toUpperCase()}</span>
+            )}
           </div>
-
           <p className="text-xs text-muted-foreground">
             {order.customer_name} · {order.items?.length || 0} items · ₦
-            {(order.total || 0).toLocaleString()}
+            {order.total.toLocaleString()}
           </p>
         </div>
       </button>
 
-      {expanded && (
-        <div className="mt-3 pt-3 border-t border-gray-50 space-y-3">
+      {expanded &&
+      <div className="mt-3 pt-3 border-t border-gray-50 space-y-3">
+          {/* Customer info */}
           <div className="space-y-1.5">
             <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-              <Mail className="w-3 h-3" />
-              {order.customer_email || 'No email'}
+              <Mail className="w-3 h-3" /> {order.customer_email || 'No email'}
             </p>
-
             <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-              <Phone className="w-3 h-3" />
-              {order.customer_phone}
+              <Phone className="w-3 h-3" /> {order.customer_phone}
             </p>
-
             <p className="text-xs text-muted-foreground flex items-start gap-1.5">
               <MapPin className="w-3 h-3 flex-shrink-0 mt-0.5" />
               <span>
@@ -120,57 +108,49 @@ function OrderCard({
               View this customer's order history →
             </button>
           )}
-
+          {/* Items */}
           <div className="bg-muted/50 rounded-xl p-2 space-y-1">
-            {order.items?.map((item, i) => (
-              <div key={i} className="flex justify-between text-xs">
+            {order.items?.map((item, i) =>
+          <div key={i} className="flex justify-between text-xs">
                 <span className="text-gray-700">
                   {item.quantity}x {item.name}
                 </span>
                 <span className="text-muted-foreground font-medium">
-                  ₦
-                  {(
-                    (item.price || 0) * (item.quantity || 1)
-                  ).toLocaleString()}
+                  ₦{((item.price || 0) * (item.quantity || 1)).toLocaleString()}
                 </span>
               </div>
-            ))}
+          )}
           </div>
 
+          {/* Total */}
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Total</span>
             <span className="font-bold text-[#2E7D32]">
-              ₦{(order.total || 0).toLocaleString()}
+              ₦{order.total.toLocaleString()}
             </span>
           </div>
 
+          {/* Payment details */}
           <div className="bg-muted/50 rounded-xl p-2 space-y-1">
             <div className="flex justify-between text-xs">
               <span className="text-muted-foreground">Payment</span>
-              <span className="font-medium text-green-700">
-                ✓ Paid · Paystack
+              <span className="font-medium text-foreground">
+                {order.payment_status === 'Paid' ? '✓ Paid · Paystack' : order.payment_status || 'Pending'}
               </span>
             </div>
-
             {order.paystack_reference && (
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">Reference</span>
-                <span className="font-medium text-foreground text-right text-[10px]">
-                  {order.paystack_reference}
-                </span>
+                <span className="font-medium text-foreground text-right text-[10px]">{order.paystack_reference}</span>
               </div>
             )}
-
             {order.payment_channel && (
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">Channel</span>
-                <span className="font-medium text-foreground capitalize">
-                  {order.payment_channel}
-                </span>
+                <span className="font-medium text-foreground capitalize">{order.payment_channel}</span>
               </div>
             )}
-
-            {order.payment_timestamp && (
+            {order.payment_timestamp && order.payment_status === 'Paid' && (
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">Paid at</span>
                 <span className="font-medium text-foreground">
@@ -180,12 +160,10 @@ function OrderCard({
             )}
           </div>
 
+          {/* Delivery rating */}
           {order.status === 'delivered' && (
             <div className="bg-primary/10 rounded-xl p-2.5">
-              <p className="text-xs font-semibold text-gray-600 mb-1">
-                Delivery Rating
-              </p>
-
+              <p className="text-xs font-semibold text-gray-600 mb-1">Delivery Rating</p>
               {!reviewLoaded ? (
                 <p className="text-xs text-gray-400">Loading…</p>
               ) : review ? (
@@ -195,82 +173,71 @@ function OrderCard({
                       <Star
                         key={s}
                         className={`w-3.5 h-3.5 ${
-                          s <= review.rating
-                            ? 'fill-[#FFB300] text-[#FFB300]'
-                            : 'text-gray-300'
+                          s <= review.rating ? 'fill-[#FFB300] text-[#FFB300]' : 'text-gray-300'
                         }`}
                       />
                     ))}
-                    <span className="text-xs text-gray-600 ml-1">
-                      {review.rating}/5
-                    </span>
+                    <span className="text-xs text-gray-600 ml-1">{review.rating}/5</span>
                   </div>
-
                   {review.comment && (
-                    <p className="text-xs text-gray-700 italic">
-                      "{review.comment}"
-                    </p>
+                    <p className="text-xs text-gray-700 italic">"{review.comment}"</p>
                   )}
                 </>
               ) : (
-                <p className="text-xs text-gray-400">
-                  No rating submitted yet
-                </p>
+                <p className="text-xs text-gray-400">No rating submitted yet</p>
               )}
             </div>
           )}
 
-          {!['delivered', 'cancelled'].includes(order.status) && (
+          {/* Assign Rider */}
+          {!['delivered', 'cancelled'].includes(order.status) && order._paid && (
             <button
               onClick={() => onAssignRider(order)}
               className="w-full h-10 rounded-xl bg-[#1B4332] text-white text-xs font-bold flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform mb-2"
             >
-              <Bike className="w-3.5 h-3.5" />
-              Assign Rider
+              <Bike className="w-3.5 h-3.5" /> Assign Rider
             </button>
           )}
-
-          <div>
-            <p className="text-xs font-semibold text-gray-600 mb-1.5">
-              Update Status
+          {!['delivered', 'cancelled'].includes(order.status) && !order._paid && (
+            <p className="text-[11px] text-amber-600 font-semibold mb-2 flex items-center gap-1">
+              <Lock className="w-3 h-3" /> Rider assignment requires confirmed payment
             </p>
+          )}
 
+          {/* Status selector */}
+          <div>
+            <p className="text-xs font-semibold text-gray-600 mb-1.5">Update Status</p>
             <div className="flex flex-wrap gap-1.5">
-              {STATUSES.map((s) => (
-                <button
-                  key={s.value}
-                  onClick={() => onStatusChange(order.id, s.value)}
-                  disabled={
-                    updatingId === order.id || order.status === s.value
-                  }
-                  className={`text-[11px] font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${
-                    order.status === s.value
-                      ? 'bg-[#2E7D32] text-white border-[#2E7D32]'
-                      : 'bg-card text-gray-700 border-gray-200 hover:border-[#2E7D32]'
-                  } ${updatingId === order.id ? 'opacity-50' : ''}`}
-                >
+              {STATUSES.filter((s) => s.value !== 'awaiting_payment').map((s) =>
+            <button
+              key={s.value}
+              onClick={() => onStatusChange(order.id, s.value)}
+              disabled={updatingId === order.id || order.status === s.value}
+              className={`text-[11px] font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${
+              order.status === s.value ?
+              'bg-[#2E7D32] text-white border-[#2E7D32]' :
+              'bg-card text-gray-700 border-gray-200 hover:border-[#2E7D32]'} ${
+              updatingId === order.id ? 'opacity-50' : ''}`}>
+              
                   {s.label}
                 </button>
-              ))}
-            </div>
-
-            {updatingId === order.id && (
-              <p className="text-[11px] text-gray-400 mt-1.5 flex items-center gap-1">
-                <Loader2 className="w-3 h-3 animate-spin" />
-                Updating order status...
-              </p>
             )}
+            </div>
+            {updatingId === order.id &&
+          <p className="text-[11px] text-gray-400 mt-1.5 flex items-center gap-1">
+                <Loader2 className="w-3 h-3 animate-spin" /> Updating order status...
+              </p>
+          }
           </div>
         </div>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 }
 
 export default function AdminOrders() {
   const [params] = useSearchParams();
   const highlightOrder = params.get('order');
-
   const [user, setUser] = useState(null);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -278,6 +245,7 @@ export default function AdminOrders() {
   const [customerFilter, setCustomerFilter] = useState(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [paymentFilter, setPaymentFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('');
   const [assignOrder, setAssignOrder] = useState(null);
 
@@ -287,61 +255,37 @@ export default function AdminOrders() {
 
   const loadOrders = async () => {
     setLoading(true);
-
     try {
-      const [list, paidRes] = await Promise.all([
-        base44.entities.Order.list('-created_date', 100),
-        base44.entities.Payment.filter(
-          { status: 'paid' },
-          { limit: 200, fields: ['order_id'] }
-        ),
-      ]);
-
-      const paidIds = new Set(
-        (paidRes.items || [])
-          .map((payment) => String(payment.order_id))
-          .filter(Boolean)
+      const list = await base44.entities.Order.list('-created_date', 100);
+      // Fulfillment gate: verify payment via the Payment entity (not the
+      // client-writable order.payment_status field).
+      const paidRes = await base44.entities.Payment.filter(
+        { status: 'paid' },
+        { limit: 200, fields: ['order_id'] }
       );
-
-      // Only orders with a matching successful payment record enter fulfilment.
-      const confirmedOrders = list
-        .filter((order) => paidIds.has(String(order.id)))
-        .map((order) => ({ ...order, _paid: true }));
-
-      setOrders(confirmedOrders);
-    } catch (error) {
-      console.error('Failed to load confirmed paid orders:', error);
-      setOrders([]);
+      const paidIds = new Set((paidRes.items || []).map((p) => p.order_id));
+      setOrders(list.map((o) => ({ ...o, _paid: paidIds.has(o.id) })));
+    } catch (e) {
+      console.error(e);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (user?.role === 'admin') {
-      loadOrders();
-    } else if (user !== null) {
-      setLoading(false);
-    }
+    if (user?.role === 'admin') loadOrders();else
+    if (user !== null) setLoading(false);
   }, [user]);
 
   const handleStatusChange = async (orderId, newStatus) => {
     const snapshot = orders;
-
     setOrders((prev) =>
-      prev.map((order) =>
-        order.id === orderId
-          ? { ...order, status: newStatus }
-          : order
-      )
+      prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
     );
-
     setUpdatingId(orderId);
-
     try {
       await notifyOrderStatusChanged(orderId, newStatus);
-    } catch (error) {
-      console.error(error);
+    } catch (e) {
       setOrders(snapshot);
       alert('Failed to update order status.');
     } finally {
@@ -353,63 +297,49 @@ export default function AdminOrders() {
     return (
       <div className="p-8 text-center">
         <Loader2 className="w-6 h-6 animate-spin text-[#2E7D32] mx-auto" />
-      </div>
-    );
+      </div>);
+
   }
 
   if (user.role !== 'admin') {
     return (
       <div className="p-8 text-center min-h-[60vh] flex flex-col items-center justify-center">
         <Lock className="w-12 h-12 text-gray-300 mb-3" />
-        <h2 className="text-lg font-bold text-foreground mb-1">
-          Admins Only
-        </h2>
+        <h2 className="text-lg font-bold text-foreground mb-1">Admins Only</h2>
         <p className="text-sm text-muted-foreground mb-4">
           You need an admin account to manage orders.
         </p>
         <Link to="/" className="text-[#2E7D32] font-bold text-sm">
           Back to Home
         </Link>
-      </div>
-    );
+      </div>);
+
   }
 
   const visibleOrders = customerFilter
-    ? orders.filter((order) => order.customer_email === customerFilter)
+    ? orders.filter((o) => o.customer_email === customerFilter)
     : orders;
 
-  const filteredOrders = visibleOrders.filter((order) => {
-    if (statusFilter !== 'all' && order.status !== statusFilter) {
-      return false;
-    }
-
+  const filteredOrders = visibleOrders.filter((o) => {
+    if (statusFilter !== 'all' && o.status !== statusFilter) return false;
+    if (paymentFilter !== 'all' && (o.payment_status || 'Pending') !== paymentFilter) return false;
     if (dateFilter) {
-      const date = order.created_date
-        ? new Date(order.created_date).toISOString().slice(0, 10)
-        : '';
-
-      if (date !== dateFilter) return false;
+      const d = o.created_date ? new Date(o.created_date).toISOString().slice(0, 10) : '';
+      if (d !== dateFilter) return false;
     }
-
     if (search.trim()) {
-      const query = search.trim().toLowerCase();
-
-      const haystack = `${order.customer_name || ''} ${
-        order.customer_email || ''
-      } ${order.order_number || ''}`.toLowerCase();
-
-      if (!haystack.includes(query)) return false;
+      const q = search.trim().toLowerCase();
+      const hay = `${o.customer_name || ''} ${o.customer_email || ''} ${o.order_number || ''}`.toLowerCase();
+      if (!hay.includes(q)) return false;
     }
-
     return true;
   });
 
-  const hasFilters =
-    search.trim() || statusFilter !== 'all' || dateFilter;
-
+  const hasFilters = search.trim() || statusFilter !== 'all' || paymentFilter !== 'all' || dateFilter;
   const clearFilters = () => {
     setSearch('');
     setStatusFilter('all');
+    setPaymentFilter('all');
     setDateFilter('');
   };
 
@@ -418,19 +348,12 @@ export default function AdminOrders() {
       {customerFilter && (
         <div className="flex items-center justify-between bg-primary/10 rounded-2xl px-4 py-3 mb-4">
           <div>
-            <p className="text-sm font-bold text-[#2E7D32]">
-              {customerFilter}
-            </p>
+            <p className="text-sm font-bold text-[#2E7D32]">{customerFilter}</p>
             <p className="text-xs text-gray-600">
-              {visibleOrders.length} paid order
-              {visibleOrders.length !== 1 ? 's' : ''} · ₦
-              {visibleOrders
-                .reduce((sum, order) => sum + (order.total || 0), 0)
-                .toLocaleString()}{' '}
-              spent
+              {visibleOrders.length} order{visibleOrders.length !== 1 ? 's' : ''} · ₦
+              {visibleOrders.reduce((s, o) => s + (o.total || 0), 0).toLocaleString()} spent
             </p>
           </div>
-
           <button
             onClick={() => setCustomerFilter(null)}
             className="text-xs font-semibold text-[#2E7D32] underline"
@@ -439,104 +362,104 @@ export default function AdminOrders() {
           </button>
         </div>
       )}
-
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Link
-            to="/profile"
-            className="p-1.5 -ml-1.5 rounded-full hover:bg-black/5"
-          />
-          <h1 className="text-xl font-bold text-foreground">
-            Manage Orders
-          </h1>
+          <Link to="/profile" className="p-1.5 -ml-1.5 rounded-full hover:bg-black/5">
+            
+          </Link>
+          <h1 className="text-xl font-bold text-foreground">Manage Orders</h1>
         </div>
-
         <button
           onClick={loadOrders}
           className="w-11 h-11 rounded-full hover:bg-muted flex items-center justify-center"
-          title="Refresh"
-        >
+          title="Refresh">
+          
           <RefreshCw className="w-4 h-4 text-muted-foreground" />
         </button>
       </div>
 
       <p className="text-xs text-muted-foreground mb-4">
-        Only successfully paid orders appear here. Tap an order to expand it
-        and update its status. Customers are emailed when the status changes.
+        Tap an order to expand it and update its status. The customer is emailed
+        automatically when the status changes.
       </p>
 
+      {/* Search & filters */}
       <div className="bg-card rounded-2xl border border-border p-3 mb-3 space-y-3">
         <div className="relative">
           <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name, email or order no."
             className="w-full pl-9 pr-3 h-10 text-sm rounded-xl border border-gray-200 outline-none focus:border-[#2E7D32]"
           />
         </div>
-
         <div className="flex flex-wrap gap-2">
           <SheetSelect
             value={statusFilter}
             onChange={setStatusFilter}
-            options={[
-              { value: 'all', label: 'All statuses' },
-              ...STATUSES,
-            ]}
+            options={[{ value: 'all', label: 'All statuses' }, ...STATUSES]}
             placeholder="All statuses"
             title="Filter by status"
             triggerClassName="flex-1 min-w-[130px] h-10 flex items-center justify-between text-sm rounded-xl border border-gray-200 px-3 bg-card"
           />
-
+          <SheetSelect
+            value={paymentFilter}
+            onChange={setPaymentFilter}
+            options={[
+              { value: 'all', label: 'All payments' },
+              { value: 'Pending', label: 'Awaiting Payment' },
+              { value: 'Paid', label: 'Paid' },
+              { value: 'Failed', label: 'Failed' },
+              { value: 'Abandoned', label: 'Abandoned' },
+            ]}
+            placeholder="All payments"
+            title="Filter by payment"
+            triggerClassName="flex-1 min-w-[130px] h-10 flex items-center justify-between text-sm rounded-xl border border-gray-200 px-3 bg-card"
+          />
           <div className="relative flex-1">
             <Calendar className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="date"
               value={dateFilter}
-              onChange={(event) => setDateFilter(event.target.value)}
+              onChange={(e) => setDateFilter(e.target.value)}
               className="w-full pl-9 pr-2 h-10 text-sm rounded-xl border border-gray-200 outline-none focus:border-[#2E7D32]"
             />
           </div>
         </div>
-
         {hasFilters && (
           <button
             onClick={clearFilters}
             className="text-xs font-semibold text-[#2E7D32] flex items-center gap-1"
           >
-            <X className="w-3 h-3" />
-            Clear filters
+            <X className="w-3 h-3" /> Clear filters
           </button>
         )}
       </div>
 
       <p className="text-xs text-gray-400 mb-3 px-1">
-        {filteredOrders.length} paid order
-        {filteredOrders.length !== 1 ? 's' : ''}
+        {filteredOrders.length} order{filteredOrders.length !== 1 ? 's' : ''}
       </p>
 
-      {filteredOrders.length === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-sm text-gray-400">
-            No paid orders match your filters.
-          </p>
+      {filteredOrders.length === 0 ?
+      <div className="text-center py-16">
+          <p className="text-sm text-gray-400">No orders match your filters.</p>
+        </div> :
+
+      <div className="space-y-3">
+          {filteredOrders.map((order) =>
+        <OrderCard
+          key={order.id}
+          order={order}
+          onStatusChange={handleStatusChange}
+          updatingId={updatingId}
+          highlighted={highlightOrder === order.order_number}
+          onViewCustomer={setCustomerFilter}
+          onAssignRider={setAssignOrder} />
+
+        )}
         </div>
-      ) : (
-        <div className="space-y-3">
-          {filteredOrders.map((order) => (
-            <OrderCard
-              key={order.id}
-              order={order}
-              onStatusChange={handleStatusChange}
-              updatingId={updatingId}
-              highlighted={highlightOrder === order.order_number}
-              onViewCustomer={setCustomerFilter}
-              onAssignRider={setAssignOrder}
-            />
-          ))}
-        </div>
-      )}
+      }
 
       <AssignRiderSheet
         order={assignOrder}
@@ -544,6 +467,8 @@ export default function AdminOrders() {
         onClose={() => setAssignOrder(null)}
         onAssigned={loadOrders}
       />
-    </div>
-  );
+    </div>);
+
 }
+
+// Close bracket for OrderCard — the AssignRiderSheet is rendered by the parent.

@@ -1,11 +1,11 @@
-
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import {
   Search,
   Package,
   PackageCheck,
+  Clock,
   Truck,
   CheckCircle2,
   MapPin,
@@ -16,7 +16,6 @@ import {
   ChevronRight,
   Bike,
   User,
-  Clock,
 } from 'lucide-react';
 
 const STEPS = [
@@ -26,7 +25,6 @@ const STEPS = [
   { key: 'on_the_way', title: 'Out for Delivery', description: 'Our rider is on the way to your Lagos address.', icon: Truck },
   { key: 'delivered', title: 'Delivered', description: 'Your order has arrived. Enjoy your groceries!', icon: CheckCircle2 },
 ];
-
 const STEP_ORDER = ['new', 'processing', 'ready', 'on_the_way', 'delivered'];
 
 const ETA_BY_STATUS = {
@@ -37,23 +35,16 @@ const ETA_BY_STATUS = {
   delivered: 'Delivered',
 };
 
-function timeAgo(value) {
-  if (!value) return '';
-
+function timeAgo(d) {
+  if (!d) return '';
   try {
-    const diff = Date.now() - new Date(value).getTime();
+    const diff = Date.now() - new Date(d).getTime();
     const mins = Math.floor(diff / 60000);
-
     if (mins < 1) return 'just now';
     if (mins < 60) return `${mins} min ago`;
-
     const hrs = Math.floor(mins / 60);
     if (hrs < 24) return `${hrs} hr ago`;
-
-    return new Date(value).toLocaleDateString('en-NG', {
-      day: 'numeric',
-      month: 'short',
-    });
+    return new Date(d).toLocaleDateString('en-NG', { day: 'numeric', month: 'short' });
   } catch {
     return '';
   }
@@ -63,79 +54,61 @@ export default function OrderTracking() {
   const [params, setParams] = useSearchParams();
   const orderId = params.get('id') || '';
   const queryOrder = params.get('order') || '';
-
   const [searchValue, setSearchValue] = useState(queryOrder);
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchOrder = useCallback(async () => {
+  const fetchOrder = async () => {
     setLoading(true);
     setError(null);
     setOrder(null);
-
     try {
       let found = null;
-
       if (orderId) {
         found = await base44.entities.Order.get(orderId).catch(() => null);
       } else if (queryOrder) {
         const orders = await base44.entities.Order.list();
-
-        found = (orders || []).find(
-          (item) =>
-            item.order_number?.toLowerCase() === queryOrder.toLowerCase()
-        );
+        found = orders.find((o) => o.order_number.toLowerCase() === queryOrder.toLowerCase());
       }
-
-      if (found?.payment_status === 'Paid') {
-        setOrder(found);
-      } else {
-        setError('Order not found. Check your order number and try again.');
-      }
+      if (found) setOrder(found);
+      else setError('Order not found. Check your order number and try again.');
     } catch {
       setError('Could not load order. Please try again.');
     } finally {
       setLoading(false);
     }
-  }, [orderId, queryOrder]);
+  };
 
   useEffect(() => {
     if (orderId || queryOrder) {
       if (queryOrder) setSearchValue(queryOrder);
       fetchOrder();
     }
-  }, [orderId, queryOrder, fetchOrder]);
+  }, [orderId, queryOrder]);
 
-  const handleSearch = (event) => {
-    event.preventDefault();
-
-    if (searchValue.trim()) {
-      setParams({ order: searchValue.trim() });
-    }
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchValue.trim()) setParams({ order: searchValue.trim() });
   };
 
   const isCancelled = order?.status === 'cancelled';
   const isDelivered = order?.status === 'delivered';
-
-  const currentStepIndex = order
-    ? Math.max(0, STEP_ORDER.indexOf(order.status))
-    : -1;
+  const currentStepIndex = order ? Math.max(0, STEP_ORDER.indexOf(order.status)) : -1;
 
   return (
     <div className="uk-page">
+      {/* Compact search — always visible so users can track another order */}
       <form onSubmit={handleSearch} className="flex items-center gap-2 mb-4">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
-
           <input
             value={searchValue}
-            onChange={(event) => setSearchValue(event.target.value)}
+            onChange={(e) => setSearchValue(e.target.value)}
             placeholder="Enter order number"
             className="uk-input pl-9 !py-2"
           />
         </div>
-
         <button
           type="submit"
           disabled={!searchValue.trim() || loading}
@@ -162,41 +135,32 @@ export default function OrderTracking() {
       {!order && !error && !loading && (
         <div className="text-center py-10">
           <Truck className="w-9 h-9 text-muted-foreground/40 mx-auto mb-2.5" />
-          <p className="uk-sub">
-            Enter your order number to see delivery status.
-          </p>
+          <p className="uk-sub">Enter your order number to see live delivery status.</p>
         </div>
       )}
 
       {order && !loading && (
         <div className="space-y-3">
+          {/* Status hero */}
           <div className="uk-card p-4">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h2 className="text-[17px] font-bold text-foreground">
-                  #{order.order_number}
-                </h2>
-
+                <h2 className="text-[17px] font-bold text-foreground">#{order.order_number}</h2>
                 <p className="uk-sub mt-0.5">
-                  {order.items?.length || 0} items · ₦
-                  {(order.total || 0).toLocaleString()}
+                  {order.items?.length || 0} items · ₦{(order.total || 0).toLocaleString()}
                 </p>
               </div>
-
               {isCancelled ? (
                 <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-red-50 text-red-600 flex items-center gap-1">
-                  <XCircle className="w-3 h-3" />
-                  Cancelled
+                  <XCircle className="w-3 h-3" /> Cancelled
                 </span>
               ) : isDelivered ? (
                 <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-secondary text-retail flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" />
-                  Delivered
+                  <CheckCircle2 className="w-3 h-3" /> Delivered
                 </span>
               ) : (
                 <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-secondary text-retail flex items-center gap-1">
-                  <Bike className="w-3 h-3" />
-                  {ETA_BY_STATUS[order.status] || 'In progress'}
+                  <Bike className="w-3 h-3" /> {ETA_BY_STATUS[order.status]}
                 </span>
               )}
             </div>
@@ -205,20 +169,10 @@ export default function OrderTracking() {
               <div className="rounded-xl bg-secondary p-3 mt-3 flex items-center gap-2.5">
                 {(() => {
                   const Icon = STEPS[currentStepIndex]?.icon || ShoppingBag;
-
-                  return (
-                    <Icon
-                      className="w-5 h-5 text-retail shrink-0"
-                      strokeWidth={2.2}
-                    />
-                  );
+                  return <Icon className="w-5 h-5 text-retail shrink-0" strokeWidth={2.2} />;
                 })()}
-
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-bold text-retail">
-                    {STEPS[currentStepIndex]?.title}
-                  </p>
-
+                  <p className="text-[13px] font-bold text-retail">{STEPS[currentStepIndex]?.title}</p>
                   <p className="text-[11px] text-retail/75 truncate">
                     {STEPS[currentStepIndex]?.description}
                   </p>
@@ -227,22 +181,16 @@ export default function OrderTracking() {
             )}
           </div>
 
+          {/* Vertical tracking timeline */}
           {!isCancelled ? (
             <div className="uk-card p-4">
               <p className="uk-section-label mb-3">Delivery progress</p>
-
               <div>
-                {STEPS.map((step, index) => {
-                  const isCompleted =
-                    index < currentStepIndex ||
-                    (isDelivered && index === currentStepIndex);
-
-                  const isCurrent =
-                    index === currentStepIndex && !isDelivered;
-
+                {STEPS.map((step, i) => {
+                  const isCompleted = i < currentStepIndex || (isDelivered && i === currentStepIndex);
+                  const isCurrent = i === currentStepIndex && !isDelivered;
                   const Icon = step.icon;
-                  const reached = index <= currentStepIndex;
-
+                  const reached = i <= currentStepIndex;
                   return (
                     <div key={step.key} className="flex gap-3">
                       <div className="flex flex-col items-center">
@@ -252,54 +200,31 @@ export default function OrderTracking() {
                           }`}
                         >
                           <Icon
-                            className={`w-3.5 h-3.5 ${
-                              reached
-                                ? 'text-white'
-                                : 'text-muted-foreground'
-                            }`}
+                            className={`w-3.5 h-3.5 ${reached ? 'text-white' : 'text-muted-foreground'}`}
                             strokeWidth={2.4}
                           />
                         </div>
-
-                        {index < STEPS.length - 1 &&
+                        {i < STEPS.length - 1 &&
                           (isCompleted ? (
                             <div className="w-0.5 flex-1 min-h-[26px] my-1 rounded-full bg-retail" />
                           ) : (
                             <div className="flex-1 min-h-[26px] my-1 border-l-2 border-dashed border-border" />
                           ))}
                       </div>
-
-                      <div
-                        className={`pb-5 min-w-0 ${
-                          index === STEPS.length - 1 ? 'pb-0' : ''
-                        }`}
-                      >
+                      <div className={`pb-5 min-w-0 ${i === STEPS.length - 1 ? 'pb-0' : ''}`}>
                         <p
                           className={`text-[13px] ${
-                            reached
-                              ? 'font-bold text-foreground'
-                              : 'font-medium text-muted-foreground'
+                            reached ? 'font-bold text-foreground' : 'font-medium text-muted-foreground'
                           }`}
                         >
                           {step.title}
                         </p>
-
-                        <p
-                          className={`text-[11px] mt-0.5 ${
-                            reached
-                              ? 'text-muted-foreground'
-                              : 'text-muted-foreground/60'
-                          }`}
-                        >
+                        <p className={`text-[11px] mt-0.5 ${reached ? 'text-muted-foreground' : 'text-muted-foreground/60'}`}>
                           {step.description}
                         </p>
-
                         {isCompleted && (
-                          <p className="text-[10px] text-muted-foreground/70 mt-1">
-                            {timeAgo(order.updated_date)}
-                          </p>
+                          <p className="text-[10px] text-muted-foreground/70 mt-1">{timeAgo(order.updated_date)}</p>
                         )}
-
                         {isCurrent && (
                           <span className="inline-flex items-center gap-1 mt-1.5 text-[10px] font-bold text-retail bg-secondary px-2 py-0.5 rounded-full">
                             <span className="w-1.5 h-1.5 rounded-full bg-retail animate-pulse" />
@@ -314,81 +239,54 @@ export default function OrderTracking() {
 
               {order.status === 'on_the_way' && (
                 <div className="mt-2 p-3 rounded-xl bg-secondary text-center">
-                  <p className="text-[13px] font-bold text-retail">
-                    Your rider is on the way! 🛵
-                  </p>
-                  <p className="text-[11px] text-retail/75 mt-0.5">
-                    Estimated arrival: 15–40 minutes
-                  </p>
+                  <p className="text-[13px] font-bold text-retail">Your rider is on the way! 🛵</p>
+                  <p className="text-[11px] text-retail/75 mt-0.5">Estimated arrival: 15–40 minutes</p>
                 </div>
               )}
             </div>
           ) : (
             <div className="bg-red-50 rounded-2xl border border-red-100 p-4 text-center">
               <XCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-              <p className="text-[13px] font-bold text-red-700">
-                This order was cancelled
-              </p>
-              <p className="text-[11px] text-red-500 mt-1">
-                If this is a mistake, please contact support.
-              </p>
+              <p className="text-[13px] font-bold text-red-700">This order was cancelled</p>
+              <p className="text-[11px] text-red-500 mt-1">If this is a mistake, please contact support.</p>
             </div>
           )}
 
+          {/* Delivery address */}
           <div className="uk-card p-4">
             <p className="uk-section-label mb-2">Delivery address</p>
-
             <div className="flex items-start gap-2.5">
               <MapPin className="w-4 h-4 text-retail shrink-0 mt-0.5" />
-
               <div className="min-w-0">
                 <p className="text-[13px] text-foreground font-semibold flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-muted-foreground" />
-                  {order.customer_name}
+                  <User className="w-3.5 h-3.5 text-muted-foreground" /> {order.customer_name}
                 </p>
-
-                <p className="text-[13px] text-muted-foreground mt-0.5">
-                  {order.customer_address}
-                </p>
-
+                <p className="text-[13px] text-muted-foreground mt-0.5">{order.customer_address}</p>
                 {order.landmark && (
-                  <p className="text-[11px] text-muted-foreground/80 mt-0.5">
-                    Near {order.landmark}
-                  </p>
+                  <p className="text-[11px] text-muted-foreground/80 mt-0.5">Near {order.landmark}</p>
                 )}
-
                 <p className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1">
-                  <Phone className="w-3 h-3" />
-                  {order.customer_phone}
+                  <Phone className="w-3 h-3" /> {order.customer_phone}
                 </p>
               </div>
             </div>
           </div>
 
+          {/* Order items */}
           <div className="uk-card p-4">
             <p className="uk-section-label mb-2.5">Order items</p>
-
             <div className="space-y-1.5 mb-3">
-              {order.items?.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between text-[13px]"
-                >
+              {order.items?.map((item, i) => (
+                <div key={i} className="flex items-center justify-between text-[13px]">
                   <span className="text-foreground truncate pr-2">
                     {item.quantity}× {item.name}
                   </span>
-
                   <span className="font-semibold text-foreground shrink-0">
-                    ₦
-                    {(
-                      ((item.price || 0) + (item.addons_total || 0)) *
-                      (item.quantity || 1)
-                    ).toLocaleString()}
+                    ₦{((item.price || 0) * (item.quantity || 1)).toLocaleString()}
                   </span>
                 </div>
               ))}
             </div>
-
             <Link
               to={`/orders/${order.id}`}
               className="flex items-center justify-between text-[13px] font-bold text-retail pt-2.5 border-t border-border"
@@ -399,8 +297,7 @@ export default function OrderTracking() {
           </div>
 
           <div className="flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground pt-1">
-            <Clock className="w-3.5 h-3.5" />
-            Last update {timeAgo(order.updated_date) || 'just now'}
+            <Clock className="w-3.5 h-3.5" /> Last update {timeAgo(order.updated_date) || 'just now'}
           </div>
 
           <Link to="/orders" className="uk-btn-outline">
