@@ -1,7 +1,17 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Loader2, Package, ChevronRight, Clock, Truck, CheckCircle2, XCircle, ChefHat } from 'lucide-react';
+import {
+  Loader2,
+  Package,
+  ChevronRight,
+  Clock,
+  Truck,
+  CheckCircle2,
+  XCircle,
+  ChefHat,
+} from 'lucide-react';
 
 const naira = (n) => '\u20A6' + (n || 0).toLocaleString();
 
@@ -29,33 +39,44 @@ export default function OrderHistory() {
 
   useEffect(() => {
     let cancelled = false;
+
     const load = async () => {
       try {
         const me = await base44.auth.me();
         const all = await base44.entities.Order.list('-created_date', 20);
-        const mine = me?.id ? all.filter((o) => o.created_by_id === me.id) : all;
+
+        const mine = (me?.email
+          ? all.filter((o) => o.customer_email === me.email)
+          : []
+        ).filter((o) => o.payment_status === 'Paid');
+
         if (!cancelled) setOrders(mine);
-      } catch {
+      } catch (error) {
+        console.error('Order history loading error:', error);
       } finally {
         if (!cancelled) setLoading(false);
       }
     };
+
     load();
+
     const unsub = base44.entities.Order.subscribe(() => load());
+
     return () => {
       cancelled = true;
       unsub();
     };
   }, []);
 
-  if (loading)
+  if (loading) {
     return (
       <div className="flex justify-center py-6">
         <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
       </div>
     );
+  }
 
-  if (orders.length === 0)
+  if (orders.length === 0) {
     return (
       <div className="bg-card rounded-2xl border border-border p-6 text-center">
         <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-2">
@@ -67,6 +88,7 @@ export default function OrderHistory() {
         </p>
       </div>
     );
+  }
 
   return (
     <div className="space-y-2.5">
@@ -74,6 +96,7 @@ export default function OrderHistory() {
         const cfg = STATUS_CONFIG[o.status] || STATUS_CONFIG.new;
         const Icon = cfg.icon;
         const isActive = o.status !== 'delivered' && o.status !== 'cancelled';
+
         return (
           <Link
             key={o.id}
@@ -84,17 +107,22 @@ export default function OrderHistory() {
               <div className={`w-10 h-10 rounded-xl ${cfg.bg} flex items-center justify-center shrink-0`}>
                 <Icon className={`w-5 h-5 ${cfg.color}`} />
               </div>
+
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold text-foreground">#{o.order_number}</p>
+                  <p className="text-sm font-bold text-foreground">
+                    #{o.order_number}
+                  </p>
                   <span className={`text-[10px] font-bold ${cfg.color} ${cfg.bg} px-2 py-0.5 rounded-full`}>
                     {cfg.label}
                   </span>
                 </div>
+
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {formatDate(o.created_date)} · {naira(o.total)} · {(o.items || []).length} item{(o.items || []).length !== 1 ? 's' : ''}
                 </p>
               </div>
+
               <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
             </div>
           </Link>
