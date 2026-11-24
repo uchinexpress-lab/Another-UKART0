@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, Navigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useCart } from '@/context/CartContext';
-import { Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import OrderSuccessHero from '@/components/order/OrderSuccessHero';
 import OrderInfoGrid from '@/components/order/OrderInfoGrid';
 import PurchasedItemsCard from '@/components/order/PurchasedItemsCard';
@@ -10,7 +11,6 @@ import DispatchStatusCard from '@/components/order/DispatchStatusCard';
 import { CUSTOMER_STATUS_MAP } from '@/lib/deliveryStatus';
 
 const ORDER_STATUS_LABELS = {
-  awaiting_payment: 'Awaiting Payment',
   new: 'Paid & Processing',
   processing: 'Paid & Processing',
   ready: 'Packed & Ready',
@@ -30,7 +30,9 @@ const CHANNEL_LABELS = {
 
 function formatDateTime(value) {
   const d = value ? new Date(value) : new Date();
+
   if (Number.isNaN(d.getTime())) return '—';
+
   return d.toLocaleString('en-NG', {
     month: 'short',
     day: 'numeric',
@@ -43,73 +45,87 @@ function formatDateTime(value) {
 export default function PaymentSuccess() {
   const { id } = useParams();
   const { clearCart } = useCart();
+
   const [order, setOrder] = useState(null);
   const [delivery, setDelivery] = useState(null);
   const [images, setImages] = useState({});
   const [loading, setLoading] = useState(true);
-  const [paying, setPaying] = useState(false);
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
     let active = true;
-    (async () => {
-      try {
-        const o = await base44.entities.Order.get(id);
-        if (!active) return;
-        setOrder(o);
-        if (o?.payment_status === 'Paid') clearCart();
 
-        // Product photos for the purchased items list (nice-to-have only).
-        const ids = [...new Set((o.items || []).map((it) => it.product_id).filter(Boolean))];
-        if (ids.length > 0) {
+    const loadOrder = async () => {
+      setLoading(true);
+      setNotFound(false);
+
+      try {
+        const result = await base44.entities.Order.get(id);
+
+        if (!active) return;
+
+        if (!result || result.payment_status !== 'Paid') {
+          setNotFound(true);
+          return;
+        }
+
+        setOrder(result);
+        clearCart();
+
+        const productIds = [
+          ...new Set(
+            (result.items || [])
+              .map((item) => item.product_id)
+              .filter(Boolean)
+          ),
+        ];
+
+        if (productIds.length > 0) {
           try {
-            const res = await base44.entities.Product.filter(
-              { id: { $in: ids } },
+            const products = await base44.entities.Product.filter(
+              { id: { $in: productIds } },
               { limit: 50 }
             );
+
             if (!active) return;
-            const map = {};
-            (res.items || []).forEach((p) => {
-              map[p.id] = p.image;
+
+            const imageMap = {};
+
+            (products?.items || []).forEach((product) => {
+              imageMap[product.id] = product.image;
             });
-            setImages(map);
-          } catch {}
+
+            setImages(imageMap);
+          } catch {
+            // Product images are optional on the success page.
+          }
         }
 
         try {
-          const dRes = await base44.entities.Delivery.filter(
+          const deliveries = await base44.entities.Delivery.filter(
             { order_id: id },
             { limit: 1 }
           );
-          if (active) setDelivery(dRes.items?.[0] || null);
-        } catch {}
+
+          if (active) {
+            setDelivery(deliveries?.items?.[0] || null);
+          }
+        } catch {
+          if (active) setDelivery(null);
+        }
       } catch {
+        if (active) setNotFound(true);
       } finally {
         if (active) setLoading(false);
       }
-    })();
+    };
+
+    loadOrder();
+
     return () => {
       active = false;
     };
-  }, [id]);
-
-  const payNow = async () => {
-    if (!order) return;
-    setPaying(true);
-    try {
-      const callbackUrl = `${window.location.origin}/payment/callback`;
-      const res = await base44.functions.invoke('initiatePaystackPayment', {
-        orderId: order.id,
-        callbackUrl,
-      });
-      if (res.data?.authorization_url) {
-        window.location.href = res.data.authorization_url;
-      } else {
-        setPaying(false);
-      }
-    } catch {
-      setPaying(false);
-    }
-  };
+  }, [id, clearCart]);
 
   if (loading) {
     return (
@@ -119,57 +135,45 @@ export default function PaymentSuccess() {
     );
   }
 
-  if (!order) {
+  if (notFound || !order || order.payment_status !== 'Paid') {
     return (
-      <div className="text-center py-16 px-6">
-        <p className="text-sm text-muted-foreground">Order not found.</p>
-        <Link to="/orders" className="text-retail text-sm font-medium mt-2 inline-block">
-          Back to orders
-        </Link>
-      </div>
+      <Navigate to="/orders" replace />
     );
   }
 
-  if (order.payment_status !== 'Paid') {
-    return (
-      <div className="flex flex-col items-center justify-center p-8 text-center min-h-[70vh]">
-        <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center mb-4">
-          <AlertTriangle className="w-10 h-10 text-retail" />
-        </div>
-        <h2 className="text-xl font-bold text-foreground mb-1">
-          {order.payment_status === 'Failed' ? 'Payment Failed' : 'Payment Not Confirmed'}
-        </h2>
-        <p className="text-sm text-muted-foreground mb-6">
-          Your payment was not completed, so order {order.order_number} is not confirmed.
-        </p>
-        <button
-          onClick={payNow}
-          disabled={paying}
-          className="uk-btn mb-3"
-        >
-          {paying ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-          {order.payment_status === 'Failed' ? 'Retry Payment' : 'Pay Now'}
-        </button>
-        <Link to="/orders" className="uk-btn-outline">
-          Back to My Orders
-        </Link>
-      </div>
-    );
-  }
-
-  const items = (order.items || []).map((it, i) => ({
-    key: `${i}-${it.name}`,
-    name: it.name,
-    sub: [it.unit, `Qty: ${it.quantity}`].filter(Boolean).join(' • '),
-    image: images[it.product_id] || '',
-    price: ((it.price || 0) + (it.addons_total || 0)) * (it.quantity || 1),
+  const purchasedItems = (order.items || []).map((item, index) => ({
+    key: `${index}-${item.name}`,
+    name: item.name,
+    sub: [
+      item.unit,
+      `Qty: ${item.quantity}`,
+    ]
+      .filter(Boolean)
+      .join(' • '),
+    image: images[item.product_id] || '',
+    price:
+      ((item.price || 0) + (item.addons_total || 0)) *
+      (item.quantity || 1),
   }));
 
   const rows = [
-    { label: 'Items Subtotal', value: order.subtotal || 0 },
-    { label: 'Delivery Fee', value: order.delivery_fee || 0 },
+    {
+      label: 'Items Subtotal',
+      value: order.subtotal || 0,
+    },
+    {
+      label: 'Delivery Fee',
+      value: order.delivery_fee || 0,
+    },
   ];
-  if (order.service_fee > 0) rows.push({ label: 'Service Fee', value: order.service_fee });
+
+  if (order.service_fee > 0) {
+    rows.push({
+      label: 'Service Fee',
+      value: order.service_fee,
+    });
+  }
+
   if (order.first_order_discount > 0) {
     rows.push({
       label: 'First Order Discount',
@@ -177,10 +181,16 @@ export default function PaymentSuccess() {
       discount: true,
     });
   }
-  const otherDiscount = (order.discount || 0) - (order.first_order_discount || 0);
+
+  const otherDiscount =
+    (order.discount || 0) -
+    (order.first_order_discount || 0);
+
   if (otherDiscount > 0) {
     rows.push({
-      label: order.voucher_code ? `Voucher (${order.voucher_code})` : 'Referral Discount',
+      label: order.voucher_code
+        ? `Voucher (${order.voucher_code})`
+        : 'Referral Discount',
       value: otherDiscount,
       discount: true,
     });
@@ -189,6 +199,7 @@ export default function PaymentSuccess() {
   const dispatchLabel = delivery
     ? CUSTOMER_STATUS_MAP[delivery.status] || 'Preparing Order'
     : 'Preparing Order';
+
   const dispatchSubtext = delivery?.rider_name
     ? `${delivery.rider_name} is handling your order`
     : 'We are packing your groceries';
@@ -198,9 +209,18 @@ export default function PaymentSuccess() {
       <OrderSuccessHero />
 
       <OrderInfoGrid
-        date={formatDateTime(order.payment_timestamp || order.created_date)}
-        payment={CHANNEL_LABELS[order.payment_channel] || order.payment_method || 'Pay Online'}
-        status={ORDER_STATUS_LABELS[order.status] || 'Paid & Processing'}
+        date={formatDateTime(
+          order.payment_timestamp || order.created_date
+        )}
+        payment={
+          CHANNEL_LABELS[order.payment_channel] ||
+          order.payment_method ||
+          'Pay Online'
+        }
+        status={
+          ORDER_STATUS_LABELS[order.status] ||
+          'Paid & Processing'
+        }
         delivery={
           delivery?.estimated_minutes
             ? `Est. ${delivery.estimated_minutes} mins`
@@ -208,16 +228,28 @@ export default function PaymentSuccess() {
         }
       />
 
-      <PurchasedItemsCard items={items} rows={rows} total={order.total || 0} />
+      <PurchasedItemsCard
+        items={purchasedItems}
+        rows={rows}
+        total={order.total || 0}
+      />
 
-      <DispatchStatusCard label={dispatchLabel} subtext={dispatchSubtext} />
+      <DispatchStatusCard
+        label={dispatchLabel}
+        subtext={dispatchSubtext}
+      />
 
       <div className="space-y-2.5">
         <Link to="/" className="uk-btn">
           Back to Home
         </Link>
+
         <Link
-          to={delivery ? `/track-order/${delivery.id}` : `/track?id=${order.id}`}
+          to={
+            delivery
+              ? `/track-order/${delivery.id}`
+              : `/track?id=${order.id}`
+          }
           className="uk-btn-outline"
         >
           Track this order
