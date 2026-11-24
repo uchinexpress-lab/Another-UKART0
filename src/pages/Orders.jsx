@@ -3,25 +3,34 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useCart } from '@/context/CartContext';
+import { toast } from '@/components/ui/use-toast';
 import {
-  ShoppingBag,
-  Clock,
   CheckCircle2,
   XCircle,
+  Loader2,
   ChevronRight,
+  ShoppingBag,
+  Truck,
+  RotateCw,
+  ShoppingCart,
+  ArrowRight,
   Plus,
   Minus,
-  Trash2,
-  Loader2,
 } from 'lucide-react';
-import { Image } from '@/components/ui/image';
+import PullToRefresh from '@/components/home/PullToRefresh';
 
 const ACTIVE = ['new', 'processing', 'ready', 'on_the_way'];
+const ACTIVE_STEP_INDEX = {
+  new: 0,
+  processing: 1,
+  ready: 2,
+  on_the_way: 3,
+};
 
 const TABS = [
-  { key: 'cart', label: 'Cart' },
-  { key: 'ongoing', label: 'Ongoing' },
-  { key: 'completed', label: 'Completed' },
+  { key: 'active', label: 'Active' },
+  { key: 'delivered', label: 'Delivered' },
+  { key: 'cancelled', label: 'Cancelled' },
 ];
 
 function formatDate(d) {
@@ -37,279 +46,323 @@ function formatDate(d) {
   }
 }
 
+function money(value) {
+  return `₦${Number(value || 0).toLocaleString('en-NG')}`;
+}
+
 function StatusBadge({ status }) {
-  if (status === 'delivered')
+  if (status === 'delivered') {
     return (
       <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-secondary text-[#2E7D32] flex items-center gap-1">
         <CheckCircle2 className="w-3 h-3" /> Completed
       </span>
     );
+  }
 
-  if (status === 'cancelled')
+  if (status === 'cancelled') {
     return (
       <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-red-50 text-red-600 flex items-center gap-1">
         <XCircle className="w-3 h-3" /> Cancelled
       </span>
     );
+  }
 
   return (
-    <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#FFF3E0] text-[#E65100] flex items-center gap-1">
-      <Clock className="w-3 h-3" /> In Progress
+    <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-secondary text-[#2E7D32] flex items-center gap-1">
+      <Truck className="w-3 h-3" /> In Progress
     </span>
   );
 }
 
-export default function Order() {
-  const [tab, setTab] = useState('cart');
+export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState('active');
 
-  const { items, total, updateQuantity, removeItem, itemCount } = useCart();
+  const {
+    items = [],
+    total = 0,
+    itemCount = 0,
+    addItems,
+  } = useCart();
+
   const navigate = useNavigate();
 
-  useEffect(() => {
-    let mounted = true;
+  const cartHasItems = items.length > 0;
 
-    (async () => {
-      try {
-        const me = await base44.auth.me();
+  const displayedItemCount =
+    itemCount || items.reduce((sum, item) => sum + Number(item.quantity || 1), 0);
 
-        if (!me?.email) {
-          if (mounted) setOrders([]);
-          return;
-        }
+  const reorder = (e, order) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-        const result = await base44.entities.Order.filter(
-          { customer_email: me.email },
-          { sort: '-created_date', limit: 100 }
-        );
+    const cartItems = (order.items || []).map((it) => ({
+      id: it.name,
+      name: it.name,
+      price: it.price || 0,
+      quantity: it.quantity || 1,
+      unit: it.unit || '',
+    }));
 
-        if (mounted) {
-          setOrders(
-            (result.items || []).filter(
-              (order) => order.payment_status === 'Paid'
-            )
-          );
-        }
-      } catch (error) {
-        console.error('Failed to load orders:', error);
-        if (mounted) setOrders([]);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    })();
+    if (cartItems.length === 0) {
+      toast({ title: 'No items to reorder' });
+      return;
+    }
 
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  const ongoing = orders.filter((order) =>
-    ACTIVE.includes(order.status)
-  );
-
-  const completed = orders.filter(
-    (order) => !ACTIVE.includes(order.status)
-  );
-
-  const deliveryFee = total > 0 ? (total > 30000 ? 0 : 1500) : 0;
-  const grandTotal = total + deliveryFee;
-
-  const renderOrderList = (list, emptyLabel) => {
-    if (loading)
-      return (
-        <div className="flex justify-center py-16">
-          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-        </div>
-      );
-
-    if (list.length === 0)
-      return (
-        <div className="text-center py-16">
-          <ShoppingBag className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
-
-          <p className="uk-sub">{emptyLabel}</p>
-
-          <Link
-            to="/"
-            className="inline-block mt-4 bg-[#2E7D32] text-white text-sm font-bold px-5 py-2.5 rounded-xl"
-          >
-            Start Shopping
-          </Link>
-        </div>
-      );
-
-    return (
-      <div className="space-y-3">
-        {list.map((order) => (
-          <Link
-            key={order.id}
-            to={`/orders/${order.id}`}
-            className="block uk-card p-3.5 active:scale-[0.99] transition-transform"
-          >
-            <div className="flex items-center justify-between gap-2 mb-1.5">
-              <span className="text-[13px] font-bold text-foreground">
-                {order.order_number}
-              </span>
-
-              <StatusBadge status={order.status} />
-            </div>
-
-            <p className="uk-meta mb-2">
-              {formatDate(order.created_date)}
-            </p>
-
-            <div className="flex items-center justify-between pt-2 border-t border-border">
-              <span className="uk-meta">
-                {(order.items?.length || 0)} item
-                {(order.items?.length || 0) > 1 ? 's' : ''}
-              </span>
-
-              <span className="flex items-center gap-1 font-bold text-[#2E7D32] text-[13px]">
-                ₦{(order.total || 0).toLocaleString()}
-                <ChevronRight className="w-4 h-4" />
-              </span>
-            </div>
-          </Link>
-        ))}
-      </div>
-    );
+    addItems(cartItems);
+    toast({
+      title: `Added ${cartItems.length} item${cartItems.length > 1 ? 's' : ''} to cart`,
+    });
+    navigate('/cart');
   };
 
+  const loadOrders = async () => {
+    setLoading(true);
+
+    try {
+      const me = await base44.auth.me();
+
+      const result = await base44.entities.Order.filter(
+        { customer_email: me?.email || '' },
+        { sort: '-created_date', limit: 100 }
+      );
+
+      // Only successfully paid orders belong in order history.
+      setOrders(
+        (result.items || []).filter(
+          (order) => order.payment_status === 'Paid'
+        )
+      );
+    } catch (error) {
+      console.error('Unable to load orders:', error);
+      setOrders([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadOrders();
+  }, []);
+
+  const filtered = orders.filter((order) => {
+    if (tab === 'active') return ACTIVE.includes(order.status);
+    if (tab === 'delivered') return order.status === 'delivered';
+    return order.status === 'cancelled';
+  });
+
   return (
-    <div className="uk-page pb-40">
-      <h1 className="uk-title mb-3">Orders</h1>
+    <PullToRefresh onRefresh={loadOrders}>
+      <div className="uk-page">
 
-      <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-4 -mx-1 px-1">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`uk-chip ${
-              tab === t.key ? 'uk-chip-active' : ''
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+        {/* CURRENT CART — shown only when the customer has items */}
+        {cartHasItems && (
+          <section className="mb-5">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h2 className="text-base font-extrabold text-foreground">
+                  Your Cart
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Items you've selected and are ready to order
+                </p>
+              </div>
 
-      {tab === 'cart' &&
-        (items.length === 0 ? (
-          <div className="text-center py-16">
-            <ShoppingBag className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
+              <span className="text-[11px] font-bold px-3 py-1.5 rounded-full bg-secondary text-[#2E7D32]">
+                {displayedItemCount} item{displayedItemCount === 1 ? '' : 's'}
+              </span>
+            </div>
 
-            <p className="uk-sub">Your cart is empty.</p>
+            <div className="uk-card overflow-hidden">
+              <div className="divide-y divide-border">
+                {items.map((item, index) => {
+                  const quantity = Number(item.quantity || 1);
+                  const unitPrice =
+                    Number(item.price || 0) +
+                    Number(item.addons_total || 0);
+
+                  return (
+                    <div
+                      key={item.id || `${item.name}-${index}`}
+                      className="flex items-center gap-3 px-3.5 py-3"
+                    >
+                      <div className="w-11 h-11 rounded-xl bg-secondary flex items-center justify-center shrink-0">
+                        <ShoppingBag className="w-5 h-5 text-retail" />
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[13px] font-bold text-foreground line-clamp-2">
+                          {item.name || item.title || 'Cart item'}
+                        </p>
+
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          Qty: {quantity}
+                          {item.unit ? ` · ${item.unit}` : ''}
+                        </p>
+                      </div>
+
+                      <p className="text-[13px] font-bold text-foreground whitespace-nowrap">
+                        {money(unitPrice * quantity)}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="border-t border-border bg-secondary/40 px-3.5 py-3">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[13px] font-semibold text-muted-foreground">
+                    Cart subtotal
+                  </span>
+                  <span className="text-base font-extrabold text-foreground">
+                    {money(total)}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => navigate('/cart')}
+                  className="w-full h-11 rounded-xl bg-retail text-retail-foreground text-[13px] font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  Continue to Checkout
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* PREVIOUSLY PAID ORDERS */}
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h2 className="text-base font-extrabold text-foreground">
+              Order History
+            </h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Track your previous purchases
+            </p>
+          </div>
+        </div>
+
+        <div className="uk-tabs mb-4">
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`uk-tab ${
+                tab === t.key ? 'uk-tab-active' : ''
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center py-16">
+            <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-14">
+            <ShoppingBag className="w-9 h-9 text-muted-foreground/40 mx-auto mb-2.5" />
+
+            <p className="uk-sub">
+              No {tab} orders yet.
+            </p>
 
             <Link
               to="/"
-              className="inline-block mt-4 bg-[#2E7D32] text-white text-sm font-bold px-5 py-2.5 rounded-xl"
+              className="inline-block mt-3.5 bg-retail text-retail-foreground text-[13px] font-bold px-5 py-2.5 rounded-lg"
             >
-              Add Items
+              Start Shopping
             </Link>
           </div>
         ) : (
-          <div className="space-y-2.5">
-            {items.map((item) => (
-              <div
-                key={item.id}
-                className="uk-card p-3 flex items-start gap-3"
-              >
-                <div className="w-14 h-14 rounded-xl overflow-hidden bg-muted shrink-0">
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    className="w-14 h-14"
-                    fittingType="fill"
-                  />
-                </div>
+          <div className="space-y-3">
+            {filtered.map((order) => {
+              const isActive = ACTIVE.includes(order.status);
+              const stepIdx = ACTIVE_STEP_INDEX[order.status] ?? -1;
+              const progressPct =
+                stepIdx >= 0 ? ((stepIdx + 1) / 5) * 100 : 100;
 
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-semibold text-foreground line-clamp-1">
-                    {item.name}
-                  </p>
+              return (
+                <div key={order.id} className="uk-card px-3.5 py-3">
+                  <Link
+                    to={
+                      isActive
+                        ? `/track?id=${order.id}`
+                        : `/orders/${order.id}`
+                    }
+                    className="block active:opacity-70 transition-opacity"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="text-[13px] font-bold text-foreground truncate">
+                          {order.order_number}
+                        </p>
 
-                  <p className="text-[11px] text-muted-foreground">
-                    {item.unit || '1 pack'}
-                  </p>
+                        <p className="uk-list-sub">
+                          {formatDate(order.created_date)} ·{' '}
+                          {order.items?.length || 0} item
+                          {(order.items?.length || 0) === 1 ? '' : 's'}
+                        </p>
+                      </div>
 
-                  <p className="text-[13px] font-bold text-foreground mt-0.5">
-                    ₦{(item.price * item.quantity).toLocaleString()}
-                  </p>
-
-                  <div className="flex items-center justify-between mt-2">
-                    <div className="flex items-center border border-border rounded-lg overflow-hidden">
-                      <button
-                        onClick={() =>
-                          updateQuantity(item.id, item.quantity - 1)
-                        }
-                        aria-label="Decrease quantity"
-                        className="w-9 h-8 flex items-center justify-center active:bg-muted"
-                      >
-                        <Minus className="w-3.5 h-3.5" />
-                      </button>
-
-                      <span className="w-8 text-center text-[13px] font-bold">
-                        {item.quantity}
-                      </span>
-
-                      <button
-                        onClick={() =>
-                          updateQuantity(item.id, item.quantity + 1)
-                        }
-                        aria-label="Increase quantity"
-                        className="w-9 h-8 flex items-center justify-center text-white bg-[#2E7D32] active:opacity-80"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                      </button>
+                      <StatusBadge status={order.status} />
                     </div>
 
-                    <button
-                      onClick={() => removeItem(item.id)}
-                      aria-label="Remove item"
-                      className="w-10 h-8 rounded-lg bg-muted flex items-center justify-center active:scale-95 transition-transform"
-                    >
-                      <Trash2 className="w-4 h-4 text-muted-foreground" />
-                    </button>
-                  </div>
+                    <div className="flex items-end justify-between gap-2 mt-2.5">
+                      <div>
+                        <p className="text-[15px] font-bold text-foreground">
+                          {money(order.total)}
+                        </p>
+
+                        <p className="flex items-center gap-1 text-[11px] font-medium text-retail">
+                          <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                          Payment Successful
+                        </p>
+                      </div>
+
+                      {isActive ? (
+                        <span className="flex items-center gap-1 text-[11px] font-bold text-retail pb-0.5">
+                          Track Order
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </span>
+                      ) : (order.items?.length || 0) > 0 ? (
+                        <button
+                          onClick={(e) => reorder(e, order)}
+                          className="flex items-center gap-1.5 border border-retail text-retail text-[11px] font-bold px-3 py-1.5 rounded-lg active:scale-95 transition-transform"
+                        >
+                          <RotateCw className="w-3 h-3" />
+                          Reorder
+                        </button>
+                      ) : (
+                        <span className="flex items-center gap-1 text-[11px] font-bold text-muted-foreground pb-0.5">
+                          Details
+                          <ChevronRight className="w-3.5 h-3.5" />
+                        </span>
+                      )}
+                    </div>
+
+                    {isActive && (
+                      <div className="mt-2.5">
+                        <div className="h-1 rounded-full bg-muted overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-retail transition-all duration-500"
+                            style={{ width: `${progressPct}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </Link>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
-        ))}
-
-      {tab === 'ongoing' &&
-        renderOrderList(ongoing, 'No ongoing orders.')}
-
-      {tab === 'completed' &&
-        renderOrderList(completed, 'No completed orders yet.')}
-
-      {tab === 'cart' && items.length > 0 && (
-        <div
-          className="fixed left-0 right-0 max-w-md mx-auto px-4 pt-3 bg-card border-t border-border"
-          style={{
-            bottom: 0,
-            paddingBottom: 'calc(env(safe-area-inset-bottom) + 72px)',
-          }}
-        >
-          <div className="flex items-center justify-between text-[11px] mb-2">
-            <span className="text-muted-foreground">
-              {itemCount} items · Delivery ₦{deliveryFee.toLocaleString()}
-            </span>
-
-            <span className="font-bold text-foreground">
-              Total ₦{grandTotal.toLocaleString()}
-            </span>
-          </div>
-
-          <button
-            onClick={() => navigate('/checkout')}
-            className="uk-btn"
-          >
-            Checkout — ₦{grandTotal.toLocaleString()}
-          </button>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </PullToRefresh>
   );
 }
