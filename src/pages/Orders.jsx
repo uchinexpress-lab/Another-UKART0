@@ -1,27 +1,27 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useCart } from '@/context/CartContext';
-import { toast } from '@/components/ui/use-toast';
 import {
+  ShoppingBag,
   Clock,
   CheckCircle2,
   XCircle,
-  Loader2,
   ChevronRight,
-  ShoppingBag,
-  Truck,
-  RotateCw,
+  Plus,
+  Minus,
+  Trash2,
+  Loader2,
 } from 'lucide-react';
-import PullToRefresh from '@/components/home/PullToRefresh';
+import { Image } from '@/components/ui/image';
 
-const ACTIVE = ['awaiting_payment', 'new', 'processing', 'ready', 'on_the_way'];
-const ACTIVE_STEP_INDEX = { new: 0, processing: 1, ready: 2, on_the_way: 3 };
+const ACTIVE = ['new', 'processing', 'ready', 'on_the_way'];
 
 const TABS = [
-  { key: 'active', label: 'Active' },
-  { key: 'delivered', label: 'Delivered' },
-  { key: 'cancelled', label: 'Cancelled' },
+  { key: 'cart', label: 'Cart' },
+  { key: 'ongoing', label: 'Ongoing' },
+  { key: 'completed', label: 'Completed' },
 ];
 
 function formatDate(d) {
@@ -38,224 +38,278 @@ function formatDate(d) {
 }
 
 function StatusBadge({ status }) {
-  if (status === 'awaiting_payment')
-    return (
-      <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#FFF3E0] text-[#E65100] flex items-center gap-1">
-        <Clock className="w-3 h-3" /> Awaiting Payment
-      </span>
-    );
   if (status === 'delivered')
     return (
       <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-secondary text-[#2E7D32] flex items-center gap-1">
         <CheckCircle2 className="w-3 h-3" /> Completed
       </span>
     );
+
   if (status === 'cancelled')
     return (
       <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-red-50 text-red-600 flex items-center gap-1">
         <XCircle className="w-3 h-3" /> Cancelled
       </span>
     );
+
   return (
-    <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-secondary text-[#2E7D32] flex items-center gap-1">
-      <Truck className="w-3 h-3" /> In Progress
+    <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#FFF3E0] text-[#E65100] flex items-center gap-1">
+      <Clock className="w-3 h-3" /> In Progress
     </span>
   );
 }
 
-export default function Orders() {
+export default function Order() {
+  const [tab, setTab] = useState('cart');
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState('active');
-  const [payingId, setPayingId] = useState(null);
-  const { addItems } = useCart();
+
+  const { items, total, updateQuantity, removeItem, itemCount } = useCart();
   const navigate = useNavigate();
 
-  const payNow = async (e, order) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setPayingId(order.id);
-    try {
-      const callbackUrl = `${window.location.origin}/payment/callback`;
-      const res = await base44.functions.invoke('initiatePaystackPayment', {
-        orderId: order.id,
-        callbackUrl,
-      });
-      if (res.data?.authorization_url) {
-        window.location.href = res.data.authorization_url;
-        return;
-      }
-      toast({ title: 'Could not start payment', description: res.data?.error || 'Please try again.' });
-    } catch (err) {
-      toast({ title: 'Could not start payment', description: err?.message || 'Please try again.' });
-    }
-    setPayingId(null);
-  };
-
-  const reorder = (e, order) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const cartItems = (order.items || []).map((it) => ({
-      id: it.name,
-      name: it.name,
-      price: it.price || 0,
-      quantity: it.quantity || 1,
-      unit: it.unit || '',
-    }));
-    if (cartItems.length === 0) {
-      toast({ title: 'No items to reorder' });
-      return;
-    }
-    addItems(cartItems);
-    toast({ title: `Added ${cartItems.length} item${cartItems.length > 1 ? 's' : ''} to cart` });
-    navigate('/cart');
-  };
-
-  const loadOrders = async () => {
-    try {
-      const me = await base44.auth.me();
-      const result = await base44.entities.Order.filter(
-        { customer_email: me?.email || '' },
-        { sort: '-created_date', limit: 100 }
-      );
-      setOrders(result.items || []);
-    } catch {}
-    setLoading(false);
-  };
-
   useEffect(() => {
-    loadOrders();
+    let mounted = true;
+
+    (async () => {
+      try {
+        const me = await base44.auth.me();
+
+        if (!me?.email) {
+          if (mounted) setOrders([]);
+          return;
+        }
+
+        const result = await base44.entities.Order.filter(
+          { customer_email: me.email },
+          { sort: '-created_date', limit: 100 }
+        );
+
+        if (mounted) {
+          setOrders(
+            (result.items || []).filter(
+              (order) => order.payment_status === 'Paid'
+            )
+          );
+        }
+      } catch (error) {
+        console.error('Failed to load orders:', error);
+        if (mounted) setOrders([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  const filtered = orders.filter((o) => {
-    // An abandoned checkout lives in the cart, never as a pending order.
-    if (o.payment_status === 'Abandoned') return false;
-    if (tab === 'active') return ACTIVE.includes(o.status);
-    if (tab === 'delivered') return o.status === 'delivered';
-    return o.status === 'cancelled';
-  });
+  const ongoing = orders.filter((order) =>
+    ACTIVE.includes(order.status)
+  );
+
+  const completed = orders.filter(
+    (order) => !ACTIVE.includes(order.status)
+  );
+
+  const deliveryFee = total > 0 ? (total > 30000 ? 0 : 1500) : 0;
+  const grandTotal = total + deliveryFee;
+
+  const renderOrderList = (list, emptyLabel) => {
+    if (loading)
+      return (
+        <div className="flex justify-center py-16">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      );
+
+    if (list.length === 0)
+      return (
+        <div className="text-center py-16">
+          <ShoppingBag className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
+
+          <p className="uk-sub">{emptyLabel}</p>
+
+          <Link
+            to="/"
+            className="inline-block mt-4 bg-[#2E7D32] text-white text-sm font-bold px-5 py-2.5 rounded-xl"
+          >
+            Start Shopping
+          </Link>
+        </div>
+      );
+
+    return (
+      <div className="space-y-3">
+        {list.map((order) => (
+          <Link
+            key={order.id}
+            to={`/orders/${order.id}`}
+            className="block uk-card p-3.5 active:scale-[0.99] transition-transform"
+          >
+            <div className="flex items-center justify-between gap-2 mb-1.5">
+              <span className="text-[13px] font-bold text-foreground">
+                {order.order_number}
+              </span>
+
+              <StatusBadge status={order.status} />
+            </div>
+
+            <p className="uk-meta mb-2">
+              {formatDate(order.created_date)}
+            </p>
+
+            <div className="flex items-center justify-between pt-2 border-t border-border">
+              <span className="uk-meta">
+                {(order.items?.length || 0)} item
+                {(order.items?.length || 0) > 1 ? 's' : ''}
+              </span>
+
+              <span className="flex items-center gap-1 font-bold text-[#2E7D32] text-[13px]">
+                ₦{(order.total || 0).toLocaleString()}
+                <ChevronRight className="w-4 h-4" />
+              </span>
+            </div>
+          </Link>
+        ))}
+      </div>
+    );
+  };
 
   return (
-    <PullToRefresh onRefresh={loadOrders}>
-    <div className="uk-page">
-      <div className="uk-tabs mb-4">
+    <div className="uk-page pb-40">
+      <h1 className="uk-title mb-3">Orders</h1>
+
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide mb-4 -mx-1 px-1">
         {TABS.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`uk-tab ${tab === t.key ? 'uk-tab-active' : ''}`}
+            className={`uk-chip ${
+              tab === t.key ? 'uk-chip-active' : ''
+            }`}
           >
             {t.label}
           </button>
         ))}
       </div>
 
-      {loading ? (
-        <div className="flex justify-center py-16">
-          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="text-center py-14">
-          <ShoppingBag className="w-9 h-9 text-muted-foreground/40 mx-auto mb-2.5" />
-          <p className="uk-sub">No {tab} orders yet.</p>
-          <Link
-            to="/"
-            className="inline-block mt-3.5 bg-retail text-retail-foreground text-[13px] font-bold px-5 py-2.5 rounded-lg"
-          >
-            Start Shopping
-          </Link>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {filtered.map((o) => {
-            const isActive = ACTIVE.includes(o.status);
-            const stepIdx = ACTIVE_STEP_INDEX[o.status] ?? -1;
-            const progressPct = stepIdx >= 0 ? ((stepIdx + 1) / 5) * 100 : 100;
-            return (
-              <div key={o.id} className="uk-card px-3.5 py-3">
-                <Link
-                  to={isActive && o.payment_status === 'Paid' ? `/track?id=${o.id}` : `/orders/${o.id}`}
-                  className="block active:opacity-70 transition-opacity"
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-[13px] font-bold text-foreground truncate">{o.order_number}</p>
-                      <p className="uk-list-sub">
-                        {formatDate(o.created_date)} · {(o.items?.length || 0)} item
-                        {(o.items?.length || 0) === 1 ? '' : 's'}
-                      </p>
-                    </div>
-                    <StatusBadge status={o.status} />
-                  </div>
+      {tab === 'cart' &&
+        (items.length === 0 ? (
+          <div className="text-center py-16">
+            <ShoppingBag className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
 
-                  <div className="flex items-end justify-between gap-2 mt-2.5">
-                    <div>
-                      <p className="text-[15px] font-bold text-foreground">
-                        ₦{(o.total || 0).toLocaleString()}
-                      </p>
-                      <p
-                        className={`flex items-center gap-1 text-[11px] font-medium ${
-                          o.payment_status === 'Paid'
-                            ? 'text-retail'
-                            : o.payment_status === 'Failed'
-                            ? 'text-red-600'
-                            : 'text-amber-600'
-                        }`}
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                        Payment {o.payment_status === 'Paid' ? 'Successful' : o.payment_status || 'Pending'}
-                      </p>
-                    </div>
+            <p className="uk-sub">Your cart is empty.</p>
 
-                    {isActive ? (
-                      <span className="flex items-center gap-1 text-[11px] font-bold text-retail pb-0.5">
-                        Track Order <ChevronRight className="w-3.5 h-3.5" />
-                      </span>
-                    ) : (o.items?.length || 0) > 0 ? (
+            <Link
+              to="/"
+              className="inline-block mt-4 bg-[#2E7D32] text-white text-sm font-bold px-5 py-2.5 rounded-xl"
+            >
+              Add Items
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-2.5">
+            {items.map((item) => (
+              <div
+                key={item.id}
+                className="uk-card p-3 flex items-start gap-3"
+              >
+                <div className="w-14 h-14 rounded-xl overflow-hidden bg-muted shrink-0">
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    className="w-14 h-14"
+                    fittingType="fill"
+                  />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <p className="text-[13px] font-semibold text-foreground line-clamp-1">
+                    {item.name}
+                  </p>
+
+                  <p className="text-[11px] text-muted-foreground">
+                    {item.unit || '1 pack'}
+                  </p>
+
+                  <p className="text-[13px] font-bold text-foreground mt-0.5">
+                    ₦{(item.price * item.quantity).toLocaleString()}
+                  </p>
+
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center border border-border rounded-lg overflow-hidden">
                       <button
-                        onClick={(e) => reorder(e, o)}
-                        className="flex items-center gap-1.5 border border-retail text-retail text-[11px] font-bold px-3 py-1.5 rounded-lg active:scale-95 transition-transform"
+                        onClick={() =>
+                          updateQuantity(item.id, item.quantity - 1)
+                        }
+                        aria-label="Decrease quantity"
+                        className="w-9 h-8 flex items-center justify-center active:bg-muted"
                       >
-                        <RotateCw className="w-3 h-3" /> Reorder
+                        <Minus className="w-3.5 h-3.5" />
                       </button>
-                    ) : (
-                      <span className="flex items-center gap-1 text-[11px] font-bold text-muted-foreground pb-0.5">
-                        Details <ChevronRight className="w-3.5 h-3.5" />
+
+                      <span className="w-8 text-center text-[13px] font-bold">
+                        {item.quantity}
                       </span>
-                    )}
-                  </div>
 
-                  {isActive && o.payment_status === 'Paid' && (
-                    <div className="mt-2.5">
-                      <div className="h-1 rounded-full bg-muted overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-retail transition-all duration-500"
-                          style={{ width: `${progressPct}%` }}
-                        />
-                      </div>
+                      <button
+                        onClick={() =>
+                          updateQuantity(item.id, item.quantity + 1)
+                        }
+                        aria-label="Increase quantity"
+                        className="w-9 h-8 flex items-center justify-center text-white bg-[#2E7D32] active:opacity-80"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                      </button>
                     </div>
-                  )}
-                </Link>
 
-                {o.payment_status !== 'Paid' && (
-                  <button
-                    onClick={(e) => payNow(e, o)}
-                    disabled={payingId === o.id}
-                    className="w-full mt-2.5 h-9 rounded-lg bg-retail text-retail-foreground text-[12px] font-bold disabled:opacity-50"
-                  >
-                    {payingId === o.id
-                      ? 'Starting…'
-                      : o.payment_status === 'Failed'
-                      ? 'Retry Payment'
-                      : 'Pay Now'}
-                  </button>
-                )}
+                    <button
+                      onClick={() => removeItem(item.id)}
+                      aria-label="Remove item"
+                      className="w-10 h-8 rounded-lg bg-muted flex items-center justify-center active:scale-95 transition-transform"
+                    >
+                      <Trash2 className="w-4 h-4 text-muted-foreground" />
+                    </button>
+                  </div>
+                </div>
               </div>
-            );
-          })}
+            ))}
+          </div>
+        ))}
+
+      {tab === 'ongoing' &&
+        renderOrderList(ongoing, 'No ongoing orders.')}
+
+      {tab === 'completed' &&
+        renderOrderList(completed, 'No completed orders yet.')}
+
+      {tab === 'cart' && items.length > 0 && (
+        <div
+          className="fixed left-0 right-0 max-w-md mx-auto px-4 pt-3 bg-card border-t border-border"
+          style={{
+            bottom: 0,
+            paddingBottom: 'calc(env(safe-area-inset-bottom) + 72px)',
+          }}
+        >
+          <div className="flex items-center justify-between text-[11px] mb-2">
+            <span className="text-muted-foreground">
+              {itemCount} items · Delivery ₦{deliveryFee.toLocaleString()}
+            </span>
+
+            <span className="font-bold text-foreground">
+              Total ₦{grandTotal.toLocaleString()}
+            </span>
+          </div>
+
+          <button
+            onClick={() => navigate('/checkout')}
+            className="uk-btn"
+          >
+            Checkout — ₦{grandTotal.toLocaleString()}
+          </button>
         </div>
       )}
     </div>
-    </PullToRefresh>
   );
 }
