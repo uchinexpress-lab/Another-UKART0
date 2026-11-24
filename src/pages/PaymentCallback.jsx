@@ -1,109 +1,278 @@
 
-import React, { useCallback, useEffect, useState } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { base44 } from '@/api/base44Client';
+import React, { useEffect, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useCart } from '@/context/CartContext';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { supabase } from '@/api/supabaseClient';
+import { CheckCircle2, XCircle, Loader2, RefreshCw, ShoppingBag } from 'lucide-react';
 
 export default function PaymentCallback() {
-  const [params] = useSearchParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { clearCart } = useCart();
 
-  const reference = params.get('reference') || params.get('trxref');
+  const [status, setStatus] = useState('verifying');
+  const [message, setMessage] = useState('Confirming your payment securely...');
+  const [reference, setReference] = useState('');
+  const [orderId, setOrderId] = useState(null);
 
-  const [state, setState] = useState('verifying');
-  const [message, setMessage] = useState(
-    'Please wait while we confirm your transaction with Paystack.'
-  );
+  const verificationStarted = useRef(false);
 
-  const verify = useCallback(async () => {
-    if (!reference) {
-      setState('error');
-      setMessage(
-        'We could not find a payment reference. Your cart has not been cleared.'
-      );
+  const verifyPayment = async paymentReference => {
+    if (!paymentReference) {
+      setStatus('failed');
+      setMessage('We could not find your payment reference. Please check your orders or contact support.');
       return;
     }
 
-    setState('verifying');
+    setReference(paymentReference);
+    setStatus('verifying');
+    setMessage('Confirming your payment securely...');
 
     try {
-      const result = await base44.functions.invoke(
+      const { data: sessionData, error: sessionError } =
+        await supabase.auth.getSession();
+
+      if (sessionError || !sessionData?.session?.access_token) {
+        throw new Error('Your session has expired. Please sign in again before verifying this payment.');
+      }
+
+      const { data, error } = await supabase.functions.invoke(
         'process-paystack-payment',
         {
-          action: 'verify',
-          reference,
+          body: {
+            action: 'verify',
+            reference: paymentReference,
+          },
         }
       );
 
-      if (result?.ok && result?.orderId) {
-        clearCart();
+      if (error) {
+        let details = null;
 
         try {
-          sessionStorage.removeItem('ukart_pending_order');
+          if (error.context?.json) {
+            details = await error.context.json();
+          }
         } catch {}
 
-        navigate(
-          `/orders/${result.orderId}/payment-success`,
-          { replace: true }
+        if (details?.paid === true) {
+          setStatus('pending');
+          setMessage(
+            'Your payment has been confirmed, but order creation needs attention. Please do not pay again. Contact Ukart support with your payment reference.'
+          );
+          return;
+        }
+
+        throw new Error(details?.error || error.message || 'Payment verification failed.');
+      }
+
+      if (data?.paid === true && !data?.orderId) {
+        setStatus('pending');
+        setMessage(
+          'Your payment has been confirmed, but your order is still being processed. Please do not pay again. Contact Ukart support with your payment reference.'
         );
         return;
       }
 
-      setState('error');
-      setMessage(
-        result?.error ||
-          'Payment has not been confirmed yet. Your cart is still saved. Please return to checkout or contact support if your account was debited.'
-      );
+      if (!data?.ok || !data?.orderId) {
+        throw new Error(data?.error || 'We could not confirm this payment.');
+      }
+
+      setOrderId(data.orderId);
+      setStatus('success');
+      setMessage('Payment successful. Your order has been confirmed.');
+
+      // Only clear the cart after the server confirms the completed order.
+      clearCart();
+
+      setTimeout(() => {
+        navigate(`/orders/${data.orderId}/payment-success`, {
+          replace: true,
+        });
+      }, 1800);
     } catch (error) {
-      setState('error');
+      console.error('Ukart payment verification error:', error);
+
+      setStatus('failed');
       setMessage(
         error?.message ||
-          'We could not reach the payment service. Your cart is still saved. If you were debited, please contact support before paying again.'
+        'We could not verify your payment. You can try again.'
       );
     }
-  }, [reference, clearCart, navigate]);
+  };
 
   useEffect(() => {
-    verify();
-  }, [verify]);
+    if (verificationStarted.current) return;
+
+    verificationStarted.current = true;
+
+    const paymentReference =
+      searchParams.get('reference') ||
+      searchParams.get('trxref');
+
+    const paymentStatus = searchParams.get('status');
+
+    if (paymentStatus === 'cancelled' || paymentStatus === 'cancel') {
+      setStatus('cancelled');
+      setMessage('You cancelled the payment. Your cart has been preserved.');
+      return;
+    }
+
+    verifyPayment(paymentReference);
+  }, [searchParams]);
+
+  const goToOrders = () => {
+    navigate('/orders', { replace: true });
+  };
+
+  const retryVerification = () => {
+    if (reference) verifyPayment(reference);
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 text-center min-h-[60vh]">
-      {state === 'verifying' ? (
-        <Loader2 className="w-8 h-8 animate-spin text-retail mb-3" />
-      ) : (
-        <AlertCircle className="w-10 h-10 text-amber-600 mb-3" />
-      )}
+    <div className="min-h-[65vh] flex items-center justify-center p-5">
+      <div className="uk-card w-full max-w-md p-6 text-center">
 
-      <h2 className="text-lg font-bold text-foreground">
-        {state === 'verifying'
-          ? 'Verifying your payment…'
-          : 'Payment confirmation needed'}
-      </h2>
+        {status === 'verifying' && (
+          <>
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-5">
+              <Loader2 className="w-8 h-8 text-retail animate-spin" />
+            </div>
 
-      <p className="text-sm text-muted-foreground mt-2 max-w-sm">
-        {message}
-      </p>
+            <h2 className="text-xl font-bold text-foreground mb-2">
+              Verifying Payment
+            </h2>
 
-      {state !== 'verifying' && (
-        <div className="flex gap-3 mt-5">
-          <button
-            onClick={verify}
-            className="rounded-full bg-retail text-white px-5 py-2.5 text-sm font-bold"
-          >
-            Check payment again
-          </button>
+            <p className="text-sm text-muted-foreground">
+              {message}
+            </p>
 
-          <Link
-            to="/cart"
-            className="rounded-full border border-border px-5 py-2.5 text-sm font-bold"
-          >
-            Return to cart
-          </Link>
-        </div>
-      )}
+            <p className="text-xs text-muted-foreground mt-4">
+              Please don't close this page.
+            </p>
+          </>
+        )}
+
+        {status === 'success' && (
+          <>
+            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-5">
+              <CheckCircle2 className="w-9 h-9 text-green-600" />
+            </div>
+
+            <h2 className="text-xl font-bold text-foreground mb-2">
+              Payment Successful!
+            </h2>
+
+            <p className="text-sm text-muted-foreground">
+              {message}
+            </p>
+
+            {orderId && (
+              <p className="text-xs text-muted-foreground mt-3">
+                Order reference: {orderId}
+              </p>
+            )}
+
+            <p className="text-xs text-muted-foreground mt-4">
+              Taking you to your order confirmation...
+            </p>
+          </>
+        )}
+
+        {status === 'pending' && (
+          <>
+            <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-5">
+              <ShoppingBag className="w-8 h-8 text-amber-600" />
+            </div>
+
+            <h2 className="text-xl font-bold text-foreground mb-2">
+              Payment Received
+            </h2>
+
+            <p className="text-sm text-muted-foreground">
+              {message}
+            </p>
+
+            {reference && (
+              <div className="bg-muted rounded-xl p-3 mt-4 text-left">
+                <p className="text-[10px] uppercase text-muted-foreground font-bold mb-1">
+                  Payment reference
+                </p>
+                <p className="text-xs font-semibold break-all">
+                  {reference}
+                </p>
+              </div>
+            )}
+
+            <button
+              onClick={retryVerification}
+              className="uk-btn mt-5"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Check Payment Again
+            </button>
+
+            <button
+              onClick={goToOrders}
+              className="w-full text-sm font-semibold text-retail mt-4"
+            >
+              Go to My Orders
+            </button>
+          </>
+        )}
+
+        {(status === 'failed' || status === 'cancelled') && (
+          <>
+            <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-5">
+              <XCircle className="w-9 h-9 text-red-600" />
+            </div>
+
+            <h2 className="text-xl font-bold text-foreground mb-2">
+              {status === 'cancelled' ? 'Payment Cancelled' : 'Verification Unsuccessful'}
+            </h2>
+
+            <p className="text-sm text-muted-foreground">
+              {message}
+            </p>
+
+            {reference && (
+              <div className="bg-muted rounded-xl p-3 mt-4 text-left">
+                <p className="text-[10px] uppercase text-muted-foreground font-bold mb-1">
+                  Payment reference
+                </p>
+                <p className="text-xs font-semibold break-all">
+                  {reference}
+                </p>
+              </div>
+            )}
+
+            {reference && status === 'failed' && (
+              <button
+                onClick={retryVerification}
+                className="uk-btn mt-5"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Try Verification Again
+              </button>
+            )}
+
+            <button
+              onClick={() => navigate('/cart')}
+              className="w-full text-sm font-semibold text-retail mt-4"
+            >
+              Return to Cart
+            </button>
+
+            <button
+              onClick={goToOrders}
+              className="w-full text-sm text-muted-foreground mt-3"
+            >
+              View My Orders
+            </button>
+          </>
+        )}
+
+      </div>
     </div>
   );
 }
