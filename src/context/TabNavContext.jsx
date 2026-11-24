@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
@@ -5,9 +6,19 @@ import { useLocation } from 'react-router-dom';
 // Returns null for routes not associated with any tab.
 export function getTabForPath(pathname) {
   if (pathname === '/') return '/';
+
   if (pathname.startsWith('/package')) return '/packages';
-  if (pathname.startsWith('/order') || pathname.startsWith('/track')) return '/order';
+
+  if (
+    pathname.startsWith('/order') ||
+    pathname.startsWith('/orders') ||
+    pathname.startsWith('/track')
+  ) {
+    return '/orders';
+  }
+
   if (pathname.startsWith('/wishlist')) return '/wishlist';
+
   if (
     pathname.startsWith('/profile') ||
     pathname.startsWith('/account') ||
@@ -20,6 +31,7 @@ export function getTabForPath(pathname) {
   ) {
     return '/profile';
   }
+
   return null;
 }
 
@@ -31,12 +43,15 @@ export function TabNavProvider({ children }) {
 
   useEffect(() => {
     const tab = getTabForPath(location.pathname);
+
     if (tab) {
       lastTabRoutes.current[tab] = location.pathname;
     }
   }, [location.pathname]);
 
-  const getTabRoute = (tabRoot) => lastTabRoutes.current[tabRoot] || tabRoot;
+  const getTabRoute = (tabRoot) => {
+    return lastTabRoutes.current[tabRoot] || tabRoot;
+  };
 
   return (
     <TabNavContext.Provider value={{ getTabRoute }}>
