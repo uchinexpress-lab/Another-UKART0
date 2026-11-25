@@ -29,12 +29,40 @@ const STEPS = [
 ];
 const STEP_ORDER = ['new', 'processing', 'ready', 'on_the_way', 'delivered'];
 
-function StatusBadge({ status }) {
-  if (status === 'delivered')
-    return <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-primary/10 text-[#2E7D32]">Completed</span>;
-  if (status === 'cancelled')
-    return <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-red-50 text-red-600">Cancelled</span>;
-  return <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#FFF3E0] text-[#E65100]">In Progress</span>;
+function DeliveryCountdown({ startTime }) {
+  const [secondsLeft, setSecondsLeft] = useState(null);
+
+  useEffect(() => {
+    const startMs = startTime ? new Date(startTime).getTime() : Date.now();
+    const validStart = Number.isNaN(startMs) ? Date.now() : startMs;
+    const endMs = validStart + 30 * 60 * 1000;
+
+    const update = () => {
+      const diff = Math.max(0, Math.floor((endMs - Date.now()) / 1000));
+      setSecondsLeft(diff);
+    };
+
+    update();
+    const timer = setInterval(update, 1000);
+    return () => clearInterval(timer);
+  }, [startTime]);
+
+  if (secondsLeft === null) return null;
+
+  const mins = Math.floor(secondsLeft / 60);
+  const secs = secondsLeft % 60;
+  const formatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+
+  return (
+    <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 border border-green-200 text-xs font-bold text-[#2E7D32]">
+      <Clock className="w-3.5 h-3.5 animate-pulse shrink-0" />
+      {secondsLeft > 0 ? (
+        <span>Arriving in ~{formatted}</span>
+      ) : (
+        <span>Arriving any moment now</span>
+      )}
+    </div>
+  );
 }
 
 export default function OrderDetail() {
@@ -332,6 +360,9 @@ export default function OrderDetail() {
                     <p className={`text-xs ${done || current ? 'text-muted-foreground' : 'text-gray-400'}`}>
                       {step.desc}
                     </p>
+                    {current && step.key === 'on_the_way' && (
+  <DeliveryCountdown startTime={delivery?.updated_date || order.updated_date} />
+)}
                   </div>
                 </div>
               );
