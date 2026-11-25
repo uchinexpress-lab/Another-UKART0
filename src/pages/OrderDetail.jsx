@@ -159,7 +159,7 @@ export default function OrderDetail() {
         setOrder(o);
         base44.entities.Delivery
           .filter({ order_id: id }, { limit: 1 })
-          .then((r) => setDelivery(r.items?. || null))
+         .then((r) => setDelivery(r.items?.[0] || null))
           .catch(() => {});
       })
       .catch(() => {})
