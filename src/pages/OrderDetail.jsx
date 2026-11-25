@@ -98,7 +98,7 @@ export default function OrderDetail() {
         try {
           await new Promise((resolve, reject) => {
             const s = document.createElement('script');
-            s.src = 'https://paystack.co';
+            s.src = 'https://js.paystack.co/v1/inline.js';
             s.onload = () => resolve();
             s.onerror = () => reject(new Error('Could not load Paystack'));
             document.head.appendChild(s);
@@ -120,11 +120,7 @@ export default function OrderDetail() {
           return;
         }
       }
-      if (res?.ok && res?.authorization_url) {
-        window.location.href = res.authorization_url;
-      } else {
-        setPaying(false);
-      }
+      setPaying(false);
     } catch {
       setPaying(false);
     }

@@ -24,7 +24,7 @@ function loadPaystackScript() {
   if (window.PaystackPop) return Promise.resolve();
   paystackScriptPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = 'https://paystack.co';
+    script.src = 'https://js.paystack.co/v1/inline.js';
     script.onload = () => resolve();
     script.onerror = () => {
       paystackScriptPromise = null;
@@ -297,10 +297,7 @@ export default function Checkout() {
       try {
         await loadPaystackScript();
       } catch {
-        const fallbackUrl =
-          res.authorization_url || `https://paystack.com{res.access_code}`;
-        window.location.href = fallbackUrl;
-        return;
+        throw new Error('Could not load the Paystack payment popup. Please check your connection and try again.');
       }
 
       await new Promise((resolve) => {
