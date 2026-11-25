@@ -77,10 +77,6 @@ export default function Checkout() {
   const [isFirstOrder, setIsFirstOrder] = useState(false);
   const [deliverySettings, setDeliverySettings] = useState(null);
   useEffect(() => {
-  loadPaystackScript().catch(() => {});
-}, []);
-  
-  useEffect(() => {
     if (selectedLocation?.zone === 'island' || selectedLocation?.zone === 'mainland') {
       setZone(selectedLocation.zone);
     }
@@ -298,62 +294,37 @@ export default function Checkout() {
         throw new Error(res?.error || 'Could not start Paystack payment');
       }
 
-            if (!window.PaystackPop) {
-        paystackScriptPromise = null;
-        await loadPaystackScript().catch(() => {});
-      }
-
-      if (window.PaystackPop) {
-        await new Promise((resolve) => {
-          const popup = new window.PaystackPop();
-          if (typeof popup.resumeTransaction === 'function') {
-            popup.resumeTransaction(res.access_code, {
-              onSuccess: (paystackResponse) => {
-                const ref = paystackResponse?.reference || res.reference;
-                window.location.href = `${window.location.origin}/payment/callback?reference=${encodeURIComponent(ref)}`;
-                resolve({ closed: false });
-              },
-              onCancel: () => {
-                setPlacing(false);
-                try {
-                  base44.functions.invoke('process-paystack-payment', {
-                    action: 'abandon',
-                    reference: res.reference,
-                  });
-                } catch {}
-                resolve({ closed: true });
-              },
-            });
-          } else {
-            const handler = window.PaystackPop.setup({
-              key: PAYSTACK_PUBLIC_KEY,
-              email: validCustomerEmail,
-              access_code: res.access_code,
-              onClose: () => {
-                setPlacing(false);
-                try {
-                  base44.functions.invoke('process-paystack-payment', {
-                    action: 'abandon',
-                    reference: res.reference,
-                  });
-                } catch {}
-                resolve({ closed: true });
-              },
-              callback: (paystackResponse) => {
-                const ref = paystackResponse.reference || res.reference;
-                window.location.href = `${window.location.origin}/payment/callback?reference=${encodeURIComponent(ref)}`;
-                resolve({ closed: false });
-              },
-            });
-            handler.openIframe();
-          }
-        });
-      } else {
+      try {
+        await loadPaystackScript();
+      } catch {
         const fallbackUrl =
           res.authorization_url || `https://paystack.com{res.access_code}`;
         window.location.href = fallbackUrl;
+        return;
       }
 
+      await new Promise((resolve) => {
+        const handler = window.PaystackPop.setup({
+          key: PAYSTACK_PUBLIC_KEY,
+          email: validCustomerEmail,
+          access_code: res.access_code,
+          onClose: () => {
+            setPlacing(false);
+            try {
+              base44.functions.invoke('process-paystack-payment', {
+                action: 'abandon',
+                reference: res.reference,
+              });
+            } catch {}
+            resolve({ closed: true });
+          },
+          callback: (paystackResponse) => {
+            const ref = paystackResponse.reference || res.reference;
+            window.location.href = `${window.location.origin}/payment/callback?reference=${encodeURIComponent(ref)}`;
+            resolve({ closed: false });
+          },
+        });
+        handler.openIframe();
       });
     } catch (e) {
       setPlacing(false);
