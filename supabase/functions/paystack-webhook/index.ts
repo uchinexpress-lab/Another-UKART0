@@ -79,7 +79,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const reference = txn.reference;
-    const transactionId = Number(txn.id);
+    const transactionId = String(txn.id);
     const mode = txn.domain === "test" ? "test" : "live";
 
     // Create a service-role client.

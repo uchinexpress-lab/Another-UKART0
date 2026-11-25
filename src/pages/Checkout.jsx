@@ -5,6 +5,25 @@ import AddressPickerMap from '@/components/delivery/AddressPickerMap';
 import { useCart } from '@/context/CartContext';
 import { base44 } from '@/api/base44Client';
 import { Clock, MapPin, Navigation, Phone, User, Loader2, ShoppingBag, Tag, History, X, CreditCard, Lock, Truck } from 'lucide-react';
+
+const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '';
+
+let paystackScriptPromise = null;
+function loadPaystackScript() {
+  if (paystackScriptPromise) return paystackScriptPromise;
+  if (window.PaystackPop) return Promise.resolve();
+  paystackScriptPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://js.paystack.co/v1/inline.js';
+    script.onload = () => resolve();
+    script.onerror = () => {
+      paystackScriptPromise = null;
+      reject(new Error('Could not load Paystack payment script'));
+    };
+    document.head.appendChild(script);
+  });
+  return paystackScriptPromise;
+}
 import { toast } from '@/components/ui/use-toast';
 import { getServiceFee } from '@/lib/fees';
 import {
@@ -279,14 +298,41 @@ const canPlace =
         callbackUrl,
       });
 
-      if (!res?.ok || !res?.authorization_url) {
+      if (!res?.ok || !res?.access_code) {
         throw new Error(res?.error || 'Could not start Paystack payment');
       }
 
-      // 3. Redirect to Paystack's hosted checkout.
-      //    The cart is NOT cleared yet — it will be cleared after the
-      //    callback verifies the payment successfully.
-      window.location.href = res.authorization_url;
+      // 3. Open the Paystack popup (Inline) using the access_code.
+      //    The server still verifies the transaction — the popup only
+      //    collects payment details. The cart is NOT cleared yet.
+      await loadPaystackScript();
+
+      await new Promise((resolve, reject) => {
+        const handler = window.PaystackPop.setup({
+          key: PAYSTACK_PUBLIC_KEY,
+          access_code: res.access_code,
+          onClose: () => {
+            // Customer closed the popup without completing payment.
+            // Mark the attempt as abandoned so it shows in Unpaid Checkouts.
+            setPlacing(false);
+            try {
+              base44.functions.invoke('process-paystack-payment', {
+                action: 'abandon',
+                reference: res.reference,
+              });
+            } catch {}
+            resolve({ closed: true });
+          },
+          callback: (paystackResponse) => {
+            // Paystack returns a reference on success. Navigate to the
+            // callback page which verifies server-side before confirming.
+            const ref = paystackResponse.reference || res.reference;
+            window.location.href = `${window.location.origin}/payment/callback?reference=${encodeURIComponent(ref)}`;
+            resolve({ closed: false });
+          },
+        });
+        handler.openIframe();
+      });
     } catch (e) {
       setPlacing(false);
       const msg = e?.message || 'Could not start payment. Please try again.';

@@ -252,11 +252,13 @@ async function verifyPayment(supabase: any, body: any) {
   }
 
   // Finalize the payment via the database function (idempotent).
+  // Pass transaction ID as string to avoid float64 precision loss for
+  // large Paystack transaction IDs.
   const { data: result, error: rpcError } = await supabase.rpc(
     "finalize_paystack_payment",
     {
       p_reference: reference,
-      p_transaction_id: Number(txn.id),
+      p_transaction_id: String(txn.id),
       p_transaction_data: txn,
       p_mode: mode,
     }

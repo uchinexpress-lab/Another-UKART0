@@ -82,6 +82,32 @@ export default function Orders() {
         orderId: order.id,
         callbackUrl,
       });
+      if (res?.ok && res?.access_code) {
+        const PAYSTACK_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '';
+        try {
+          await new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = 'https://js.paystack.co/v1/inline.js';
+            s.onload = () => resolve();
+            s.onerror = () => reject(new Error('Could not load Paystack'));
+            document.head.appendChild(s);
+          });
+        } catch {}
+        if (window.PaystackPop) {
+          const handler = window.PaystackPop.setup({
+            key: PAYSTACK_KEY,
+            access_code: res.access_code,
+            onClose: () => { setPayingId(null); },
+            callback: (resp) => {
+              const ref = resp.reference || res.reference;
+              window.location.href = `${window.location.origin}/payment/callback?reference=${encodeURIComponent(ref)}`;
+            },
+          });
+          handler.openIframe();
+          return;
+        }
+      }
+      // Fallback: redirect to hosted checkout if popup unavailable.
       if (res?.ok && res?.authorization_url) {
         window.location.href = res.authorization_url;
         return;

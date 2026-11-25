@@ -7,11 +7,11 @@
     },
     "paystack-webhook": {
       "hasChanged": false,
-      "hash": "8d9e87461ee63014a9a905fc6d66be4c1034ae72f8735ced542a2c10c8efffbc"
+      "hash": "a2993b099bf573f0888461163068e04375b03ccffa1613ac3d6797ec1cdf921f"
     },
     "process-paystack-payment": {
       "hasChanged": false,
-      "hash": "00dddd6e28bf126c3745c9bcf5aa1884b21e9d41b82c0d7fbec100c0075689cf"
+      "hash": "fe0c619b7a7dbc58cc1c49e7163eb667ef43d64923ad7b73c77b86c4ec42af8b"
     }
   }
 }
