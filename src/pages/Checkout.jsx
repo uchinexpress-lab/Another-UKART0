@@ -76,7 +76,6 @@ export default function Checkout() {
   const [promoSettings, setPromoSettings] = useState(null);
   const [isFirstOrder, setIsFirstOrder] = useState(false);
   const [deliverySettings, setDeliverySettings] = useState(null);
-
   useEffect(() => {
     if (selectedLocation?.zone === 'island' || selectedLocation?.zone === 'mainland') {
       setZone(selectedLocation.zone);
@@ -156,6 +155,7 @@ export default function Checkout() {
       } catch {}
     })();
   }, []);
+
   const firstOrderEligible = isFirstOrder && promoSettings?.first_order_enabled !== false;
   const firstOrderDiscount = firstOrderEligible ? (promoSettings?.first_order_discount || 500) : 0;
   const voucherDiscount = voucher
@@ -217,7 +217,6 @@ export default function Checkout() {
     if (savedZone) setZone(savedZone);
     setLandmark(a.landmark || '');
   };
-
   const placeOrder = async () => {
     if (total < MINIMUM_ORDER) {
       alert('Ukart requires a minimum order of ₦5,000. Please add more items to your cart.');
@@ -240,9 +239,9 @@ export default function Checkout() {
 
       const orderItems = items.map((i) => {
         const packageId =
-          i.package_id || (String(i.id).startsWith('mealkit-') ? String(i.id).slice(8).split('-')[0] : '');
+          i.package_id || (String(i.id).startsWith('mealkit-') ? String(i.id).slice(8).split('-') : '');
         return {
-          product_id: packageId ? '' : i.product_id || (i.id || '').split('__')[0],
+          product_id: packageId ? '' : i.product_id || (i.id || '').split('__'),
           package_id: packageId || '',
           name: i.name || '',
           price: i.price || 0,
@@ -295,7 +294,7 @@ export default function Checkout() {
         throw new Error(res?.error || 'Could not start Paystack payment');
       }
 
-           try {
+      try {
         await loadPaystackScript();
       } catch {
         const fallbackUrl =
@@ -318,15 +317,6 @@ export default function Checkout() {
               });
             } catch {}
             resolve({ closed: true });
-          },
-          callback: (paystackResponse) => {
-            const ref = paystackResponse.reference || res.reference;
-            window.location.href = `${window.location.origin}/payment/callback?reference=${encodeURIComponent(ref)}`;
-            resolve({ closed: false });
-          },
-        });
-        handler.openIframe();
-      });
           },
           callback: (paystackResponse) => {
             const ref = paystackResponse.reference || res.reference;
