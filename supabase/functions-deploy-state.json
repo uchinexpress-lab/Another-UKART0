@@ -5,13 +5,33 @@
       "hasChanged": false,
       "hash": "61104fa3fa2f1263512b31d41ccfc6b76ac90aec0c176050e56b4e348f723586"
     },
+    "manageDelivery": {
+      "hasChanged": false,
+      "hash": "3f4d4fb46b66d5d4b251214de52bc146378745a6f5bcba931eaf66be6b8522c8"
+    },
+    "notifyTicketReply": {
+      "hasChanged": false,
+      "hash": "0de6c6cb0508ee11553f5279948f8f2cb4d0d641044291948bf04f0860d70116"
+    },
+    "orderNotifications": {
+      "hasChanged": false,
+      "hash": "0e7c09bd05f64ee5d56a09c5c49c5b86347de1ab32d6c8dec6b24ac7e28e1049"
+    },
     "paystack-webhook": {
       "hasChanged": false,
       "hash": "a2993b099bf573f0888461163068e04375b03ccffa1613ac3d6797ec1cdf921f"
     },
     "process-paystack-payment": {
       "hasChanged": false,
-      "hash": "fe0c619b7a7dbc58cc1c49e7163eb667ef43d64923ad7b73c77b86c4ec42af8b"
+      "hash": "728dbde1bb7dadccceb97015715bd91ef179c9ad029c33497994148e17103dab"
+    },
+    "resendDeliveryOtp": {
+      "hasChanged": false,
+      "hash": "47705f4c0a1dd80ea19f2902b784f38f45557a8e165062c679a65e76e54bd06f"
+    },
+    "updateRiderLocation": {
+      "hasChanged": false,
+      "hash": "c181b73d6a26ee8048f9461272bd541e7da7e7a867d49707c8f34aa73677640e"
     }
   }
 }
