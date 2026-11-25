@@ -22,7 +22,11 @@ export default function About() {
   const title = getField('title', 'UKART');
   const subtitle = getField('subtitle', 'No Market Wahala');
   const description = getField('description',
-    'UKART is a modern online grocery platform built to make grocery shopping easier across Lagos. Whether customers need everyday groceries or carefully curated grocery packages, UKART delivers fresh products directly to their doorstep. Our mission is simple: No Market Wahala. We help customers save time, shop conveniently, and enjoy reliable delivery through a simple, modern mobile experience.'
+    'UKART is a household shopping platform making it easier for Nigerian households to access groceries and everyday essentials without the market wahala. We help customers access fresh groceries, food essentials and thoughtfully curated meal kits without the stress of visiting multiple markets or spending hours sourcing ingredients. From individual grocery purchases to ready-made grocery packages for students, busy professionals and families, Ukart makes it easier to shop according to your needs and budget. Ukart currently serves customers across selected locations in Lagos, Nigeria.
+
+Through our market-sourcing network, we work with vendors and local suppliers to source fresh produce, proteins, grains, tubers and other household food essentials. Our meal kits and grocery packages bring selected ingredients together, helping customers save time and simplify meal preparation.
+
+With convenient ordering and coordinated delivery, Ukart brings the market closer to your doorstep.'
   );
   const contactEmail = getField('contact_email', 'hello@ukart.ng');
   const contactPhone = getField('contact_phone', '+2349067384517');
