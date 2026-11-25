@@ -44,8 +44,11 @@ export default function PaymentCallback() {
     }
 
     try {
-      const res = await base44.functions.invoke('verifyPaystackPayment', { reference });
-      const data = res.data || {};
+      const res = await base44.functions.invoke('process-paystack-payment', {
+        action: 'verify',
+        reference,
+      });
+      const data = res || {};
       if (data.orderId) setOrderId(data.orderId);
 
       if (data.ok && data.orderId) {
@@ -65,7 +68,8 @@ export default function PaymentCallback() {
       setState('failed');
       setReason(data.reason || 'The payment was not completed.');
       try {
-        await base44.functions.invoke('abandonCheckout', {
+        await base44.functions.invoke('process-paystack-payment', {
+          action: 'abandon',
           orderId: data.orderId || readPendingOrder() || undefined,
           reference,
         });
@@ -88,12 +92,13 @@ export default function PaymentCallback() {
     if (!id) return;
     setRetrying(true);
     try {
-      const res = await base44.functions.invoke('initiatePaystackPayment', {
+      const res = await base44.functions.invoke('process-paystack-payment', {
+        action: 'initialize',
         orderId: id,
         callbackUrl: `${window.location.origin}/payment/callback`,
       });
-      if (res.data?.authorization_url) {
-        window.location.href = res.data.authorization_url;
+      if (res?.authorization_url) {
+        window.location.href = res.authorization_url;
         return;
       }
     } catch {}

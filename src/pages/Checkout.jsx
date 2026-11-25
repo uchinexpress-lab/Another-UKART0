@@ -14,33 +14,9 @@ import {
   getDeliveryDiscountPercent,
   resolveDeliverySettings,
 } from '@/lib/delivery';
-import { notifyOrderCreated } from '@/lib/notifications';
 import { useLocation } from '@/context/LocationContext';
 const REWARD_AMOUNT = 550;
 const MINIMUM_ORDER = 5000;
-
-const PAYSTACK_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
-if (!PAYSTACK_KEY) {
-  console.warn('[Ukart] VITE_PAYSTACK_PUBLIC_KEY is missing — Paystack checkout will not work. Add it to your .env file.');
-}
-
-function loadPaystackScript() {
-  return new Promise((resolve, reject) => {
-    if (window.PaystackPop) return resolve(window.PaystackPop);
-    const script = document.createElement('script');
-    script.src = 'https://js.paystack.co/v1/inline.js';
-    script.async = true;
-    script.onload = () => resolve(window.PaystackPop);
-    script.onerror = () => reject(new Error('Could not load Paystack. Check your internet connection.'));
-    document.head.appendChild(script);
-  });
-}
-
-function generateReference() {
-  const ts = Date.now().toString(36);
-  const rand = Math.random().toString(36).slice(2, 8);
-  return `ukart-${ts}-${rand}`;
-}
 
 function classifyAddressZone(address) {
   const text = (address || '').toLowerCase();
@@ -232,26 +208,21 @@ const canPlace =
   };
 
   const placeOrder = async () => {
-  if (total < MINIMUM_ORDER) {
-    alert('Ukart requires a minimum order of ₦5,000. Please add more items to your cart.');
-    navigate('/cart');
-    return;
-  }
-
-  if (!canPlace) return;
-    if (!PAYSTACK_KEY) {
-      alert('Payment is not configured. Please contact support.');
+    if (total < MINIMUM_ORDER) {
+      alert('Ukart requires a minimum order of ₦5,000. Please add more items to your cart.');
+      navigate('/cart');
       return;
     }
+
+    if (!canPlace) return;
     setPlacing(true);
     try {
-      // 1. Get the current user's email
       const me = await base44.auth.me();
-      if (!me?.email) {
+      if (!me?.id) {
         throw new Error('Please sign in to place an order.');
       }
 
-      // 2. Create the pending order directly in Supabase
+      // 1. Create the pending order in Supabase
       const orderItems = items.map((i) => {
         const packageId =
           i.package_id || (String(i.id).startsWith('mealkit-') ? String(i.id).slice(8).split('-')[0] : '');
@@ -274,7 +245,6 @@ const canPlace =
         };
       });
 
-      const reference = generateReference();
       const orderNumber = `UK-${Date.now().toString().slice(-8)}`;
       const { data: order, error: insertError } = await supabase
         .from('orders')
@@ -312,52 +282,24 @@ const canPlace =
         throw new Error(insertError.message || 'Could not create order');
       }
 
-            // 3. Launch Paystack Inline checkout
-      const totalInKobo = Math.round(grandTotal * 100);
-      const PaystackPop = await loadPaystackScript();
-      const handler = PaystackPop.setup({
-        key: PAYSTACK_KEY,
-        email: me.email,
-        amount: totalInKobo,
-        ref: reference,
-        currency: 'NGN',
-        metadata: {
-          custom_fields: [
-            { display_name: 'Order Number', variable_name: 'order_number', value: orderNumber },
-            { display_name: 'Customer Name', variable_name: 'customer_name', value: name },
-          ],
-        },
-        callback: function (transaction) {
-          (async () => {
-            try {
-              // 4. Mark the order as paid
-              const { error: rpcError } = await supabase.rpc('mark_order_paid', {
-                p_order_id: order.id,
-                p_reference: transaction.reference,
-                p_transaction_id: transaction.transaction_id || null,
-              });
-              if (rpcError) throw rpcError;
-notifyOrderCreated(order.id);
-              // 5. Clear cart and navigate to order confirmation
-              clearCart();
-              navigate(`/orders/${order.id}/payment-success`, { replace: true });
-            } catch (err) {
-              console.error('Failed to mark order paid:', err);
-              setPlacing(false);
-              alert('Payment succeeded but we could not confirm it. Your order is saved. Please check your orders.');
-              navigate(`/orders/${order.id}`, { replace: true });
-            }
-          })();
-        },
-        onClose: function () {
-          setPlacing(false);
-          toast({
-            title: 'Payment cancelled',
-            description: 'Your order is saved. You can retry payment from your orders.',
-          });
-        },
+      // 2. Initialize payment via the process-paystack-payment edge function.
+      //    This creates a payment_attempts record linked to the order and
+      //    returns a Paystack authorization URL for the hosted checkout.
+      const callbackUrl = `${window.location.origin}/payment/callback`;
+      const res = await base44.functions.invoke('process-paystack-payment', {
+        action: 'initialize',
+        orderId: order.id,
+        callbackUrl,
       });
-      handler.openIframe();
+
+      if (!res?.ok || !res?.authorization_url) {
+        throw new Error(res?.error || 'Could not start Paystack payment');
+      }
+
+      // 3. Redirect to Paystack's hosted checkout.
+      //    The cart is NOT cleared yet — it will be cleared after the
+      //    callback verifies the payment successfully.
+      window.location.href = res.authorization_url;
     } catch (e) {
       setPlacing(false);
       const msg = e?.message || 'Could not start payment. Please try again.';

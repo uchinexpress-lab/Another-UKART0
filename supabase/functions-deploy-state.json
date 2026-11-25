@@ -4,6 +4,14 @@
     "inviteStaff": {
       "hasChanged": false,
       "hash": "61104fa3fa2f1263512b31d41ccfc6b76ac90aec0c176050e56b4e348f723586"
+    },
+    "paystack-webhook": {
+      "hasChanged": false,
+      "hash": "8d9e87461ee63014a9a905fc6d66be4c1034ae72f8735ced542a2c10c8efffbc"
+    },
+    "process-paystack-payment": {
+      "hasChanged": false,
+      "hash": "e83c47c5a34c5aff8128d421c8533388bda51f9aaf0189a2751692f2b133733c"
     }
   }
 }

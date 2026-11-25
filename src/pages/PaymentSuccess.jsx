@@ -97,12 +97,13 @@ export default function PaymentSuccess() {
     setPaying(true);
     try {
       const callbackUrl = `${window.location.origin}/payment/callback`;
-      const res = await base44.functions.invoke('initiatePaystackPayment', {
+      const res = await base44.functions.invoke('process-paystack-payment', {
+        action: 'initialize',
         orderId: order.id,
         callbackUrl,
       });
-      if (res.data?.authorization_url) {
-        window.location.href = res.data.authorization_url;
+      if (res?.ok && res?.authorization_url) {
+        window.location.href = res.authorization_url;
       } else {
         setPaying(false);
       }
