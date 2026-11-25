@@ -277,8 +277,7 @@ Through our market-sourcing network, we work with vendors and local suppliers to
 
 With convenient ordering and coordinated delivery, Ukart brings the market closer to your doorstep.'
   );
-  const contactEmail = getField('contact_email', 'hello@ukart.ng');
-  const contactPhone = getField('contact_phone', '+2349067384517');
+  const contactEmail = getField('contact_email', 'support@ukart.ng');
   const contactAddress = getField('contact_address', 'Lagos, Nigeria');
 
   return (
