@@ -4,23 +4,14 @@ import { base44 } from '@/api/base44Client';
 import { useCart } from '@/context/CartContext';
 import { Loader2, CheckCircle2, AlertCircle, Clock, RefreshCw } from 'lucide-react';
 
-const readPendingOrder = () => {
-  try {
-    return sessionStorage.getItem('ukart_pending_order');
-  } catch {
-    return null;
-  }
-};
-
 const forgetPendingOrder = () => {
   try {
     sessionStorage.removeItem('ukart_pending_order');
   } catch {}
 };
 
-// Returns the customer from Paystack. The screen shown is decided ONLY by the
-// server's verification of the transaction — never by the fact that the
-// customer came back.
+// The screen shown is decided ONLY by the server's verification of the
+// transaction — never by the fact that the customer came back.
 export default function PaymentCallback() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
