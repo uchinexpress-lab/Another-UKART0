@@ -40,7 +40,7 @@ export default function Cart() {
 
       <div className="uk-banner mb-2 py-1.5 px-2.5 text-[11px]">
         <Bike className="w-3.5 h-3.5 shrink-0" />
-        <span>Your order will arrive in 30-45 min after sorting!</span>
+        <span>Island delivery target: ~30 mins. Mainland: same-day. Times vary with traffic &amp; order volume.</span>
       </div>
 
       <div className="space-y-1.5">

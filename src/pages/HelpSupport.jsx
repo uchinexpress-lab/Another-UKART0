@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Search,
-  Phone,
   Mail,
   MessageCircle,
   ChevronRight,
@@ -12,7 +11,6 @@ import {
   Undo2,
   User,
   Tag,
-  AlertTriangle,
 } from 'lucide-react';
 import {
   Accordion,
@@ -20,34 +18,105 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from '@/components/ui/use-toast';
 import { usePageContent } from '@/lib/usePageContent';
 
-const SUPPORT_PHONE = '+2348012345678';
 const SUPPORT_EMAIL = 'hello@ukartapp.com';
 
 const FAQS = [
   {
     q: 'How long does delivery take?',
-    a: 'Island areas typically receive orders within 30–45 minutes. Mainland areas are delivered same-day. You can check your delivery zone in the location selector on the home screen.',
+    a: 'Our Island delivery target is approximately 30 minutes, but this is not a guaranteed time. Actual delivery depends on order preparation, rider availability, traffic and your exact location. Mainland areas are delivered same-day. You can check your delivery zone in the location selector on the home screen.',
+    topic: 'delivery',
   },
   {
     q: 'What are the delivery fees?',
-    a: 'A normal delivery fee applies to help get your order to you quickly and reliably. The exact amount is shown at checkout before you place your order.',
+    a: 'Delivery fees are location-based and depend on your delivery area (Island or Mainland). The exact fee is calculated and displayed during checkout before you make payment, so you can review your full order summary before placing an order.',
+    topic: 'delivery',
   },
   {
     q: 'How do I track my order?',
-    a: 'Open My Orders, tap any order to see its live status, or use the Track Order page with your order number.',
+    a: 'Open My Orders from your profile, tap any active order to see its live status, or use the Track Order page with your order number. Active orders update in real time as the status changes.',
+    topic: 'delivery',
   },
   {
     q: 'What payment methods are accepted?',
-    a: 'We currently accept only Secure online payments via Paystack are coming soon.',
+    a: 'We accept secure online payments via Paystack. You can pay with your debit card, bank transfer, or USSD through the Paystack checkout at the end of your order.',
+    topic: 'payment',
   },
   {
     q: 'Can I cancel an order?',
-    a: 'Yes — contact support with your order number before it is dispatched and we will cancel and refund you.',
+    a: 'You can request a cancellation by contacting support with your order number before the order is dispatched. Once an order has been accepted, prepared, or is out for delivery, cancellation is no longer available. To request a cancellation, open a support ticket with the category "Cancellation Request" and include your order number.',
+    topic: 'refund',
+  },
+  {
+    q: 'How do I request a refund?',
+    a: 'To request a refund, open a support ticket from the Support page and select "Refund Request" as the category. Include your order number and a description of the issue. Our team will review your request and respond. Submitting a refund request does not guarantee a refund will be processed — each request is reviewed individually.',
+    topic: 'refund',
+  },
+  {
+    q: 'What if my order is missing, damaged or incorrect?',
+    a: 'If your order arrives with missing items, damaged products, or incorrect items, open a support ticket within 24 hours of delivery. Select the appropriate category (Missing Item, Damaged Item, or Wrong Item) and include your order number along with a description of the problem. Providing photos or details of the affected items helps us resolve your issue faster.',
+    topic: 'quality',
+  },
+  {
+    q: 'What should I do about product freshness or quality concerns?',
+    a: 'If you have concerns about the freshness or quality of a product you received, please open a support ticket with the category "Product Quality" within 24 hours of delivery. Include the product name, your order number, and a description of the issue. Our team will review your concern and respond with a resolution.',
+    topic: 'quality',
+  },
+  {
+    q: 'How do I create an account?',
+    a: 'Tap "Create Account" on the login screen. Enter your name, email, phone number, and password. You will receive a verification code by email to activate your account. Once verified, you can start shopping immediately.',
+    topic: 'account',
+  },
+  {
+    q: 'How do I update my personal information?',
+    a: 'Go to your Profile, then tap "Edit Profile". You can update your full name, phone number, and date of birth. To change your email address, please contact support — email changes require verification for security.',
+    topic: 'account',
+  },
+  {
+    q: 'How do I change my phone number?',
+    a: 'Go to Profile, then Edit Profile, and update your phone number in the phone field. Make sure to enter a valid Nigerian phone number (starting with 070, 080, 081, 090, or 091).',
+    topic: 'account',
+  },
+  {
+    q: 'How do I reset my password?',
+    a: 'On the login screen, tap "Forgot Password" and enter your email address. A password reset link will be sent to your email. Open the link and enter your new password. If you do not receive the email, check your spam folder or contact support.',
+    topic: 'account',
+  },
+  {
+    q: 'How do I manage my saved addresses?',
+    a: 'Go to Profile, then tap "Saved Addresses". You can add, edit, or delete saved addresses. Each address can be labelled as Home, Work, or Other. You can also set a default address for faster checkout.',
+    topic: 'account',
+  },
+  {
+    q: 'How do I apply a promo code?',
+    a: 'During checkout, enter your promo code in the voucher field and tap apply. If the code is valid, the discount will be reflected in your order total before you pay.',
+    topic: 'promo',
+  },
+  {
+    q: 'Why is my promo code not working?',
+    a: 'A promo code may not work if it has expired, has already been used, does not meet the minimum order value, or is not valid for the items in your cart. Check the terms of the promotion and try again. If you believe the code should be valid, contact support.',
+    topic: 'promo',
+  },
+  {
+    q: 'How do promotional discounts appear at checkout?',
+    a: 'When a valid promo code is applied, the discount amount is shown in your checkout summary alongside items total, delivery fee, and total. You will always see the final amount before payment is processed.',
+    topic: 'promo',
+  },
+  {
+    q: 'What happens after I submit a refund request?',
+    a: 'After you submit a refund request via a support ticket, our team reviews it and responds to you through the ticket. You will be notified when there is a reply. Refund requests are reviewed case by case — submitting a request does not automatically trigger a refund.',
+    topic: 'refund',
+  },
+  {
+    q: 'How do I contact support about a refund?',
+    a: 'Open a support ticket from the Support page and select "Refund Request" as the category. Include your order number and details of the issue. You can track the conversation and respond to staff replies directly in the ticket chat.',
+    topic: 'refund',
+  },
+  {
+    q: 'What email verification do I need?',
+    a: 'When you create an account, a six-digit verification code is sent to your email. Enter this code on the verification screen to activate your account. If you did not receive the code, tap "Resend code" on the verification screen.',
+    topic: 'account',
   },
 ];
 
@@ -61,11 +130,9 @@ const TOPICS = [
 ];
 
 export default function HelpSupport() {
-  const [report, setReport] = useState('');
   const [query, setQuery] = useState('');
   const { getField, isSectionVisible } = usePageContent('support');
 
-  const supportPhone = getField('contact_phone', SUPPORT_PHONE);
   const supportEmail = getField('contact_email', SUPPORT_EMAIL);
 
   const filtered = FAQS.filter((f) => {
@@ -73,16 +140,6 @@ export default function HelpSupport() {
     if (!q) return true;
     return (f.q + ' ' + f.a).toLowerCase().includes(q);
   });
-
-  const sendReport = () => {
-    if (!report.trim()) {
-      toast({ title: 'Please describe the issue', variant: 'destructive' });
-      return;
-    }
-    const subject = encodeURIComponent('Ukart Problem Report');
-    const body = encodeURIComponent(report.trim());
-    window.location.href = `mailto:${supportEmail}?subject=${subject}&body=${body}`;
-  };
 
   return (
     <div className="uk-page space-y-5">
@@ -144,7 +201,7 @@ export default function HelpSupport() {
         {filtered.length === 0 ? (
           <div className="bg-card rounded-2xl border border-border p-6 text-center">
             <p className="text-sm text-muted-foreground">
-              No articles match your search.
+              No articles match your search. Try a different keyword or contact support.
             </p>
           </div>
         ) : (
@@ -197,19 +254,6 @@ export default function HelpSupport() {
             <ChevronRight className="w-4 h-4 text-gray-400" />
           </Link>
           <a
-            href={`tel:${supportPhone}`}
-            className="flex items-center gap-3 p-4 active:bg-muted/50"
-          >
-            <div className="w-10 h-10 rounded-xl bg-[#EEF8EE] flex items-center justify-center">
-              <Phone className="w-5 h-5 text-[#2E7D32]" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-foreground">Call Support</p>
-              <p className="text-xs text-muted-foreground">Mon–Sat, 8am–8pm</p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
-          </a>
-          <a
             href={`mailto:${supportEmail}`}
             className="flex items-center gap-3 p-4 active:bg-muted/50"
           >
@@ -225,26 +269,6 @@ export default function HelpSupport() {
         </div>
       </div>
       )}
-
-      {/* Report a problem */}
-      <div className="bg-card rounded-2xl border border-border p-4">
-        <h2 className="text-sm font-bold text-foreground flex items-center gap-2 mb-2">
-          <AlertTriangle className="w-4 h-4 text-amber-500" /> Report a Problem
-        </h2>
-        <Textarea
-          value={report}
-          onChange={(e) => setReport(e.target.value)}
-          placeholder="Describe the issue..."
-          rows={4}
-          className="rounded-xl resize-none"
-        />
-        <Button
-          className="w-full mt-3 h-11 rounded-xl"
-          onClick={sendReport}
-        >
-          <Mail className="w-4 h-4 mr-2" /> Submit Report
-        </Button>
-      </div>
 
       <p className="text-center text-xs text-gray-400">
         Contact us at{' '}

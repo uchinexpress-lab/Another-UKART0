@@ -33,7 +33,7 @@ export function buildWhatsAppUrl(order, statusOverride) {
   const phone = formatNigerianPhone(order?.customer_phone);
   if (!phone) return null;
   const text = encodeURIComponent(buildOrderMessage(order, statusOverride));
-  return `https://wa.me{phone}?text=${text}`;
+  return `https://wa.me/${phone}?text=${text}`;
 }
 
 export function buildSmsUrl(order, statusOverride) {

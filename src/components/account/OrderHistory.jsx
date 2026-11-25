@@ -32,8 +32,14 @@ export default function OrderHistory() {
     const load = async () => {
       try {
         const me = await base44.auth.me();
-        const all = await base44.entities.Order.list('-created_date', 20);
-        const mine = me?.id ? all.filter((o) => o.created_by_id === me.id) : all;
+        let mine = [];
+        if (me?.id) {
+          const res = await base44.entities.Order.filter(
+            { created_by_id: me.id },
+            { sort: '-created_date', limit: 50 }
+          );
+          mine = Array.isArray(res) ? res : res?.items || [];
+        }
         if (!cancelled) setOrders(mine);
       } catch {
       } finally {

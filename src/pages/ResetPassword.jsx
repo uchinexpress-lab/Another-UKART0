@@ -1,16 +1,13 @@
 import React, { useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Lock, Loader2, AlertTriangle, ArrowRight } from "lucide-react";
+import { Lock, Loader2, ArrowRight } from "lucide-react";
 import AuthShell from "@/components/auth/AuthShell";
 
 export default function ResetPassword() {
-  const [searchParams] = useSearchParams();
-  const resetToken = searchParams.get("token");
-
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
@@ -23,40 +20,20 @@ export default function ResetPassword() {
       setError("Passwords do not match");
       return;
     }
+    if (newPassword.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
     setLoading(true);
     try {
-      await base44.auth.resetPassword({ resetToken, newPassword });
+      await base44.auth.resetPassword({ newPassword });
       window.location.href = "/login";
     } catch (err) {
-      setError(err.message || "Failed to reset password");
+      setError(err.message || "Failed to reset password. The link may have expired — please request a new one.");
     } finally {
       setLoading(false);
     }
   };
-
-  if (!resetToken) {
-    return (
-      <AuthShell
-        showBack
-        icon={AlertTriangle}
-        title="Invalid reset link"
-        subtitle="This password reset link is missing or invalid"
-        footer={
-          <Link
-            to="/forgot-password"
-            className="text-sm text-primary font-medium hover:underline"
-          >
-            Request a new link
-          </Link>
-        }
-      >
-        <p className="text-sm text-muted-foreground text-center leading-relaxed">
-          The link you used appears to be incomplete. Please request a new
-          password reset email.
-        </p>
-      </AuthShell>
-    );
-  }
 
   return (
     <AuthShell

@@ -15,3 +15,15 @@ verify_jwt = true
 
 [functions.sendPushBroadcast]
 verify_jwt = true
+
+[functions.updateRiderLocation]
+verify_jwt = true
+
+[functions.manageDelivery]
+verify_jwt = true
+
+[functions.resendDeliveryOtp]
+verify_jwt = true
+
+[functions.notifyTicketReply]
+verify_jwt = true

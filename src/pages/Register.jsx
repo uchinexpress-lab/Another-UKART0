@@ -21,6 +21,7 @@ import GoogleIcon from "@/components/GoogleIcon";
 import AuthShell from "@/components/auth/AuthShell";
 import { toast } from "@/components/ui/use-toast";
 import { safeReturnTo } from "@/lib/authReturnTo";
+import { isValidNigerianPhone } from "@/lib/phoneValidation";
 
 export default function Register() {
   const [firstName, setFirstName] = useState("");
@@ -58,8 +59,8 @@ export default function Register() {
       setError("Please accept the Terms & Conditions and Privacy Policy");
       return;
     }
-    if (phone && !/^\+?[0-9\s-]{7,}$/.test(phone)) {
-      setError("Enter a valid phone number");
+    if (phone && !isValidNigerianPhone(phone)) {
+      setError("Enter a valid Nigerian phone number (e.g. 0803 123 4567)");
       return;
     }
     if (dateOfBirth) {

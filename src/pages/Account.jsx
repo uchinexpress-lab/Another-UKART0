@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Image } from '@/components/ui/image';
 import { toast } from '@/components/ui/use-toast';
+import { isValidNigerianPhone } from '@/lib/phoneValidation';
 import OrderHistory from '@/components/account/OrderHistory';
 import BirthdayReward from '@/components/account/BirthdayReward';
 
@@ -71,6 +72,10 @@ export default function Account() {
   const save = async () => {
     if (!fullName.trim()) {
       toast({ title: 'Name is required', variant: 'destructive' });
+      return;
+    }
+    if (phone && !isValidNigerianPhone(phone)) {
+      toast({ title: 'Enter a valid Nigerian phone number (e.g. 0803 123 4567)', variant: 'destructive' });
       return;
     }
     setSaving(true);

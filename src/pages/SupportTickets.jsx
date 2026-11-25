@@ -18,6 +18,12 @@ const CATEGORIES = [
   { value: 'order', label: 'Order Issue' },
   { value: 'delivery', label: 'Delivery' },
   { value: 'payment', label: 'Payment' },
+  { value: 'missing_item', label: 'Missing Item' },
+  { value: 'wrong_item', label: 'Wrong Item' },
+  { value: 'damaged_item', label: 'Damaged Item' },
+  { value: 'product_quality', label: 'Product Quality' },
+  { value: 'refund_request', label: 'Refund Request' },
+  { value: 'cancellation_request', label: 'Cancellation Request' },
   { value: 'account', label: 'Account' },
   { value: 'other', label: 'Other' },
 ];
@@ -180,7 +186,7 @@ export default function SupportTickets() {
         user_email: me?.email || '',
         user_name: me?.full_name || me?.email || '',
         last_message_at: new Date().toISOString(),
-        closed_reason: 'manual',
+        closed_reason: null,
       });
       await base44.entities.TicketMessage.create({
         ticket_id: ticket.id,

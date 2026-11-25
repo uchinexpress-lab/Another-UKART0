@@ -33,6 +33,7 @@ import {
   resolveDeliverySettings,
 } from '@/lib/delivery';
 import { useLocation } from '@/context/LocationContext';
+import { isValidNigerianPhone } from '@/lib/phoneValidation';
 const REWARD_AMOUNT = 550;
 const MINIMUM_ORDER = 5000;
 
@@ -137,27 +138,18 @@ export default function Checkout() {
           payment_status: 'Paid',
         });
         setIsFirstOrder(!paidOrders || paidOrders.length === 0);
-        const prev = await base44.entities.Order.filter(
-          { customer_email: me.email },
-          '-created_date',
-          50
-        );
-        const seen = new Set();
-        const addrs = [];
-        prev.forEach((o) => {
-          const key = `${o.customer_name}|${o.customer_phone}|${o.customer_address}|${o.landmark}`;
-          if (o.customer_address && !seen.has(key)) {
-            seen.add(key);
-            addrs.push({
-              name: o.customer_name,
-              phone: o.customer_phone,
-              altPhone: o.alternate_phone,
-              address: o.customer_address,
-              landmark: o.landmark,
-            });
-          }
-        });
-        setSavedAddresses(addrs);
+        const profileAddrs = Array.isArray(me?.saved_addresses) ? me.saved_addresses : [];
+        setSavedAddresses(profileAddrs.map((a) => ({
+          id: a.id,
+          label: a.label,
+          name: a.full_name,
+          phone: a.phone,
+          address: a.address,
+          landmark: a.landmark,
+          lat: a.lat ?? null,
+          lng: a.lng ?? null,
+          zone: a.zone || null,
+        })));
       } catch {}
     })();
   }, []);
@@ -193,6 +185,7 @@ const canPlace =
   meetsMinimumOrder &&
   name.trim() &&
   phone.trim() &&
+  isValidNigerianPhone(phone) &&
   address.trim() &&
   landmark.trim() &&
   !placing;
@@ -217,10 +210,10 @@ const canPlace =
   const applySaved = (a) => {
     setName(a.name || '');
     setPhone(a.phone || '');
-    setAltPhone(a.altPhone || '');
+    setAltPhone('');
     setAddress(a.address || '');
-    setCoords({ lat: null, lng: null });
-    const savedZone = classifyAddressZone(a.address);
+    setCoords({ lat: a.lat ?? null, lng: a.lng ?? null });
+    const savedZone = a.zone || classifyAddressZone(a.address);
     if (savedZone) setZone(savedZone);
     setLandmark(a.landmark || '');
   };
@@ -426,12 +419,15 @@ const canPlace =
             <History className="w-3.5 h-3.5" /> Use a saved address
           </p>
           <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-            {savedAddresses.map((a, i) => (
+            {savedAddresses.map((a) => (
               <button
-                key={i}
+                key={a.id || a.address}
                 onClick={() => applySaved(a)}
                 className="flex-shrink-0 text-left text-xs bg-card border border-border rounded-xl px-3 py-2 w-44 active:scale-95 transition-transform"
               >
+                {a.label && (
+                  <span className="text-[10px] font-bold text-[#2E7D32] bg-[#2E7D32]/10 px-1.5 py-0.5 rounded-full mb-0.5 inline-block">{a.label}</span>
+                )}
                 <span className="font-semibold text-foreground block line-clamp-1">{a.name}</span>
                 <span className="text-muted-foreground line-clamp-2">{a.address}</span>
               </button>
