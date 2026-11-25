@@ -7,13 +7,14 @@ import {
   LayoutDashboard, ShoppingCart, Ticket as TicketIcon, Bike, Truck,
   Package, FolderTree, UtensilsCrossed, Image as ImageIcon, Upload, Users,
   BarChart3, Bell, Gift, Settings as SettingsIcon, Search, Menu, LogOut, X,
-  FileText,
+  FileText, Clock,
 } from 'lucide-react';
 import StaffThemeToggle from '@/components/staff/StaffThemeToggle';
 
 const NAV_ITEMS = [
   { key: 'dashboard', label: 'Dashboard', path: '/admin', icon: LayoutDashboard },
   { key: 'orders', label: 'Orders', path: '/admin/orders', icon: ShoppingCart },
+  { key: 'unpaid-checkouts', label: 'Unpaid Checkouts', path: '/admin/unpaid-checkouts', icon: Clock },
   { key: 'tickets', label: 'Tickets', path: '/admin/tickets', icon: TicketIcon },
   { key: 'riders', label: 'Riders', path: '/admin/riders', icon: Bike },
   { key: 'live-deliveries', label: 'Live Deliveries', path: '/admin/live-deliveries', icon: Truck },

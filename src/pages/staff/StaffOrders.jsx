@@ -13,7 +13,6 @@ import {
 import SheetSelect from '@/components/SheetSelect';
 
 const STATUSES = [
-  { value: 'awaiting_payment', label: 'Awaiting Payment' },
   { value: 'new', label: 'Order Placed' },
   { value: 'processing', label: 'Being Prepared' },
   { value: 'ready', label: 'Ready for Delivery' },
@@ -77,6 +76,7 @@ export default function StaffOrders() {
   };
 
   const filtered = orders.filter((o) => {
+    if (o.status === 'awaiting_payment') return false;
     if (statusFilter !== 'all' && o.status !== statusFilter) return false;
     if (paymentFilter !== 'all' && o.payment_status !== paymentFilter) return false;
     if (search.trim()) {

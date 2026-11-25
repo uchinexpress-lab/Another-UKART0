@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import PullToRefresh from '@/components/home/PullToRefresh';
 
-const ACTIVE = ['awaiting_payment', 'new', 'processing', 'ready', 'on_the_way'];
+const ACTIVE = ['new', 'processing', 'ready', 'on_the_way'];
 const ACTIVE_STEP_INDEX = { new: 0, processing: 1, ready: 2, on_the_way: 3 };
 
 const TABS = [

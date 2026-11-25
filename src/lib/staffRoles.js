@@ -16,12 +16,12 @@ export const STAFF_ROLES = {
   },
   support: {
     label: 'Support',
-    pages: ['dashboard', 'orders', 'tickets', 'customers', 'birthday-rewards'],
+    pages: ['dashboard', 'orders', 'unpaid-checkouts', 'tickets', 'customers', 'birthday-rewards'],
     color: 'bg-amber-100 text-amber-700',
   },
   operations: {
     label: 'Operations',
-    pages: ['dashboard', 'orders', 'riders', 'live-deliveries'],
+    pages: ['dashboard', 'orders', 'unpaid-checkouts', 'riders', 'live-deliveries'],
     color: 'bg-blue-100 text-blue-700',
   },
   content_manager: {
@@ -31,7 +31,7 @@ export const STAFF_ROLES = {
   },
   finance: {
     label: 'Finance',
-    pages: ['dashboard', 'orders', 'reports', 'birthday-rewards'],
+    pages: ['dashboard', 'orders', 'unpaid-checkouts', 'reports', 'birthday-rewards'],
     color: 'bg-purple-100 text-purple-700',
   },
   rider_manager: {
@@ -55,7 +55,7 @@ export const STAFF_ROLE_OPTIONS = [
 ];
 
 export const ALL_STAFF_PAGES = [
-  'dashboard', 'orders', 'tickets', 'riders', 'live-deliveries',
+  'dashboard', 'orders', 'unpaid-checkouts', 'tickets', 'riders', 'live-deliveries',
   'products', 'categories', 'meal-kits', 'packages', 'banners', 'bulk-images', 'homepage',
   'customers', 'reports', 'notifications', 'birthday-rewards', 'settings', 'page-content',
 ];

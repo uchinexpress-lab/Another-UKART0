@@ -8,6 +8,7 @@ const StaffLogin = lazy(() => import('@/pages/staff/StaffLogin'));
 const StaffLayout = lazy(() => import('@/components/staff/StaffLayout'));
 const StaffDashboard = lazy(() => import('@/pages/staff/StaffDashboard'));
 const StaffOrders = lazy(() => import('@/pages/staff/StaffOrders'));
+const StaffUnpaidCheckouts = lazy(() => import('@/pages/staff/StaffUnpaidCheckouts'));
 const StaffTickets = lazy(() => import('@/pages/staff/StaffTickets'));
 const StaffTicketDetail = lazy(() => import('@/pages/staff/StaffTicketDetail'));
 const StaffRiders = lazy(() => import('@/pages/staff/StaffRiders'));
@@ -146,6 +147,7 @@ export default function StaffApp({ dashboardOnly = false }) {
         <Route element={<StaffLayout />}>
           <Route index element={<StaffDashboard />} />
           <Route path="orders" element={<StaffOrders />} />
+          <Route path="unpaid-checkouts" element={<StaffUnpaidCheckouts />} />
           <Route path="tickets" element={<StaffTickets />} />
           <Route path="tickets/:id" element={<StaffTicketDetail />} />
           <Route path="riders" element={<StaffRiders />} />

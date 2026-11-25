@@ -18,10 +18,15 @@ function jsonResponse(body: unknown, status = 200) {
 }
 
 /**
- * Initialize a payment attempt for an existing pending order.
- * Creates a payment_attempts row with the order linked, then calls
- * Paystack's transaction initialize API to get an authorization URL.
- * The customer is redirected to Paystack's hosted checkout.
+ * Initialize a payment attempt.
+ *
+ * Primary path (new checkout flow): accepts `checkoutData` directly — no order
+ * is created until payment succeeds. The checkout data is stored in
+ * payment_attempts.checkout_data and used by finalize_paystack_payment to
+ * create the order after successful payment.
+ *
+ * Legacy path (retry on existing order): accepts `orderId` for backward
+ * compatibility with any existing awaiting_payment orders.
  */
 async function initializePayment(
   supabase: any,
@@ -29,44 +34,76 @@ async function initializePayment(
   userId: string | null
 ) {
   const orderId = body?.orderId;
+  const checkoutData = body?.checkoutData;
   const callbackUrl = body?.callbackUrl;
 
-  if (!orderId) {
-    return jsonResponse({ error: "orderId is required" }, 400);
-  }
   if (!callbackUrl) {
     return jsonResponse({ error: "callbackUrl is required" }, 400);
   }
 
-  // Fetch the order using the service role (to get all fields regardless of RLS).
-  const { data: order, error: orderError } = await supabase
-    .from("orders")
-    .select("*")
-    .eq("id", orderId)
-    .maybeSingle();
+  let email: string | null = null;
+  let amountKobo = 0;
+  let storedCheckoutData: any = null;
+  let orderNumber: string | null = null;
+  let linkedOrderId: string | null = null;
 
-  if (orderError || !order) {
-    return jsonResponse({ error: "Order not found" }, 404);
+  if (orderId) {
+    // Legacy path: retry on an existing pending order.
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .select("*")
+      .eq("id", orderId)
+      .maybeSingle();
+
+    if (orderError || !order) {
+      return jsonResponse({ error: "Order not found" }, 404);
+    }
+
+    if (order.payment_status === "Paid") {
+      return jsonResponse({ ok: true, alreadyPaid: true, orderId: order.id });
+    }
+
+    email = order.customer_email;
+    amountKobo = Math.round(Number(order.total) * 100);
+    orderNumber = order.order_number;
+    linkedOrderId = order.id;
+    storedCheckoutData = {
+      items: order.items,
+      subtotal: order.subtotal,
+      delivery_fee: order.delivery_fee,
+      service_fee: order.service_fee,
+      discount: order.discount,
+      voucher_code: order.voucher_code,
+      voucher_id: order.voucher_id,
+      customer_name: order.customer_name,
+      customer_phone: order.customer_phone,
+      alternate_phone: order.alternate_phone,
+      customer_address: order.customer_address,
+      landmark: order.landmark,
+      delivery_zone: order.delivery_zone,
+      delivery_lat: order.delivery_lat,
+      delivery_lng: order.delivery_lng,
+      is_first_order: order.is_first_order,
+      first_order_discount: order.first_order_discount,
+      referral_id: order.referral_id,
+      referral_type: order.referral_type,
+    };
+  } else if (checkoutData) {
+    // New path: checkout data passed directly, no pre-created order.
+    email = checkoutData.customer_email || null;
+    amountKobo = Math.round(Number(checkoutData.total) * 100);
+    storedCheckoutData = checkoutData;
+    linkedOrderId = null;
+  } else {
+    return jsonResponse({ error: "checkoutData or orderId is required" }, 400);
   }
 
-  if (order.payment_status === "Paid") {
-    return jsonResponse({
-      ok: true,
-      alreadyPaid: true,
-      orderId: order.id,
-    });
-  }
-
-  // The orders table does not have a user_id column; use customer_email
-  // which is always set when the order is created.
-  const email = order.customer_email;
   if (!email) {
-    return jsonResponse({ error: "Customer email not found on order" }, 400);
+    return jsonResponse({ error: "Customer email is required" }, 400);
   }
 
-  const amountKobo = Math.round(Number(order.total) * 100);
   if (amountKobo <= 0) {
-    return jsonResponse({ error: "Invalid order amount" }, 400);
+    return jsonResponse({ error: "Invalid amount" }, 400);
   }
 
   // Generate a unique reference.
@@ -77,32 +114,6 @@ async function initializePayment(
   // user_id is required by payment_attempts (NOT NULL + FK to auth.users).
   // The caller's JWT has already been validated by Supabase's gateway
   // (verify_jwt = true), so we extract the UUID from its sub claim.
-
-  // Store checkout_data for order creation fallback (in case the order
-  // row is lost, finalize_paystack_payment can recreate it).
-  const checkoutData = {
-    items: order.items,
-    subtotal: order.subtotal,
-    delivery_fee: order.delivery_fee,
-    service_fee: order.service_fee,
-    discount: order.discount,
-    voucher_code: order.voucher_code,
-    voucher_id: order.voucher_id,
-    customer_name: order.customer_name,
-    customer_phone: order.customer_phone,
-    alternate_phone: order.alternate_phone,
-    customer_address: order.customer_address,
-    landmark: order.landmark,
-    delivery_zone: order.delivery_zone,
-    delivery_lat: order.delivery_lat,
-    delivery_lng: order.delivery_lng,
-    is_first_order: order.is_first_order,
-    first_order_discount: order.first_order_discount,
-    referral_id: order.referral_id,
-    referral_type: order.referral_type,
-  };
-
-  // Create the payment_attempts record, linked to the existing order.
   const { error: attemptError } = await supabase
     .from("payment_attempts")
     .insert({
@@ -110,14 +121,26 @@ async function initializePayment(
       user_id: userId,
       amount_kobo: amountKobo,
       currency: "NGN",
-      checkout_data: checkoutData,
+      checkout_data: storedCheckoutData,
       status: "initialized",
-      order_id: order.id,
+      order_id: linkedOrderId,
     });
 
   if (attemptError) {
     console.error("[process-paystack-payment] insert attempt error:", attemptError);
     return jsonResponse({ error: "Could not create payment attempt" }, 500);
+  }
+
+  // Build Paystack metadata.
+  const customFields: any[] = [
+    { display_name: "Customer Name", variable_name: "customer_name", value: storedCheckoutData.customer_name || "" },
+  ];
+  if (orderNumber) {
+    customFields.push({ display_name: "Order Number", variable_name: "order_number", value: orderNumber });
+  }
+  const metadata: any = { custom_fields: customFields };
+  if (linkedOrderId) {
+    metadata.order_id = linkedOrderId;
   }
 
   // Call Paystack initialize API.
@@ -133,14 +156,7 @@ async function initializePayment(
       currency: "NGN",
       reference,
       callback_url: callbackUrl,
-      metadata: {
-        custom_fields: [
-          { display_name: "Order Number", variable_name: "order_number", value: order.order_number },
-          { display_name: "Customer Name", variable_name: "customer_name", value: order.customer_name || "" },
-          { display_name: "Order ID", variable_name: "order_id", value: order.id },
-        ],
-        order_id: order.id,
-      },
+      metadata,
     }),
   });
 
@@ -277,7 +293,7 @@ async function verifyPayment(supabase: any, body: any) {
 
 /**
  * Abandon a checkout — mark the payment attempt as abandoned.
- * Does NOT delete the order (the customer may retry payment later).
+ * If an orderId is provided (legacy flow), also mark that order as abandoned.
  */
 async function abandonCheckout(supabase: any, body: any) {
   const reference = body?.reference;
@@ -292,7 +308,7 @@ async function abandonCheckout(supabase: any, body: any) {
   }
 
   if (orderId) {
-    // Mark the order as abandoned (not cancelled — customer can retry).
+    // Legacy: mark the pre-created order as abandoned.
     await supabase
       .from("orders")
       .update({ payment_status: "Abandoned", updated_date: new Date().toISOString() })

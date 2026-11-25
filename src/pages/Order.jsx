@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { Image } from '@/components/ui/image';
 
-const ACTIVE = ['awaiting_payment', 'new', 'processing', 'ready', 'on_the_way'];
+const ACTIVE = ['new', 'processing', 'ready', 'on_the_way'];
 
 const TABS = [
   { key: 'cart', label: 'Cart' },

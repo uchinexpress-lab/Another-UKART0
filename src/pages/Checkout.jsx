@@ -4,7 +4,6 @@ import AddressAutocomplete from '@/components/checkout/AddressAutocomplete';
 import AddressPickerMap from '@/components/delivery/AddressPickerMap';
 import { useCart } from '@/context/CartContext';
 import { base44 } from '@/api/base44Client';
-import { supabase } from '@/api/supabaseClient';
 import { Clock, MapPin, Navigation, Phone, User, Loader2, ShoppingBag, Tag, History, X, CreditCard, Lock, Truck } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 import { getServiceFee } from '@/lib/fees';
@@ -222,7 +221,7 @@ const canPlace =
         throw new Error('Please sign in to place an order.');
       }
 
-      // 1. Create the pending order in Supabase
+      // 1. Build checkout data — no order is created until payment succeeds.
       const orderItems = items.map((i) => {
         const packageId =
           i.package_id || (String(i.id).startsWith('mealkit-') ? String(i.id).slice(8).split('-')[0] : '');
@@ -245,50 +244,38 @@ const canPlace =
         };
       });
 
-      const orderNumber = `UK-${Date.now().toString().slice(-8)}`;
-      const { data: order, error: insertError } = await supabase
-        .from('orders')
-        .insert({
-          order_number: orderNumber,
-          items: orderItems,
-          subtotal: total,
-          delivery_fee: deliveryFee,
-          service_fee: serviceFee,
-          discount: appliedDiscount,
-          voucher_code: voucher ? voucher.code : null,
-          voucher_id: voucher ? voucher.id : null,
-          total: grandTotal,
-          customer_name: name,
-          customer_email: me.email,
-          customer_phone: phone,
-          alternate_phone: altPhone,
-          customer_address: address,
-          landmark,
-          delivery_zone: zone,
-          delivery_lat: coords.lat,
-          delivery_lng: coords.lng,
-          payment_method: 'Pay Online',
-          payment_status: 'Pending',
-          status: 'awaiting_payment',
-          is_first_order: isFirstOrder,
-          first_order_discount: firstOrderDiscount,
-          referral_id: rewardRef ? rewardRef.id : null,
-          referral_type: rewardRef ? rewardRef.type : null,
-        })
-        .select()
-        .single();
-
-      if (insertError) {
-        throw new Error(insertError.message || 'Could not create order');
-      }
+      const checkoutData = {
+        items: orderItems,
+        subtotal: total,
+        delivery_fee: deliveryFee,
+        service_fee: serviceFee,
+        discount: appliedDiscount,
+        voucher_code: voucher ? voucher.code : null,
+        voucher_id: voucher ? voucher.id : null,
+        total: grandTotal,
+        customer_name: name,
+        customer_email: me.email,
+        customer_phone: phone,
+        alternate_phone: altPhone,
+        customer_address: address,
+        landmark,
+        delivery_zone: zone,
+        delivery_lat: coords.lat,
+        delivery_lng: coords.lng,
+        is_first_order: isFirstOrder,
+        first_order_discount: firstOrderDiscount,
+        referral_id: rewardRef ? rewardRef.id : null,
+        referral_type: rewardRef ? rewardRef.type : null,
+      };
 
       // 2. Initialize payment via the process-paystack-payment edge function.
-      //    This creates a payment_attempts record linked to the order and
-      //    returns a Paystack authorization URL for the hosted checkout.
+      //    The edge function stores checkout_data in a payment_attempts row
+      //    and returns a Paystack authorization URL. No order exists yet —
+      //    the order is created by finalize_paystack_payment after payment.
       const callbackUrl = `${window.location.origin}/payment/callback`;
       const res = await base44.functions.invoke('process-paystack-payment', {
         action: 'initialize',
-        orderId: order.id,
+        checkoutData,
         callbackUrl,
       });
 
