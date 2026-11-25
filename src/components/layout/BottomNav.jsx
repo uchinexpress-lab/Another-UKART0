@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Package, ClipboardList, Heart, User } from 'lucide-react';
-import { useTabNav, getTabForPath } from '@/context/TabNavContext';
+import { getTabForPath } from '@/context/TabNavContext';
 import { useGuardedNavigate } from '@/lib/navigation';
 
 const navItems = [
@@ -15,17 +15,14 @@ const navItems = [
 export default function BottomNav() {
   const location = useLocation();
   const navigate = useGuardedNavigate();
-  const { getTabRoute } = useTabNav();
   const pathname = location.pathname;
 
   const handleTap = (e, to) => {
     e.preventDefault();
-    const target = getTabRoute(to);
-    if (pathname === target) {
-      // Already on the tab's current route — scroll to top
+    if (pathname === to) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      navigate(target);
+      navigate(to);
     }
   };
 
