@@ -141,6 +141,7 @@ export default function TopNav() {
                 </span>
               </button>
             </DrawerTrigger>
+            <DrawerContent>
             <DrawerHeader className="text-left">
   <DrawerTitle>Choose delivery area</DrawerTitle>
 </DrawerHeader>
