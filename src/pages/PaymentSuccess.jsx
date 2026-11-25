@@ -149,7 +149,7 @@ export default function PaymentSuccess() {
     return (
       <div className="text-center py-16 px-6">
         <p className="text-sm text-muted-foreground">Order not found.</p>
-        <Link to="/orders" className="text-retail text-sm font-medium mt-2 inline-block">
+        <Link to="/order" className="text-retail text-sm font-medium mt-2 inline-block">
           Back to orders
         </Link>
       </div>
@@ -176,7 +176,7 @@ export default function PaymentSuccess() {
           {paying ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
           {order.payment_status === 'Failed' ? 'Retry Payment' : 'Pay Now'}
         </button>
-        <Link to="/orders" className="uk-btn-outline">
+        <Link to="/order" className="uk-btn-outline">
           Back to My Orders
         </Link>
       </div>
