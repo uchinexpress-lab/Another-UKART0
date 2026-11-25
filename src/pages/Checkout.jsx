@@ -231,137 +231,91 @@ const canPlace =
     setLandmark(a.landmark || '');
   };
 
+  
   const placeOrder = async () => {
-  if (total < MINIMUM_ORDER) {
-    alert('Ukart requires a minimum order of ₦5,000. Please add more items to your cart.');
-    navigate('/cart');
-    return;
-  }
-
-  if (!canPlace) return;
-    if (!PAYSTACK_KEY) {
-      alert('Payment is not configured. Please contact support.');
+    if (total < MINIMUM_ORDER) {
+      alert('Ukart requires a minimum order of ₦5,000. Please add more items to your cart.');
+      navigate('/cart');
       return;
     }
+
+    if (!canPlace) return;
+
     setPlacing(true);
+
     try {
-      // 1. Get the current user's email
       const me = await base44.auth.me();
+
       if (!me?.email) {
         throw new Error('Please sign in to place an order.');
       }
 
-      // 2. Create the pending order directly in Supabase
-      const orderItems = items.map((i) => {
-        const packageId =
-          i.package_id || (String(i.id).startsWith('mealkit-') ? String(i.id).slice(8).split('-')[0] : '');
-        return {
-          product_id: packageId ? '' : i.product_id || (i.id || '').split('__')[0],
-          package_id: packageId || '',
-          name: i.name || '',
-          price: i.price || 0,
-          unit: i.variant_label || i.details || i.size_label || '',
-          variant_label: packageId ? '' : i.variant_label || i.details || '',
-          size_label: i.size_label || '',
-          protein_names: i.protein_names || [],
-          selections: i.selections || [],
-          quantity: i.quantity,
-          addons_total: i.addons_total || 0,
-          addon_ids: packageId
-            ? i.addon_ids || []
-            : (i.addons || []).map((a) => a.id),
-          image: i.image || '',
-        };
-      });
+      const checkout = {
+        items: items.map((item) => {
+          const packageId =
+            item.package_id ||
+            (String(item.id || '').startsWith('mealkit-')
+              ? String(item.id).slice(8).split('-')[0]
+              : '');
 
-      const reference = generateReference();
-      const orderNumber = `UK-${Date.now().toString().slice(-8)}`;
-      const { data: order, error: insertError } = await supabase
-        .from('orders')
-        .insert({
-          order_number: orderNumber,
-          items: orderItems,
-          subtotal: total,
-          delivery_fee: deliveryFee,
-          service_fee: serviceFee,
-          discount: appliedDiscount,
-          voucher_code: voucher ? voucher.code : null,
-          voucher_id: voucher ? voucher.id : null,
-          total: grandTotal,
-          customer_name: name,
-          customer_email: me.email,
-          customer_phone: phone,
-          alternate_phone: altPhone,
-          customer_address: address,
-          landmark,
-          delivery_zone: zone,
-          delivery_lat: coords.lat,
-          delivery_lng: coords.lng,
-          payment_method: 'Pay Online',
-          payment_status: 'Pending',
-          status: 'awaiting_payment',
-          is_first_order: isFirstOrder,
-          first_order_discount: firstOrderDiscount,
-          referral_id: rewardRef ? rewardRef.id : null,
-          referral_type: rewardRef ? rewardRef.type : null,
-        })
-        .select()
-        .single();
+          return {
+            ...item,
+            id: String(item.id || ''),
+            product_id: packageId
+              ? ''
+              : item.product_id || String(item.id || '').split('__')[0],
+            package_id: packageId || null,
+            quantity: Number(item.quantity),
+            variant_label: item.variant_label || item.details || '',
+            size_label: item.size_label || '',
+            protein_names: item.protein_names || [],
+            selections: item.selections || [],
+            addon_ids:
+              item.addon_ids ||
+              (item.addons || []).map((addon) => addon.id),
+            image: item.image || '',
+          };
+        }),
+        customer_name: name.trim(),
+        customer_phone: phone.trim(),
+        alternate_phone: altPhone.trim(),
+        customer_address: address.trim(),
+        landmark: landmark.trim(),
+        delivery_zone: zone,
+        delivery_lat: coords.lat,
+        delivery_lng: coords.lng,
+        referral_id: rewardRef?.id || null,
+        referral_type: rewardRef?.type || null,
+        voucher_code: voucher?.code || null,
+      };
 
-      if (insertError) {
-        throw new Error(insertError.message || 'Could not create order');
+      // Initialize payment securely on the server.
+      // No order is created until Paystack confirms successful payment.
+      const data = await base44.functions.invoke(
+        'process-paystack-payment',
+        {
+          action: 'initialize',
+          checkout,
+          callbackUrl: `${window.location.origin}/payment/callback`,
+        }
+      );
+
+      if (!data?.ok || !data?.authorization_url || !data?.reference) {
+        throw new Error(
+          data?.error || 'Could not initialize payment. Please try again.'
+        );
       }
 
-            // 3. Launch Paystack Inline checkout
-      const totalInKobo = Math.round(grandTotal * 100);
-      const PaystackPop = await loadPaystackScript();
-      const handler = PaystackPop.setup({
-        key: PAYSTACK_KEY,
-        email: me.email,
-        amount: totalInKobo,
-        ref: reference,
-        currency: 'NGN',
-        metadata: {
-          custom_fields: [
-            { display_name: 'Order Number', variable_name: 'order_number', value: orderNumber },
-            { display_name: 'Customer Name', variable_name: 'customer_name', value: name },
-          ],
-        },
-        callback: function (transaction) {
-          (async () => {
-            try {
-              // 4. Mark the order as paid
-              const { error: rpcError } = await supabase.rpc('mark_order_paid', {
-                p_order_id: order.id,
-                p_reference: transaction.reference,
-                p_transaction_id: transaction.transaction_id || null,
-              });
-              if (rpcError) throw rpcError;
-notifyOrderCreated(order.id);
-              // 5. Clear cart and navigate to order confirmation
-              clearCart();
-              navigate(`/orders/${order.id}/payment-success`, { replace: true });
-            } catch (err) {
-              console.error('Failed to mark order paid:', err);
-              setPlacing(false);
-              alert('Payment succeeded but we could not confirm it. Your order is saved. Please check your orders.');
-              navigate(`/orders/${order.id}`, { replace: true });
-            }
-          })();
-        },
-        onClose: function () {
-          setPlacing(false);
-          toast({
-            title: 'Payment cancelled',
-            description: 'Your order is saved. You can retry payment from your orders.',
-          });
-        },
-      });
-      handler.openIframe();
-    } catch (e) {
+      // Redirect customer to Paystack.
+      window.location.assign(data.authorization_url);
+    } catch (error) {
+      console.error('Checkout payment initialization failed:', error);
+
       setPlacing(false);
-      const msg = e?.message || 'Could not start payment. Please try again.';
-      alert(msg);
+
+      alert(
+        error?.message || 'Could not start payment. Please try again.'
+      );
     }
   };
 
