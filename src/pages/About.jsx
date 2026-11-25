@@ -103,7 +103,7 @@ For questions, cancellations, payment issues or refund requests, customers shoul
 15. Governing Law
 These Terms & Conditions are governed by the applicable laws of the Federal Republic of Nigeria.`;
 
-const PRIVACY POLICY = `Effective Date: 1 December 2026
+const PRIVACY_POLICY = `Effective Date: 1 December 2026
 
 1. Introduction
 
@@ -270,12 +270,7 @@ export default function About() {
   const title = getField('title', 'UKART');
   const subtitle = getField('subtitle', 'No Market Wahala');
   const description = getField('description',
-    'UKART is a household shopping platform making it easier for Nigerian households to access groceries and everyday essentials without the market wahala. 
-We help customers access fresh groceries, food essentials and thoughtfully curated meal kits without the stress of visiting multiple markets or spending hours sourcing ingredients. From individual grocery purchases to ready-made grocery packages for students, busy professionals and families, Ukart makes it easier to shop according to your needs and budget. Ukart currently serves customers across selected locations in Lagos, Nigeria.
-
-Through our market-sourcing network, we work with vendors and local suppliers to source fresh produce, proteins, grains, tubers and other household food essentials. Our meal kits and grocery packages bring selected ingredients together, helping customers save time and simplify meal preparation.
-
-With convenient ordering and coordinated delivery, Ukart brings the market closer to your doorstep.'
+    'UKART is a household shopping platform making it easier for Nigerian households to access groceries and everyday essentials without the market wahala. We help customers access fresh groceries, food essentials and thoughtfully curated meal kits without the stress of visiting multiple markets or spending hours sourcing ingredients. From individual grocery purchases to ready-made grocery packages for students, busy professionals and families, Ukart makes it easier to shop according to your needs and budget. Ukart currently serves customers across selected locations in Lagos, Nigeria. Through our market-sourcing network, we work with vendors and local suppliers to source fresh produce, proteins, grains, tubers and other household food essentials. Our meal kits and grocery packages bring selected ingredients together, helping customers save time and simplify meal preparation. With convenient ordering and coordinated delivery, Ukart brings the market closer to your doorstep.'
   );
   const contactEmail = getField('contact_email', 'support@ukart.ng');
   const contactAddress = getField('contact_address', 'Lagos, Nigeria');
@@ -367,7 +362,7 @@ With convenient ordering and coordinated delivery, Ukart brings the market close
               Privacy Policy
             </AccordionTrigger>
             <AccordionContent className="text-sm text-muted-foreground pb-4 leading-relaxed">
-              {PRIVACY}
+              {PRIVACY_POLICY}
             </AccordionContent>
           </AccordionItem>
         </Accordion>
