@@ -169,12 +169,25 @@ export function LocationProvider({ children }) {
     );
   }, []);
 
-  // Automatically detect location on first visit AND right after a customer logs in (unless manually overridden)
-  useEffect(() => {
-    if (location?.manual) return;
-    if (!location && promptDismissed && !user?.id) return;
+  // Automatically detect real GPS location on load/login whenever permission is granted or first visit
+useEffect(() => {
+  if (navigator.permissions?.query) {
+    navigator.permissions
+      .query({ name: 'geolocation' })
+      .then((perm) => {
+        if (perm.state === 'granted') {
+          detect();
+        } else if (!location?.manual && !(promptDismissed && !user?.id)) {
+          detect();
+        }
+      })
+      .catch(() => {
+        if (!location?.manual) detect();
+      });
+  } else if (!location?.manual) {
     detect();
-  }, [user?.id]);
+  }
+}, [user?.id]);
 
   const setManual = useCallback((areaName) => {
     const loc = { ...classify(areaName), manual: true };
