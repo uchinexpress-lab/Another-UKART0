@@ -26,7 +26,7 @@ function jsonResponse(body: unknown, status = 200) {
 async function initializePayment(
   supabase: any,
   body: any,
-  userJwt: string | null
+  userId: string | null
 ) {
   const orderId = body?.orderId;
   const callbackUrl = body?.callbackUrl;
@@ -74,15 +74,9 @@ async function initializePayment(
   const rand = Math.random().toString(36).slice(2, 8);
   const reference = `ukart-${ts}-${rand}`;
 
-  // The orders table stores customer_email but not user_id. The
-  // payment_attempts.user_id is used by finalize_paystack_payment only
-  // when creating a new order from checkout_data (Case 2). Since we
-  // always link the attempt to an existing order (Case 1), user_id is
-  // not strictly needed — but we try to look it up from public.users
-  // by joining on the profile that matches the customer_email.
-  // public.users doesn't have email, so we pass null; the finalize
-  // function uses the existing order's customer_email instead.
-  const userId = null;
+  // user_id is required by payment_attempts (NOT NULL + FK to auth.users).
+  // The caller's JWT has already been validated by Supabase's gateway
+  // (verify_jwt = true), so we extract the UUID from its sub claim.
 
   // Store checkout_data for order creation fallback (in case the order
   // row is lost, finalize_paystack_payment can recreate it).
@@ -323,8 +317,20 @@ Deno.serve(async (req: Request) => {
       auth: { persistSession: false },
     });
 
+    // Extract the authenticated user's UUID from the JWT.
+    // verify_jwt = true guarantees the token is valid before this runs.
+    const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.replace(/^Bearer\s+/i, "");
+    let userId: string | null = null;
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        userId = payload?.sub || null;
+      } catch {}
+    }
+
     if (action === "initialize") {
-      return await initializePayment(supabase, body, null);
+      return await initializePayment(supabase, body, userId);
     } else if (action === "verify") {
       return await verifyPayment(supabase, body);
     } else if (action === "abandon") {
