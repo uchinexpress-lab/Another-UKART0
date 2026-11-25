@@ -6,6 +6,7 @@ import BrandedHeader from './BrandedHeader';
 import FloatingCart from './FloatingCart';
 import BottomNav from './BottomNav';
 import LocationPrompt from '@/components/LocationPrompt';
+import InstallAppPrompt from '@/components/InstallAppPrompt';
 import { TabNavProvider } from '@/context/TabNavContext';
 
 const TAB_ROUTES = ['/', '/packages', '/order', '/wishlist', '/profile'];
@@ -112,6 +113,7 @@ export default function Layout() {
       <FloatingCart />
       {isTab && <BottomNav />}
       <LocationPrompt />
+      <InstallAppPrompt />
     </div>
     </TabNavProvider>
   );
