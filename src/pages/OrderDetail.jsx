@@ -27,7 +27,16 @@ const STEPS = [
   { key: 'on_the_way', title: 'Out for Delivery', icon: Truck, desc: 'Our rider is on the way.' },
   { key: 'delivered', title: 'Delivered', icon: CheckCircle2, desc: 'Your order has arrived.' },
 ];
+
 const STEP_ORDER = ['new', 'processing', 'ready', 'on_the_way', 'delivered'];
+
+function StatusBadge({ status }) {
+  if (status === 'delivered')
+    return <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-primary/10 text-[#2E7D32]">Completed</span>;
+  if (status === 'cancelled')
+    return <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-red-50 text-red-600">Cancelled</span>;
+  return <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#FFF3E0] text-[#E65100]">In Progress</span>;
+}
 
 function DeliveryCountdown({ startTime }) {
   const [secondsLeft, setSecondsLeft] = useState(null);
@@ -89,7 +98,7 @@ export default function OrderDetail() {
         try {
           await new Promise((resolve, reject) => {
             const s = document.createElement('script');
-            s.src = 'https://js.paystack.co/v1/inline.js';
+            s.src = 'https://paystack.co';
             s.onload = () => resolve();
             s.onerror = () => reject(new Error('Could not load Paystack'));
             document.head.appendChild(s);
@@ -99,7 +108,9 @@ export default function OrderDetail() {
           const handler = window.PaystackPop.setup({
             key: PAYSTACK_KEY,
             access_code: res.access_code,
-            onClose: () => { setPaying(false); },
+            onClose: () => {
+              setPaying(false);
+            },
             callback: (resp) => {
               const ref = resp.reference || res.reference;
               window.location.href = `${window.location.origin}/payment/callback?reference=${encodeURIComponent(ref)}`;
@@ -146,282 +157,178 @@ export default function OrderDetail() {
       .get(id)
       .then((o) => {
         setOrder(o);
-        // Fetch delivery record for this order
         base44.entities.Delivery
           .filter({ order_id: id }, { limit: 1 })
-          .then((r) => setDelivery(r.items?.[0] || null))
+          .then((r) => setDelivery(r.items?. || null))
           .catch(() => {});
       })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [id]);
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { base44 } from '@/api/base44Client';
+import { useCart } from '@/context/CartContext';
+import { toast } from '@/components/ui/use-toast';
+import {
+  Loader2,
+  MapPin,
+  Phone,
+  User,
+  Truck,
+  Tag,
+  ShoppingBag,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Package,
+  PackageCheck,
+  RotateCw,
+} from 'lucide-react';
+import RateDeliveryCard from '@/components/notifications/RateDeliveryCard';
 
-  if (loading)
-    return (
-      <div className="flex justify-center py-16">
-        <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-      </div>
-    );
+const STEPS = [
+  { key: 'new', title: 'Order Placed', icon: ShoppingBag, desc: 'We received your order.' },
+  { key: 'processing', title: 'Preparing', icon: Package, desc: 'Your groceries are being packed.' },
+  { key: 'ready', title: 'Ready for Delivery', icon: PackageCheck, desc: 'Packed and waiting for a rider.' },
+  { key: 'on_the_way', title: 'Out for Delivery', icon: Truck, desc: 'Our rider is on the way.' },
+  { key: 'delivered', title: 'Delivered', icon: CheckCircle2, desc: 'Your order has arrived.' },
+];
 
-  if (!order)
-    return (
-      <div className="text-center py-16">
-        <p className="text-sm text-muted-foreground">Order not found.</p>
-        <Link to="/orders" className="text-[#2E7D32] text-sm font-medium mt-2 inline-block">
-          Back to orders
-        </Link>
-      </div>
-    );
+const STEP_ORDER = ['new', 'processing', 'ready', 'on_the_way', 'delivered'];
 
-  const isCancelled = order.status === 'cancelled';
-  const currentStepIndex = STEP_ORDER.indexOf(order.status);
-  const discount = order.discount || 0;
+function StatusBadge({ status }) {
+  if (status === 'delivered')
+    return <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-primary/10 text-[#2E7D32]">Completed</span>;
+  if (status === 'cancelled')
+    return <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-red-50 text-red-600">Cancelled</span>;
+  return <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[#FFF3E0] text-[#E65100]">In Progress</span>;
+}
+
+function DeliveryCountdown({ startTime }) {
+  const [secondsLeft, setSecondsLeft] = useState(null);
+
+  useEffect(() => {
+    const startMs = startTime ? new Date(startTime).getTime() : Date.now();
+    const validStart = Number.isNaN(startMs) ? Date.now() : startMs;
+    const endMs = validStart + 30 * 60 * 1000;
+
+    const update = () => {
+      const diff = Math.max(0, Math.floor((endMs - Date.now()) / 1000));
+      setSecondsLeft(diff);
+    };
+
+    update();
+    const timer = setInterval(update, 1000);
+    return () => clearInterval(timer);
+  }, [startTime]);
+
+  if (secondsLeft === null) return null;
+
+  const mins = Math.floor(secondsLeft / 60);
+  const secs = secondsLeft % 60;
+  const formatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 
   return (
-    <div className="uk-page space-y-4">
-      <div className="bg-card rounded-2xl border border-border p-4">
-        <div className="flex items-center justify-between mb-1">
-          <span className="font-bold text-foreground">{order.order_number}</span>
-          <StatusBadge status={order.status} />
-        </div>
-        <p className="text-xs text-gray-400">
-          {new Date(order.created_date).toLocaleString('en-NG')}
-        </p>
-      </div>
-
-      <div className="bg-card rounded-2xl border border-border p-4">
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase mb-3">Items</h3>
-        <div className="space-y-2">
-          {order.items?.map((it, i) => (
-            <div key={i} className="flex items-start justify-between text-sm">
-              <div className="min-w-0">
-                <span className="text-gray-700">
-                  {it.quantity}× {it.name}
-                </span>
-                {it.addons && it.addons.length > 0 && (
-                  <div className="mt-0.5 space-y-0.5">
-                    {it.addons.map((a, j) => (
-                      <p key={j} className="text-[11px] text-muted-foreground">
-                        + {a.name} {a.price === 0 ? 'Free' : `₦${a.price.toLocaleString()}`}
-                      </p>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <span className="font-medium text-foreground shrink-0 ml-2">
-                ₦{(((it.price || 0) + (it.addons_total || 0)) * (it.quantity || 1)).toLocaleString()}
-              </span>
-            </div>
-          ))}
-        </div>
-        <div className="mt-3 pt-3 border-t border-gray-50 space-y-1.5 text-sm">
-          <div className="flex justify-between text-muted-foreground">
-            <span>Subtotal</span>
-            <span>₦{(order.subtotal || 0).toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between text-muted-foreground">
-            <span>Delivery fee</span>
-            <span>₦{(order.delivery_fee || 0).toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between text-muted-foreground">
-            <span>Service fee</span>
-            <span>₦{(order.service_fee || 0).toLocaleString()}</span>
-          </div>
-          {order.first_order_discount > 0 && (
-            <div className="flex justify-between text-[#2E7D32] font-medium">
-              <span className="flex items-center gap-1">
-                <Tag className="w-3.5 h-3.5" /> First order discount
-              </span>
-              <span>−₦{order.first_order_discount.toLocaleString()}</span>
-            </div>
-          )}
-          {(discount - (order.first_order_discount || 0)) > 0 && (
-            <div className="flex justify-between text-[#2E7D32] font-medium">
-              <span className="flex items-center gap-1">
-                <Tag className="w-3.5 h-3.5" /> {order.voucher_code ? `Voucher (${order.voucher_code})` : 'Referral discount'}
-              </span>
-              <span>−₦{(discount - (order.first_order_discount || 0)).toLocaleString()}</span>
-            </div>
-          )}
-          <div className="flex justify-between font-bold text-foreground pt-1">
-            <span>Total</span>
-            <span className="text-[#2E7D32]">₦{(order.total || 0).toLocaleString()}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-card rounded-2xl border border-border p-4">
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase mb-3">Delivery Details</h3>
-        <div className="space-y-1.5 text-sm">
-          <p className="flex items-center gap-2 text-foreground font-medium">
-            <User className="w-4 h-4 text-gray-400" /> {order.customer_name}
-          </p>
-          <p className="flex items-center gap-2 text-gray-600">
-            <MapPin className="w-4 h-4 text-gray-400" /> {order.customer_address}
-            {order.landmark ? ` — ${order.landmark}` : ''}
-          </p>
-          <p className="flex items-center gap-2 text-gray-600">
-            <Phone className="w-4 h-4 text-gray-400" /> {order.customer_phone}
-          </p>
-          <div className="pt-2 mt-1 border-t border-gray-50 space-y-1">
-            <p className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Payment Method</span>
-              <span className="font-medium text-foreground">Paystack</span>
-            </p>
-            <p className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Payment Status</span>
-              {order.payment_status === 'Paid' ? (
-                <span className="font-bold text-[#2E7D32] flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" /> Payment Confirmed
-                </span>
-              ) : order.payment_status === 'Failed' ? (
-                <span className="font-bold text-red-600 flex items-center gap-1">
-                  <XCircle className="w-3 h-3" /> Payment Failed
-                </span>
-              ) : (
-                <span className="font-bold text-[#E65100] flex items-center gap-1">
-                  <Clock className="w-3 h-3" /> Payment Pending
-                </span>
-              )}
-            </p>
-            <p className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">Order Status</span>
-              <span className="font-medium text-foreground capitalize">
-                {(order.status || '').replace(/_/g, ' ')}
-              </span>
-            </p>
-            {order.paystack_reference && (
-              <p className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Reference</span>
-                <span className="font-medium text-foreground text-right text-[10px]">{order.paystack_reference}</span>
-              </p>
-            )}
-            {order.payment_channel && (
-              <p className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Channel</span>
-                <span className="font-medium text-foreground capitalize">{order.payment_channel}</span>
-              </p>
-            )}
-            {order.payment_timestamp && order.payment_status === 'Paid' && (
-              <p className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Paid at</span>
-                <span className="font-medium text-foreground">
-                  {new Date(order.payment_timestamp).toLocaleString('en-NG')}
-                </span>
-              </p>
-            )}
-            {order.payment_status !== 'Paid' && order.status !== 'cancelled' && (
-              <button
-                onClick={payNow}
-                disabled={paying}
-                className="mt-2 w-full h-10 rounded-xl bg-[#2E7D32] text-white text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-50"
-              >
-                {paying ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCw className="w-3.5 h-3.5" />}
-                {order.payment_status === 'Failed' ? 'Retry Payment' : 'Pay Now'}
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {!isCancelled && order.payment_status === 'Paid' ? (
-        <div className="bg-card rounded-2xl border border-border p-4">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase mb-4">Delivery Progress</h3>
-          <div className="space-y-0">
-            {STEPS.map((step, i) => {
-              const done = i < currentStepIndex;
-              const current = i === currentStepIndex;
-              const Icon = step.icon;
-              return (
-                <div key={step.key} className="flex gap-3">
-                  <div className="flex flex-col items-center">
-                    <div
-                      className={`w-9 h-9 rounded-full flex items-center justify-center ${
-                        done || current ? 'bg-primary/10' : 'bg-muted'
-                      } ${current ? 'ring-2 ring-[#2E7D32] ring-offset-1' : ''}`}
-                    >
-                      <Icon
-                        className={`w-4 h-4 ${done || current ? 'text-[#2E7D32]' : 'text-gray-400'}`}
-                        strokeWidth={done || current ? 2.5 : 2}
-                      />
-                    </div>
-                    {i < STEPS.length - 1 && (
-                      <div
-                        className={`w-0.5 flex-1 min-h-[24px] my-1 rounded-full ${
-                          done ? 'bg-[#2E7D32]' : 'bg-muted'
-                        }`}
-                      />
-                    )}
-                  </div>
-                  <div className="pb-5">
-                    <p className={`text-sm font-bold ${done || current ? 'text-foreground' : 'text-gray-400'}`}>
-                      {step.title}
-                    </p>
-                    <p className={`text-xs ${done || current ? 'text-muted-foreground' : 'text-gray-400'}`}>
-                      {step.desc}
-                    </p>
-                    {current && step.key === 'on_the_way' && (
-  <DeliveryCountdown startTime={delivery?.updated_date || order.updated_date} />
-)}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          {delivery && ['on_the_way', 'arriving_soon', 'picked_up'].includes(delivery.status) ? (
-            <Link
-              to={`/track-order/${delivery.id}`}
-              className="mt-3 w-full flex items-center justify-center gap-2 bg-[#2E7D32] text-white text-sm font-bold py-3 rounded-2xl animate-pulse"
-            >
-              <Truck className="w-4 h-4" /> Live Track Order
-            </Link>
-          ) : delivery && delivery.status === 'delivered' ? (
-            <Link
-              to={`/track-order/${delivery.id}`}
-              className="mt-3 w-full flex items-center justify-center gap-2 bg-gray-100 text-gray-600 text-sm font-bold py-3 rounded-2xl"
-            >
-              <CheckCircle2 className="w-4 h-4" /> View Delivery
-            </Link>
-          ) : (
-            <Link
-              to={`/track?order=${order.order_number}`}
-              className="mt-3 w-full flex items-center justify-center gap-2 bg-[#2E7D32] text-white text-sm font-bold py-3 rounded-2xl"
-            >
-              <Truck className="w-4 h-4" /> Track Order
-            </Link>
-          )}
-        </div>
-      ) : isCancelled ? (
-        <div className="bg-red-50 rounded-2xl border border-red-100 p-4 text-center">
-          <XCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-          <p className="text-sm font-bold text-red-700">This order was cancelled</p>
-          <p className="text-xs text-red-500 mt-1">Contact support if this is a mistake.</p>
-        </div>
-      ) : null}
-
-      {order.status === 'delivered' && (
-        <div className="bg-card rounded-2xl border border-border p-4">
-          <h3 className="text-sm font-bold text-foreground mb-1">Rate your delivery</h3>
-          <p className="text-xs text-muted-foreground mb-3">Tell us about your experience</p>
-          <RateDeliveryCard order={order} />
-        </div>
+    <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-50 border border-green-200 text-xs font-bold text-[#2E7D32]">
+      <Clock className="w-3.5 h-3.5 animate-pulse shrink-0" />
+      {secondsLeft > 0 ? (
+        <span>Arriving in ~{formatted}</span>
+      ) : (
+        <span>Arriving any moment now</span>
       )}
-
-      {order.status !== 'cancelled' && (order.items?.length || 0) > 0 && (
-        <button
-          onClick={reorder}
-          className="w-full flex items-center justify-center gap-2 bg-[#2E7D32] text-white text-sm font-bold py-3 rounded-2xl active:scale-[0.98] transition-transform"
-        >
-          <RotateCw className="w-4 h-4" /> Reorder these items
-        </button>
-      )}
-
-      <Link
-        to="/orders"
-        className="block w-full text-center bg-card border border-gray-200 text-gray-700 text-sm font-bold py-3 rounded-2xl"
-      >
-        Back to Orders
-      </Link>
     </div>
   );
 }
+
+export default function OrderDetail() {
+  const { id } = useParams();
+  const [order, setOrder] = useState(null);
+  const [delivery, setDelivery] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [paying, setPaying] = useState(false);
+  const { addItems } = useCart();
+  const navigate = useNavigate();
+
+  const payNow = async () => {
+    if (!order) return;
+    setPaying(true);
+    try {
+      const callbackUrl = `${window.location.origin}/payment/callback`;
+      const res = await base44.functions.invoke('process-paystack-payment', {
+        action: 'initialize',
+        orderId: order.id,
+        callbackUrl,
+      });
+      if (res?.ok && res?.access_code) {
+        const PAYSTACK_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '';
+        try {
+          await new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = 'https://paystack.co';
+            s.onload = () => resolve();
+            s.onerror = () => reject(new Error('Could not load Paystack'));
+            document.head.appendChild(s);
+          });
+        } catch {}
+        if (window.PaystackPop) {
+          const handler = window.PaystackPop.setup({
+            key: PAYSTACK_KEY,
+            access_code: res.access_code,
+            onClose: () => {
+              setPaying(false);
+            },
+            callback: (resp) => {
+              const ref = resp.reference || res.reference;
+              window.location.href = `${window.location.origin}/payment/callback?reference=${encodeURIComponent(ref)}`;
+            },
+          });
+          handler.openIframe();
+          return;
+        }
+      }
+      if (res?.ok && res?.authorization_url) {
+        window.location.href = res.authorization_url;
+      } else {
+        setPaying(false);
+      }
+    } catch {
+      setPaying(false);
+    }
+  };
+
+  const reorder = () => {
+    const cartItems = (order.items || [])
+      .map((it) => ({
+        id: it.product_id || it.name,
+        name: it.product_name || it.name,
+        details: it.variant_label || '',
+        price: it.price || 0,
+        quantity: it.quantity || 1,
+        unit: it.unit || '',
+        addons: it.addons || [],
+        addons_total: it.addons_total || 0,
+      }))
+      .filter((it) => it.id);
+    if (cartItems.length === 0) {
+      toast({ title: 'No items to reorder' });
+      return;
+    }
+    addItems(cartItems);
+    toast({ title: `Added ${cartItems.length} item${cartItems.length > 1 ? 's' : ''} to cart` });
+    navigate('/cart');
+  };
+
+  useEffect(() => {
+    base44.entities.Order
+      .get(id)
+      .then((o) => {
+        setOrder(o);
+        base44.entities.Delivery
+          .filter({ order_id: id }, { limit: 1 })
+          .then((r) => setDelivery(r.items?. || null))
+          .catch(() => {});
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [id]);
