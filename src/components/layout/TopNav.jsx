@@ -145,6 +145,30 @@ export default function TopNav() {
   <DrawerTitle>Choose delivery area</DrawerTitle>
 </DrawerHeader>
 <div className="overflow-y-auto px-4 pb-8 space-y-4">
+  <button
+  type="button"
+  onClick={() => {
+    retry();
+    setAreaOpen(false);
+  }}
+  disabled={status === 'requesting'}
+  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#2E9E44]/10 border border-[#2E9E44]/30 text-[#1B7F3A] text-sm font-bold active:scale-[0.98] transition-transform"
+>
+  {status === 'requesting' ? (
+    <>
+      <Loader2 className="w-4 h-4 animate-spin" /> Detecting your location...
+    </>
+  ) : (
+    <>
+      <Navigation className="w-4 h-4" /> Use my current location
+    </>
+  )}
+</button>
+{status === 'denied' && (
+  <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+    Location access is blocked in your browser. Enable location permission or select your area below.
+  </p>
+)}
   <div>
     <p className="text-xs font-bold text-[#2E9E44] uppercase mb-2">
       Lagos Island · 30 mins
