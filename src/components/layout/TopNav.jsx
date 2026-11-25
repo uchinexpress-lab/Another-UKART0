@@ -7,6 +7,8 @@ import {
   ChevronDown,
   Search,
   Bike,
+  Navigation,
+  Loader2,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '@/lib/AuthContext';
@@ -53,7 +55,7 @@ const LAGOS_AREAS = {
 };
 
 export default function TopNav() {
-  const { location, setManual } = useLocation();
+  const { location, status, setManual, retry } = useLocation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
@@ -102,7 +104,7 @@ export default function TopNav() {
   }, [firstName]);
 
   const areaDisplay = location?.area ?? 'your area';
-  const deliveryShort = location?.zone === 'island' ? '30 mins' : 'Today';
+  const deliveryShort = location?.zone === 'island' ? '30 mins' : 'Same Day';
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -139,15 +141,14 @@ export default function TopNav() {
                 </span>
               </button>
             </DrawerTrigger>
-            <DrawerContent className="max-h-[80vh]">
-              <DrawerHeader className="text-left">
-                <DrawerTitle>Choose delivery area</DrawerTitle>
-              </DrawerHeader>
-              <div className="overflow-y-auto px-4 pb-8 space-y-4">
-                <div>
-                  <p className="text-xs font-bold text-[#2E9E44] uppercase mb-2">
-                    Lagos Island · 30 mins
-                  </p>
+            <DrawerHeader className="text-left">
+  <DrawerTitle>Choose delivery area</DrawerTitle>
+</DrawerHeader>
+<div className="overflow-y-auto px-4 pb-8 space-y-4">
+  <div>
+    <p className="text-xs font-bold text-[#2E9E44] uppercase mb-2">
+      Lagos Island · 30 mins
+    </p>
                   <div className="grid grid-cols-2 gap-2">
                     {LAGOS_AREAS.island.map((area) => (
                       <button
