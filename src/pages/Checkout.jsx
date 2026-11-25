@@ -295,7 +295,15 @@ export default function Checkout() {
         throw new Error(res?.error || 'Could not start Paystack payment');
       }
 
-      await loadPaystackScript();
+           try {
+        await loadPaystackScript();
+      } catch {
+        const fallbackUrl =
+          res.authorization_url || `https://paystack.com{res.access_code}`;
+        window.location.href = fallbackUrl;
+        return;
+      }
+
       await new Promise((resolve) => {
         const handler = window.PaystackPop.setup({
           key: PAYSTACK_PUBLIC_KEY,
@@ -310,6 +318,15 @@ export default function Checkout() {
               });
             } catch {}
             resolve({ closed: true });
+          },
+          callback: (paystackResponse) => {
+            const ref = paystackResponse.reference || res.reference;
+            window.location.href = `${window.location.origin}/payment/callback?reference=${encodeURIComponent(ref)}`;
+            resolve({ closed: false });
+          },
+        });
+        handler.openIframe();
+      });
           },
           callback: (paystackResponse) => {
             const ref = paystackResponse.reference || res.reference;
