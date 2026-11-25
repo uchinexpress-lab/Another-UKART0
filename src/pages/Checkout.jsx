@@ -5,25 +5,6 @@ import AddressPickerMap from '@/components/delivery/AddressPickerMap';
 import { useCart } from '@/context/CartContext';
 import { base44 } from '@/api/base44Client';
 import { Clock, MapPin, Navigation, Phone, User, Loader2, ShoppingBag, Tag, History, X, CreditCard, Lock, Truck } from 'lucide-react';
-
-const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '';
-
-let paystackScriptPromise = null;
-function loadPaystackScript() {
-  if (paystackScriptPromise) return paystackScriptPromise;
-  if (window.PaystackPop) return Promise.resolve();
-  paystackScriptPromise = new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = 'https://js.paystack.co/v1/inline.js';
-    script.onload = () => resolve();
-    script.onerror = () => {
-      paystackScriptPromise = null;
-      reject(new Error('Could not load Paystack payment script'));
-    };
-    document.head.appendChild(script);
-  });
-  return paystackScriptPromise;
-}
 import { toast } from '@/components/ui/use-toast';
 import { getServiceFee } from '@/lib/fees';
 import {
@@ -34,6 +15,26 @@ import {
 } from '@/lib/delivery';
 import { useLocation } from '@/context/LocationContext';
 import { isValidNigerianPhone } from '@/lib/phoneValidation';
+
+const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '';
+let paystackScriptPromise = null;
+
+function loadPaystackScript() {
+  if (paystackScriptPromise) return paystackScriptPromise;
+  if (window.PaystackPop) return Promise.resolve();
+  paystackScriptPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://paystack.co';
+    script.onload = () => resolve();
+    script.onerror = () => {
+      paystackScriptPromise = null;
+      reject(new Error('Could not load Paystack payment script'));
+    };
+    document.head.appendChild(script);
+  });
+  return paystackScriptPromise;
+}
+
 const REWARD_AMOUNT = 550;
 const MINIMUM_ORDER = 5000;
 
@@ -61,7 +62,7 @@ export default function Checkout() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [altPhone, setAltPhone] = useState('');
-  const [address, setAddress] = useState(''); 
+  const [address, setAddress] = useState('');
   const [coords, setCoords] = useState({ lat: null, lng: null });
   const [landmark, setLandmark] = useState('');
   const [zone, setZone] = useState(selectedLocation?.zone || 'mainland');
@@ -108,8 +109,8 @@ export default function Checkout() {
           referrer_rewarded: false,
         });
         if (asReferrer.length > 0) {
-          setReferralDiscount(asReferred[0].reward_amount || REWARD_AMOUNT);
-          setRewardRef({ id: asReferred[0].id, type: 'referrer' });
+          setReferralDiscount(asReferrer[0].reward_amount || REWARD_AMOUNT);
+          setRewardRef({ id: asReferrer[0].id, type: 'referrer' });
         }
       } catch {}
     })();
@@ -139,24 +140,24 @@ export default function Checkout() {
         });
         setIsFirstOrder(!paidOrders || paidOrders.length === 0);
         const profileAddrs = Array.isArray(me?.saved_addresses) ? me.saved_addresses : [];
-        setSavedAddresses(profileAddrs.map((a) => ({
-          id: a.id,
-          label: a.label,
-          name: a.full_name,
-          phone: a.phone,
-          address: a.address,
-          landmark: a.landmark,
-          lat: a.lat ?? null,
-          lng: a.lng ?? null,
-          zone: a.zone || null,
-        })));
+        setSavedAddresses(
+          profileAddrs.map((a) => ({
+            id: a.id,
+            label: a.label,
+            name: a.full_name,
+            phone: a.phone,
+            address: a.address,
+            landmark: a.landmark,
+            lat: a.lat ?? null,
+            lng: a.lng ?? null,
+            zone: a.zone || null,
+          }))
+        );
       } catch {}
     })();
   }, []);
-
   const firstOrderEligible = isFirstOrder && promoSettings?.first_order_enabled !== false;
   const firstOrderDiscount = firstOrderEligible ? (promoSettings?.first_order_discount || 500) : 0;
-
   const voucherDiscount = voucher
     ? voucher.discount_type === 'fixed_amount'
       ? Math.min(voucher.discount_amount || 0, total)
@@ -178,17 +179,16 @@ export default function Checkout() {
   const deliveryDiscount = deliveryBase - deliveryFee;
   const serviceFee = getServiceFee(total);
   const grandTotal = total - appliedDiscount + deliveryFee + serviceFee;
-
   const meetsMinimumOrder = total >= MINIMUM_ORDER;
 
-const canPlace =
-  meetsMinimumOrder &&
-  name.trim() &&
-  phone.trim() &&
-  isValidNigerianPhone(phone) &&
-  address.trim() &&
-  landmark.trim() &&
-  !placing;
+  const canPlace =
+    meetsMinimumOrder &&
+    name.trim() &&
+    phone.trim() &&
+    isValidNigerianPhone(phone) &&
+    address.trim() &&
+    landmark.trim() &&
+    !placing;
 
   const applyVoucher = async () => {
     setVoucherError('');
@@ -224,7 +224,6 @@ const canPlace =
       navigate('/cart');
       return;
     }
-
     if (!canPlace) return;
     setPlacing(true);
     try {
@@ -233,7 +232,12 @@ const canPlace =
         throw new Error('Please sign in to place an order.');
       }
 
-      // 1. Build checkout data — no order is created until payment succeeds.
+      const rawEmail = String(me.email || '').trim();
+      const cleanPhone = String(phone || '').replace(/\D/g, '') || 'customer';
+      const validCustomerEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawEmail)
+        ? rawEmail
+        : `${cleanPhone}@ukartapp.com`;
+
       const orderItems = items.map((i) => {
         const packageId =
           i.package_id || (String(i.id).startsWith('mealkit-') ? String(i.id).slice(8).split('-')[0] : '');
@@ -266,7 +270,7 @@ const canPlace =
         voucher_id: voucher ? voucher.id : null,
         total: grandTotal,
         customer_name: name,
-        customer_email: me.email,
+        customer_email: validCustomerEmail,
         customer_phone: phone,
         alternate_phone: altPhone,
         customer_address: address,
@@ -280,10 +284,6 @@ const canPlace =
         referral_type: rewardRef ? rewardRef.type : null,
       };
 
-      // 2. Initialize payment via the process-paystack-payment edge function.
-      //    The edge function stores checkout_data in a payment_attempts row
-      //    and returns a Paystack authorization URL. No order exists yet —
-      //    the order is created by finalize_paystack_payment after payment.
       const callbackUrl = `${window.location.origin}/payment/callback`;
       const res = await base44.functions.invoke('process-paystack-payment', {
         action: 'initialize',
@@ -295,18 +295,13 @@ const canPlace =
         throw new Error(res?.error || 'Could not start Paystack payment');
       }
 
-      // 3. Open the Paystack popup (Inline) using the access_code.
-      //    The server still verifies the transaction — the popup only
-      //    collects payment details. The cart is NOT cleared yet.
       await loadPaystackScript();
-
-      await new Promise((resolve, reject) => {
+      await new Promise((resolve) => {
         const handler = window.PaystackPop.setup({
           key: PAYSTACK_PUBLIC_KEY,
+          email: validCustomerEmail,
           access_code: res.access_code,
           onClose: () => {
-            // Customer closed the popup without completing payment.
-            // Mark the attempt as abandoned so it shows in Unpaid Checkouts.
             setPlacing(false);
             try {
               base44.functions.invoke('process-paystack-payment', {
@@ -317,8 +312,6 @@ const canPlace =
             resolve({ closed: true });
           },
           callback: (paystackResponse) => {
-            // Paystack returns a reference on success. Navigate to the
-            // callback page which verifies server-side before confirming.
             const ref = paystackResponse.reference || res.reference;
             window.location.href = `${window.location.origin}/payment/callback?reference=${encodeURIComponent(ref)}`;
             resolve({ closed: false });
@@ -332,7 +325,6 @@ const canPlace =
       alert(msg);
     }
   };
-
   if (items.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center p-8 text-center min-h-[60vh]">
@@ -349,7 +341,8 @@ const canPlace =
   }
 
   const fieldClass = 'uk-input';
-  const labelClass = 'text-[11px] font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5 mb-1.5';
+  const labelClass =
+    'text-[11px] font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5 mb-1.5';
 
   return (
     <div className="p-4 pb-10">
@@ -357,31 +350,29 @@ const canPlace =
       <div className="flex items-center justify-between mb-3">
         <h2 className="uk-title">Checkout</h2>
       </div>
-{!meetsMinimumOrder && (
-  <div className="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200">
-    <p className="text-sm font-semibold text-amber-900">
-      Minimum order: ₦5,000
-    </p>
-    <p className="text-xs text-amber-800 mt-1">
-      Add ₦{(MINIMUM_ORDER - total).toLocaleString()} more to continue.
-    </p>
-    <button
-      onClick={() => navigate('/cart')}
-      className="text-xs font-bold text-amber-900 underline mt-2"
-    >
-      Return to cart
-    </button>
-  </div>
-)}
+
+      {!meetsMinimumOrder && (
+        <div className="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200">
+          <p className="text-sm font-semibold text-amber-900">Minimum order: ₦5,000</p>
+          <p className="text-xs text-amber-800 mt-1">
+            Add ₦{(MINIMUM_ORDER - total).toLocaleString()} more to continue.
+          </p>
+          <button
+            onClick={() => navigate('/cart')}
+            className="text-xs font-bold text-amber-900 underline mt-2"
+          >
+            Return to cart
+          </button>
+        </div>
+      )}
+
       {/* Cart summary */}
       <div className="uk-card p-3.5 mb-4">
         <div className="flex items-center justify-between text-sm mb-2">
           <span className="text-muted-foreground">
             {items.reduce((s, i) => s + i.quantity, 0)} items
           </span>
-          <span className="font-bold text-retail">
-            ₦{grandTotal.toLocaleString()}
-          </span>
+          <span className="font-bold text-retail">₦{grandTotal.toLocaleString()}</span>
         </div>
         {firstOrderDiscount > 0 && (
           <div className="flex items-center gap-1.5 text-xs text-retail font-medium mb-2">
@@ -412,7 +403,6 @@ const canPlace =
 
       {/* 1. Delivery address */}
       <p className="uk-section-label mb-2">1. Delivery address</p>
-
       {savedAddresses.length > 0 && (
         <div className="mb-4">
           <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1.5 mb-2">
@@ -426,7 +416,9 @@ const canPlace =
                 className="flex-shrink-0 text-left text-xs bg-card border border-border rounded-xl px-3 py-2 w-44 active:scale-95 transition-transform"
               >
                 {a.label && (
-                  <span className="text-[10px] font-bold text-[#2E7D32] bg-[#2E7D32]/10 px-1.5 py-0.5 rounded-full mb-0.5 inline-block">{a.label}</span>
+                  <span className="text-[10px] font-bold text-[#2E7D32] bg-[#2E7D32]/10 px-1.5 py-0.5 rounded-full mb-0.5 inline-block">
+                    {a.label}
+                  </span>
                 )}
                 <span className="font-semibold text-foreground block line-clamp-1">{a.name}</span>
                 <span className="text-muted-foreground line-clamp-2">{a.address}</span>
@@ -468,14 +460,13 @@ const canPlace =
           <label className={labelClass}>
             <MapPin className="w-3.5 h-3.5" /> House Address
           </label>
-         <AddressAutocomplete
+          <AddressAutocomplete
             value={address}
             onChange={handleAddressChange}
             onResolved={(d) => {
               const addressZone = classifyAddressZone(d?.address);
               if (addressZone) setZone(addressZone);
               else if (d?.zone === 'island' || d?.zone === 'mainland') setZone(d.zone);
-
               if (d?.lat != null && d?.lng != null) {
                 setCoords({ lat: d.lat, lng: d.lng });
               }
@@ -486,7 +477,7 @@ const canPlace =
           <p className="text-[11px] text-muted-foreground mt-1.5">
             Pick the suggestion so we find your exact street, then add your house or flat number.
           </p>
-                        <div className="mt-3">
+          <div className="mt-3">
             <AddressPickerMap
               onConfirmLocation={({ address: pickedAddress, lat, lng, zone: detectedZone }) => {
                 if (pickedAddress) setAddress(pickedAddress);
@@ -496,8 +487,8 @@ const canPlace =
                 setCoords({ lat, lng });
               }}
             />
-            </div>
           </div>
+        </div>
         <div>
           <label className={labelClass}>
             <Navigation className="w-3.5 h-3.5" /> Landmark
@@ -537,7 +528,6 @@ const canPlace =
 
       {/* 2. Payment */}
       <p className="uk-section-label mb-2 mt-5">2. Payment</p>
-
       <div className="uk-card p-4 mb-4">
         <p className="text-sm font-bold text-foreground mb-3">Payment Method</p>
         <div className="uk-radio-card uk-radio-card-active">
@@ -564,7 +554,11 @@ const canPlace =
         {voucher ? (
           <div className="flex items-center justify-between bg-primary/10 rounded-xl px-3 py-2.5">
             <span className="text-sm font-semibold text-retail">
-              {voucher.code} ({voucher.discount_type === 'fixed_amount' ? `₦${(voucher.discount_amount || 0).toLocaleString()} off` : `${voucher.discount_percent}% off`})
+              {voucher.code} (
+              {voucher.discount_type === 'fixed_amount'
+                ? `₦${(voucher.discount_amount || 0).toLocaleString()} off`
+                : `${voucher.discount_percent}% off`}
+              )
             </span>
             <button
               onClick={() => {
@@ -632,10 +626,14 @@ const canPlace =
             <span className="text-retail font-semibold">−₦{firstOrderDiscount.toLocaleString()}</span>
           </div>
         )}
-        {(referralDiscount + voucherDiscount) > 0 && (
+        {referralDiscount + voucherDiscount > 0 && (
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Discount {voucher ? `(${voucher.code})` : ''}</span>
-            <span className="text-retail font-semibold">−₦{(referralDiscount + voucherDiscount).toLocaleString()}</span>
+            <span className="text-muted-foreground">
+              Discount {voucher ? `(${voucher.code})` : ''}
+            </span>
+            <span className="text-retail font-semibold">
+              −₦{(referralDiscount + voucherDiscount).toLocaleString()}
+            </span>
           </div>
         )}
         <div className="border-t border-border pt-2 flex justify-between">
