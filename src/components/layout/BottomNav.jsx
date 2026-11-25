@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Package, ClipboardList, Heart, User } from 'lucide-react';
-import { getTabForPath } from '@/context/TabNavContext';
+import { useTabNav, getTabForPath } from '@/context/TabNavContext';
 import { useGuardedNavigate } from '@/lib/navigation';
 
 const navItems = [
@@ -16,16 +15,17 @@ const navItems = [
 export default function BottomNav() {
   const location = useLocation();
   const navigate = useGuardedNavigate();
+  const { getTabRoute } = useTabNav();
   const pathname = location.pathname;
 
   const handleTap = (e, to) => {
     e.preventDefault();
-
-    // Always open the main page of the selected tab.
-    if (pathname === to) {
+    const target = getTabRoute(to);
+    if (pathname === target) {
+      // Already on the tab's current route — scroll to top
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      navigate(to);
+      navigate(target);
     }
   };
 
@@ -37,7 +37,6 @@ export default function BottomNav() {
       >
         {navItems.map(({ to, icon: Icon, label }) => {
           const active = getTabForPath(pathname) === to;
-
           return (
             <Link
               key={to}
@@ -46,16 +45,12 @@ export default function BottomNav() {
               className="flex-1 flex flex-col items-center justify-center gap-1 h-16 no-tap-highlight touch-manipulation active:opacity-70 transition-opacity"
             >
               <Icon
-                className={`w-[22px] h-[22px] ${
-                  active ? 'text-[#2E7D32]' : 'text-muted-foreground'
-                }`}
+                className={`w-[22px] h-[22px] ${active ? 'text-[#2E7D32]' : 'text-muted-foreground'}`}
                 strokeWidth={active ? 2.4 : 1.9}
               />
               <span
                 className={`text-[10px] leading-none ${
-                  active
-                    ? 'font-bold text-[#2E7D32]'
-                    : 'font-medium text-muted-foreground'
+                  active ? 'font-bold text-[#2E7D32]' : 'font-medium text-muted-foreground'
                 }`}
               >
                 {label}
