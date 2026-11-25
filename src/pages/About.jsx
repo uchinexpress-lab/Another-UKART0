@@ -274,7 +274,6 @@ export default function About() {
   );
   const contactEmail = getField('contact_email', 'support@ukart.ng');
   const contactAddress = getField('contact_address', 'Lagos, Nigeria');
-  const contactPhone = getField('contact_phone', '+234 803 000 0000');
 
   return (
     <div className="uk-page space-y-4">
@@ -315,10 +314,6 @@ export default function About() {
             <div className="flex justify-between">
               <span className="text-muted-foreground">Email</span>
               <span className="font-medium text-foreground">{contactEmail}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">Phone</span>
-              <span className="font-medium text-foreground">{contactPhone}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Version</span>
