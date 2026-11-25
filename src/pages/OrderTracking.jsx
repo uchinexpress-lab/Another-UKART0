@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import {
   Search,
@@ -25,13 +25,12 @@ const STEPS = [
   { key: 'on_the_way', title: 'Out for Delivery', description: 'Our rider is on the way to your Lagos address.', icon: Truck },
   { key: 'delivered', title: 'Delivered', description: 'Your order has arrived. Enjoy your groceries!', icon: CheckCircle2 },
 ];
-
 const STEP_ORDER = ['new', 'processing', 'ready', 'on_the_way', 'delivered'];
 
 const ETA_BY_STATUS = {
   new: '30–45 mins',
-  processing: '15–30 mins',
-  ready: '10–20 mins',
+  processing: '1–5 mins',
+  ready: '5–15 mins',
   on_the_way: '15–30 mins',
   delivered: 'Delivered',
 };
@@ -51,40 +50,8 @@ function timeAgo(d) {
   }
 }
 
-function LiveThirtyMinCountdown({ startTime }) {
-  const [secondsLeft, setSecondsLeft] = useState(null);
-
-  useEffect(() => {
-    const startMs = startTime ? new Date(startTime).getTime() : Date.now();
-    const validStart = Number.isNaN(startMs) ? Date.now() : startMs;
-    const endMs = validStart + 30 * 60 * 1000;
-
-    const tick = () => {
-      setSecondsLeft(Math.max(0, Math.floor((endMs - Date.now()) / 1000)));
-    };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
-  }, [startTime]);
-
-  if (secondsLeft === null) return null;
-  const mins = Math.floor(secondsLeft / 60);
-  const secs = secondsLeft % 60;
-  const formatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-
-  return (
-    <div className="mt-3 p-3 rounded-xl bg-secondary text-center">
-      <p className="text-[13px] font-bold text-retail">Your rider is on the way! 🛵</p>
-      <p className="text-xs font-bold text-retail mt-1">
-        {secondsLeft > 0 ? `Estimated arrival: ~${formatted}` : 'Arriving any moment now'}
-      </p>
-    </div>
-  );
-}
-
 export default function OrderTracking() {
   const [params, setParams] = useSearchParams();
-  const navigate = useNavigate();
   const orderId = params.get('id') || '';
   const queryOrder = params.get('order') || '';
   const [searchValue, setSearchValue] = useState(queryOrder);
@@ -101,23 +68,11 @@ export default function OrderTracking() {
       if (orderId) {
         found = await base44.entities.Order.get(orderId).catch(() => null);
       } else if (queryOrder) {
-        const cleanQuery = queryOrder.trim().replace(/^#/, '').toUpperCase();
-        const res = await base44.entities.Order.filter({ order_number: cleanQuery }, { limit: 1 }).catch(() => null);
-        const list = Array.isArray(res) ? res : res?.items || [];
-        found = list[0] || null;
+        const orders = await base44.entities.Order.list();
+        found = orders.find((o) => o.order_number.toLowerCase() === queryOrder.toLowerCase());
       }
-
-      if (found) {
-        const dRes = await base44.entities.Delivery.filter({ order_id: found.id }, { limit: 1 }).catch(() => null);
-        const deliveries = Array.isArray(dRes) ? dRes : dRes?.items || [];
-        if (deliveries[0]?.id) {
-          navigate(`/track-order/${deliveries[0].id}`, { replace: true });
-          return;
-        }
-        setOrder(found);
-      } else {
-        setError('Order not found. Check your order number and try again.');
-      }
+      if (found) setOrder(found);
+      else setError('Order not found. Check your order number and try again.');
     } catch {
       setError('Could not load order. Please try again.');
     } finally {
@@ -140,15 +95,17 @@ export default function OrderTracking() {
   const isCancelled = order?.status === 'cancelled';
   const isDelivered = order?.status === 'delivered';
   const currentStepIndex = order ? Math.max(0, STEP_ORDER.indexOf(order.status)) : -1;
+
   return (
     <div className="uk-page">
+      {/* Compact search — always visible so users can track another order */}
       <form onSubmit={handleSearch} className="flex items-center gap-2 mb-4">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
-            placeholder="Enter order number (e.g. UK-3A561E55)"
+            placeholder="Enter order number"
             className="uk-input pl-9 !py-2"
           />
         </div>
@@ -184,6 +141,7 @@ export default function OrderTracking() {
 
       {order && !loading && (
         <div className="space-y-3">
+          {/* Status hero */}
           <div className="uk-card p-4">
             <div className="flex items-start justify-between gap-2">
               <div>
@@ -202,7 +160,7 @@ export default function OrderTracking() {
                 </span>
               ) : (
                 <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-secondary text-retail flex items-center gap-1">
-                  <Bike className="w-3 h-3" /> {ETA_BY_STATUS[order.status] || 'In Progress'}
+                  <Bike className="w-3 h-3" /> {ETA_BY_STATUS[order.status]}
                 </span>
               )}
             </div>
@@ -223,6 +181,7 @@ export default function OrderTracking() {
             )}
           </div>
 
+          {/* Vertical tracking timeline */}
           {!isCancelled ? (
             <div className="uk-card p-4">
               <p className="uk-section-label mb-3">Delivery progress</p>
@@ -279,7 +238,10 @@ export default function OrderTracking() {
               </div>
 
               {order.status === 'on_the_way' && (
-                <LiveThirtyMinCountdown startTime={order.updated_date} />
+                <div className="mt-2 p-3 rounded-xl bg-secondary text-center">
+                  <p className="text-[13px] font-bold text-retail">Your rider is on the way! 🛵</p>
+                  <p className="text-[11px] text-retail/75 mt-0.5">Estimated arrival: 15–40 minutes</p>
+                </div>
               )}
             </div>
           ) : (
@@ -290,6 +252,7 @@ export default function OrderTracking() {
             </div>
           )}
 
+          {/* Delivery address */}
           <div className="uk-card p-4">
             <p className="uk-section-label mb-2">Delivery address</p>
             <div className="flex items-start gap-2.5">
@@ -309,6 +272,7 @@ export default function OrderTracking() {
             </div>
           </div>
 
+          {/* Order items */}
           <div className="uk-card p-4">
             <p className="uk-section-label mb-2.5">Order items</p>
             <div className="space-y-1.5 mb-3">
@@ -336,7 +300,7 @@ export default function OrderTracking() {
             <Clock className="w-3.5 h-3.5" /> Last update {timeAgo(order.updated_date) || 'just now'}
           </div>
 
-          <Link to="/order" className="uk-btn-outline">
+          <Link to="/orders" className="uk-btn-outline">
             Back to My Orders
           </Link>
         </div>
