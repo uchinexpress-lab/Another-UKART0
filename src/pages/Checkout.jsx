@@ -77,6 +77,10 @@ export default function Checkout() {
   const [isFirstOrder, setIsFirstOrder] = useState(false);
   const [deliverySettings, setDeliverySettings] = useState(null);
   useEffect(() => {
+  loadPaystackScript().catch(() => {});
+}, []);
+  
+  useEffect(() => {
     if (selectedLocation?.zone === 'island' || selectedLocation?.zone === 'mainland') {
       setZone(selectedLocation.zone);
     }
