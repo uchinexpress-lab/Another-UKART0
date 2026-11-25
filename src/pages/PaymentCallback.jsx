@@ -27,18 +27,15 @@ export default function PaymentCallback() {
   const { clearCart } = useCart();
   const reference = params.get('reference') || params.get('trxref');
 
-  const [state, setState] = useState('verifying'); // verifying | pending | failed | error
-  const [orderId, setOrderId] = useState(null);
+  const [state, setState] = useState('verifying'); // verifying | pending | error
   const [reason, setReason] = useState('');
-  const [retrying, setRetrying] = useState(false);
 
   const verify = useCallback(async () => {
     setState('verifying');
     setReason('');
 
     if (!reference) {
-      setState('failed');
-      setOrderId(readPendingOrder());
+      setState('error');
       setReason('No payment reference was returned by Paystack.');
       return;
     }
@@ -49,8 +46,6 @@ export default function PaymentCallback() {
         reference,
       });
       const data = res || {};
-      if (data.orderId) setOrderId(data.orderId);
-
       if (data.ok && data.orderId) {
         clearCart();
         forgetPendingOrder();
@@ -64,21 +59,17 @@ export default function PaymentCallback() {
         return;
       }
 
-      // Definitively not paid: close the attempt, keep the order for the record.
-      setState('failed');
-      setReason(data.reason || 'The payment was not completed.');
-      try {
-        await base44.functions.invoke('process-paystack-payment', {
-          action: 'abandon',
-          orderId: data.orderId || readPendingOrder() || undefined,
-          reference,
-        });
-      } catch {}
-      forgetPendingOrder();
+      // Verification returned an error — but Paystack may have still charged
+      // the customer. Do NOT abandon. Show a recovery state that lets the
+      // customer check again (the webhook may finalize the order shortly).
+      setState('error');
+      setReason(
+        data.reason ||
+          'We could not confirm your payment right now. If Paystack sent you a receipt, your order will appear shortly — please check again.'
+      );
     } catch (e) {
       // Verification unreachable — this is NOT a failed payment.
       setState('error');
-      setOrderId(readPendingOrder());
       setReason(e?.response?.data?.error || e?.message || 'We could not reach the payment service.');
     }
   }, [reference, clearCart, navigate]);
@@ -86,49 +77,6 @@ export default function PaymentCallback() {
   useEffect(() => {
     verify();
   }, [verify]);
-
-  const payAgain = async () => {
-    const id = orderId || readPendingOrder();
-    if (!id) return;
-    setRetrying(true);
-    try {
-      const res = await base44.functions.invoke('process-paystack-payment', {
-        action: 'initialize',
-        orderId: id,
-        callbackUrl: `${window.location.origin}/payment/callback`,
-      });
-      if (res?.ok && res?.access_code) {
-        const PAYSTACK_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || '';
-        try {
-          await new Promise((resolve, reject) => {
-            const s = document.createElement('script');
-            s.src = 'https://js.paystack.co/v1/inline.js';
-            s.onload = () => resolve();
-            s.onerror = () => reject(new Error('Could not load Paystack'));
-            document.head.appendChild(s);
-          });
-        } catch {}
-        if (window.PaystackPop) {
-          const handler = window.PaystackPop.setup({
-            key: PAYSTACK_KEY,
-            access_code: res.access_code,
-            onClose: () => { setRetrying(false); },
-            callback: (resp) => {
-              const ref = resp.reference || res.reference;
-              window.location.href = `${window.location.origin}/payment/callback?reference=${encodeURIComponent(ref)}`;
-            },
-          });
-          handler.openIframe();
-          return;
-        }
-      }
-      if (res?.authorization_url) {
-        window.location.href = res.authorization_url;
-        return;
-      }
-    } catch {}
-    setRetrying(false);
-  };
 
   if (state === 'verifying') {
     return (
@@ -140,15 +88,13 @@ export default function PaymentCallback() {
     );
   }
 
-  const Icon = state === 'pending' ? Clock : state === 'error' ? AlertCircle : AlertCircle;
+  const Icon = state === 'pending' ? Clock : AlertCircle;
   const iconTone =
-    state === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600';
+    state === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-amber-100 text-amber-700';
   const title =
     state === 'pending'
       ? 'Still confirming your payment'
-      : state === 'error'
-      ? "We couldn't confirm your payment"
-      : 'Payment not completed';
+      : "We couldn't confirm your payment yet";
 
   return (
     <div className="flex flex-col items-center justify-center p-6 text-center min-h-[60vh]">
@@ -156,12 +102,11 @@ export default function PaymentCallback() {
         <Icon className="w-7 h-7" />
       </div>
       <h2 className="text-lg font-bold text-foreground">{title}</h2>
-      <p className="text-sm text-muted-foreground mt-1.5 max-w-[300px]">
+      <p className="text-sm text-muted-foreground mt-1.5 max-w-[320px]">
         {state === 'pending'
           ? 'Paystack is still settling this transaction. Your order will update automatically as soon as it completes — you can safely check again.'
-          : state === 'error'
-          ? 'Your bank may still be processing the payment. Check again in a moment before trying another payment.'
-          : reason}
+          : reason ||
+            'If Paystack sent you a receipt, your payment went through. Your order will appear in your order history shortly. Please check again in a moment.'}
       </p>
 
       <div className="w-full max-w-[320px] mt-5 space-y-2">
@@ -169,34 +114,18 @@ export default function PaymentCallback() {
           <RefreshCw className="w-4 h-4" /> Check again
         </button>
 
-        {state === 'failed' && orderId && (
-          <button onClick={payAgain} disabled={retrying} className="uk-btn-outline">
-            {retrying ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Opening Paystack…
-              </>
-            ) : (
-              <>Try payment again</>
-            )}
-          </button>
-        )}
-
-        {orderId && (
-          <Link to={`/orders/${orderId}`} className="uk-btn-outline">
-            View order
-          </Link>
-        )}
+        <Link to="/orders" className="uk-btn-outline">
+          View my orders
+        </Link>
         <Link to="/cart" className="block text-xs font-semibold text-muted-foreground py-2">
           Back to cart
         </Link>
       </div>
 
-      {state === 'failed' && (
-        <p className="text-[11px] text-muted-foreground mt-4 flex items-center gap-1.5">
-          <CheckCircle2 className="w-3.5 h-3.5 text-retail" />
-          Your cart is untouched and your order is saved.
-        </p>
-      )}
+      <p className="text-[11px] text-muted-foreground mt-4 flex items-center gap-1.5">
+        <CheckCircle2 className="w-3.5 h-3.5 text-retail" />
+        Your cart is preserved until your payment is confirmed.
+      </p>
     </div>
   );
 }

@@ -302,9 +302,13 @@ async function abandonCheckout(supabase: any, body: any) {
   const orderId = body?.orderId;
 
   if (reference) {
+    // The payment_attempts.status CHECK constraint only allows
+    // 'initialized', 'verified', 'failed'. Use 'failed' for abandoned
+    // checkouts so the row is preserved for reconciliation without
+    // violating the constraint.
     await supabase
       .from("payment_attempts")
-      .update({ status: "abandoned" })
+      .update({ status: "failed" })
       .eq("reference", reference)
       .neq("status", "verified");
   }
