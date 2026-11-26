@@ -300,14 +300,19 @@ const auth = {
   },
 
   async verifyOtp({ email, otpCode }) {
-    const { data, error } = await supabase.auth.verifyOtp({ email, token: otpCode, type: 'signup' });
-    if (error) throw error;
-    if (data.user) {
-      const profile = await fetchProfile(data.user.id);
-      return { user: mapAuthUser(data.user, profile), access_token: data.session?.access_token };
-    }
-    return { user: null };
-  },
+  const cleanEmail = String(email || '').trim().toLowerCase();
+  const cleanToken = String(otpCode || '').replace(/\D/g, '').trim();
+  let res = await supabase.auth.verifyOtp({ email: cleanEmail, token: cleanToken, type: 'signup' });
+  if (res.error) {
+    res = await supabase.auth.verifyOtp({ email: cleanEmail, token: cleanToken, type: 'email' });
+  }
+  if (res.error) throw res.error;
+  if (res.data?.user) {
+    const profile = await fetchProfile(res.data.user.id);
+    return { user: mapAuthUser(res.data.user, profile), access_token: res.data.session?.access_token };
+  }
+  return { user: null };
+},
 
   async resendOtp(email) {
     const { error } = await supabase.auth.resend({ email, type: 'signup' });
