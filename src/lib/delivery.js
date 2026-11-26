@@ -21,8 +21,8 @@ export const DEFAULT_DELIVERY_SETTINGS = {
   mainland_fee: 5000,
   mainland_threshold: 10000,
   discounts_enabled: true,
-  first_order_discount_percent: 65,
-  repeat_discount_percent: 50,
+  first_order_discount_percent: 60,
+  repeat_discount_percent: 49.999,
   first_order_min_subtotal: 4900,
 };
 
