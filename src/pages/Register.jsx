@@ -141,10 +141,10 @@ export default function Register() {
     e.preventDefault();
     setError("");
     const code = otpCode.trim();
-    if (!/^\d{6}$/.test(code)) {
-      setError("Enter the six-digit code sent to your email.");
-      return;
-    }
+    if (!/^\d{6,8}$/.test(code)) {
+  setError("Enter the verification code sent to your email.");
+  return;
+}
     setLoading(true);
     try {
       const verified = await base44.auth.verifyOtp({ email: email.trim(), otpCode: code });
@@ -213,7 +213,7 @@ export default function Register() {
       await base44.auth.resendOtp(email.trim());
       setOtpExpiresAt(Date.now() + 5 * 60 * 1000);
       setOtpSecondsLeft(300);
-      toast({ title: "New code sent", description: "Check your email for a fresh six-digit code. It expires in 5 minutes." });
+      toast({ title: "New code sent", description: "Check your email for a fresh verification code code. It expires in 5 minutes." });
     } catch (err) {
       setError(err.message || "We couldn't resend the code. Please try again shortly.");
     } finally {
@@ -272,7 +272,7 @@ export default function Register() {
             <Mail className="w-9 h-9 text-primary mx-auto" />
             <h2 className="text-xl font-semibold">Verify your email</h2>
             <p className="text-sm text-muted-foreground">
-              We sent a six-digit code to <strong>{email}</strong>. Enter it below to activate your Ukart account.
+              We sent a eight-digit code to <strong>{email}</strong>. Enter it below to activate your Ukart account.
             </p>
             {otpExpired ? (
               <p className="text-sm text-destructive font-medium">
@@ -285,19 +285,19 @@ export default function Register() {
             )}
           </div>
           <div>
-            <Label className="mb-1.5 block">Six-digit verification code</Label>
-            <Input
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              maxLength={6}
-              placeholder="000000"
-              value={otpCode}
-              onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-              className="h-14 rounded-xl text-center text-2xl tracking-[0.5em] font-semibold"
-              required
-            />
+            <Label className="mb-1.5 block">Verification code</Label>
+<Input
+  inputMode="numeric"
+  autoComplete="one-time-code"
+  maxLength={8}
+  placeholder="00000000"
+  value={otpCode}
+  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
+  className="h-14 rounded-xl text-center text-2xl tracking-[0.3em] font-semibold"
+  required
+/>
           </div>
-          <Button type="submit" className="w-full h-12 rounded-xl font-semibold" disabled={loading || otpCode.length !== 6 || otpExpired}>
+          <Button type="submit" className="w-full h-12 rounded-xl font-semibold" disabled={loading || otpCode.length < 6 || otpExpired}>
             {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Verifying...</> : "Verify email and continue"}
           </Button>
           <Button type="button" variant="outline" className="w-full h-11 rounded-xl" onClick={handleResendOtp} disabled={resending || loading}>
