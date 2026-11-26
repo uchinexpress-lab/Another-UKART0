@@ -80,7 +80,7 @@ export default function Order() {
   const ongoing = orders.filter((o) => ACTIVE.includes(o.status));
   const completed = orders.filter((o) => !ACTIVE.includes(o.status));
   const deliveryFee = total > 0 ? (total > 30000 ? 0 : 1500) : 0;
-  const grandTotal = total + deliveryFee;
+  const grandTotal = total;
 
   const renderOrderList = (list, emptyLabel) => {
     if (loading)
