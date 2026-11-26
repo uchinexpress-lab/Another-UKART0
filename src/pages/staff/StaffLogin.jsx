@@ -15,14 +15,9 @@ export default function StaffLogin() {
     setError('');
 
     try {
-      // Check if this email belongs to an approved staff member
-      const { data: checkData, error: checkError } = await supabase.rpc('check_staff_email', {
-        p_email: email.trim().toLowerCase(),
-      });
-      if (checkError) throw new Error(checkError.message);
-      if (checkData?.is_staff === false) {
-        throw new Error('This email is not registered as a staff member. Contact your super admin to be added.');
-      }
+      // Staff membership is confirmed after sign-in by the admin area itself.
+      // We deliberately do not check it here: answering "is this a staff email?"
+      // before authentication would let anyone probe which accounts exist.
 
       // Send magic link — reuse the existing OAuth callback route which
       // already handles session detection and redirect.
@@ -31,7 +26,7 @@ export default function StaffLogin() {
         email: email.trim().toLowerCase(),
         options: { emailRedirectTo: redirectTo },
       });
-      if (linkError) throw new Error(linkError.message);
+      if (linkError) throw new Error('We could not send the login link. Please try again shortly.');
 
       setSent(true);
     } catch (err) {

@@ -17,6 +17,235 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
+const MINIMUM_ORDER = 5000;
+
+const DEFAULT_DELIVERY_SETTINGS = {
+  island_fee: 3000,
+  mainland_fee: 5000,
+  mainland_threshold: 10000,
+  discounts_enabled: true,
+  first_order_discount_percent: 65,
+  repeat_discount_percent: 49.999,
+  first_order_min_subtotal: 4900,
+};
+
+function num(value: unknown, fallback = 0): number {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+/** Service fee ladder — must mirror src/lib/fees.js */
+function serverServiceFee(subtotal: number): number {
+  if (subtotal < 5000) return 0;
+  if (subtotal <= 50000) return 310;
+  return 490;
+}
+
+/**
+ * The client may send ids as strings or, for some cart shapes, as arrays of
+ * fragments. Normalize both into a single id string.
+ */
+function normalizeId(value: unknown): string {
+  if (Array.isArray(value)) {
+    if (value.length === 5) return value.join("-");
+    return String(value[0] ?? "");
+  }
+  return value == null ? "" : String(value);
+}
+
+/** Smallest price this catalogue row can legitimately be sold at. */
+function minPriceFromRow(row: any): number | null {
+  const candidates: number[] = [];
+  const push = (v: unknown) => {
+    const n = Number(v);
+    if (Number.isFinite(n) && n > 0) candidates.push(n);
+  };
+  push(row?.price);
+  push(row?.starting_price);
+  const collections = [row?.variants, row?.sizes];
+  for (const collection of collections) {
+    if (Array.isArray(collection)) {
+      for (const entry of collection) push(entry?.price);
+    }
+  }
+  if (!candidates.length) return null;
+  return Math.min(...candidates);
+}
+
+/**
+ * Recompute the amount to charge from server-held data.
+ *
+ * The browser is untrusted: it may send any subtotal, delivery fee, service
+ * fee, discount or total it likes. We therefore
+ *   - rebuild a price floor for the cart from the catalogue,
+ *   - recompute the service fee and the smallest legal delivery fee,
+ *   - cap the discount at the voucher / referral / first-order values the
+ *     database actually holds for this caller,
+ *   - and derive the charged total from those validated components.
+ */
+async function computeTrustedAmount(
+  supabase: any,
+  checkoutData: any,
+  userId: string | null,
+  email: string | null
+): Promise<{ error?: string; amountKobo?: number; normalized?: any }> {
+  const items = Array.isArray(checkoutData?.items) ? checkoutData.items : [];
+  if (!items.length) return { error: "Your cart is empty" };
+
+  // 1. Catalogue price floor.
+  const productIds = new Set<string>();
+  const packageIds = new Set<string>();
+  for (const item of items) {
+    const quantity = num(item?.quantity, 0);
+    if (!Number.isInteger(quantity) || quantity <= 0 || quantity > 100) {
+      return { error: "Invalid item quantity in cart" };
+    }
+    const pid = normalizeId(item?.product_id);
+    const kid = normalizeId(item?.package_id);
+    if (pid) productIds.add(pid);
+    if (kid) packageIds.add(kid);
+  }
+
+  const priceById = new Map<string, number>();
+  if (productIds.size) {
+    const { data } = await supabase
+      .from("products")
+      .select("id, price, variants")
+      .in("id", [...productIds]);
+    for (const row of data || []) {
+      const min = minPriceFromRow(row);
+      if (min !== null) priceById.set(String(row.id), min);
+    }
+  }
+  if (packageIds.size) {
+    const { data } = await supabase
+      .from("packages")
+      .select("id, starting_price, sizes")
+      .in("id", [...packageIds]);
+    for (const row of data || []) {
+      const min = minPriceFromRow(row);
+      if (min !== null) priceById.set(String(row.id), min);
+    }
+  }
+
+  let subtotalFloor = 0;
+  for (const item of items) {
+    const quantity = num(item?.quantity, 0);
+    const id = normalizeId(item?.package_id) || normalizeId(item?.product_id);
+    const catalogPrice = id ? priceById.get(id) : undefined;
+    if (catalogPrice !== undefined) subtotalFloor += catalogPrice * quantity;
+  }
+
+  const subtotal = Math.max(num(checkoutData?.subtotal, 0), subtotalFloor);
+  if (subtotal < MINIMUM_ORDER) {
+    return { error: `Minimum order is NGN ${MINIMUM_ORDER.toLocaleString()}` };
+  }
+
+  // 2. Service fee — recomputed, never below the server ladder.
+  const serviceFee = Math.max(num(checkoutData?.service_fee, 0), serverServiceFee(subtotal));
+
+  // 3. Delivery fee — never below the most heavily discounted legal fee.
+  const { data: deliveryRows } = await supabase
+    .from("delivery_settings")
+    .select("*")
+    .limit(1);
+  const ds = { ...DEFAULT_DELIVERY_SETTINGS } as any;
+  const rawDs = deliveryRows?.[0];
+  if (rawDs) {
+    for (const key of Object.keys(DEFAULT_DELIVERY_SETTINGS)) {
+      const v = rawDs[key];
+      if (v !== undefined && v !== null && v !== "") ds[key] = v;
+    }
+  }
+  const minBase = Math.min(num(ds.island_fee), num(ds.mainland_fee));
+  const maxPercent =
+    ds.discounts_enabled === false
+      ? 0
+      : Math.max(num(ds.first_order_discount_percent), num(ds.repeat_discount_percent));
+  const deliveryFloor = Math.round(minBase * (1 - maxPercent / 100));
+  const deliveryFee = Math.max(num(checkoutData?.delivery_fee, 0), deliveryFloor);
+
+  // 4. Discount — capped at what the database says this caller is entitled to.
+  let allowedDiscount = 0;
+
+  // 4a. First-order discount: only when this customer has no paid order yet.
+  const { data: promoRows } = await supabase
+    .from("promotion_settings")
+    .select("first_order_enabled, first_order_discount")
+    .limit(1);
+  const promo = promoRows?.[0];
+  if (promo && promo.first_order_enabled !== false && email) {
+    const { data: paidOrders } = await supabase
+      .from("orders")
+      .select("id")
+      .ilike("customer_email", email)
+      .ilike("payment_status", "paid")
+      .limit(1);
+    if (!paidOrders || paidOrders.length === 0) {
+      allowedDiscount += num(promo.first_order_discount, 0);
+    }
+  }
+
+  // 4b. Referral reward: only a referral row that belongs to this user and
+  //     has not been paid out yet.
+  const referralId = checkoutData?.referral_id;
+  if (referralId && userId) {
+    const { data: referral } = await supabase
+      .from("referrals")
+      .select("*")
+      .eq("id", referralId)
+      .maybeSingle();
+    if (referral) {
+      const isReferred = referral.referred_user_id === userId && referral.referred_rewarded !== true;
+      const isReferrer = referral.referrer_id === userId && referral.referrer_rewarded !== true;
+      if (isReferred || isReferrer) allowedDiscount += num(referral.reward_amount, 0);
+    }
+  }
+
+  // 4c. Voucher: re-read from the database, never trust the client's value.
+  const voucherCode = checkoutData?.voucher_code;
+  if (voucherCode) {
+    const { data: voucher } = await supabase
+      .from("vouchers")
+      .select("*")
+      .ilike("code", String(voucherCode))
+      .maybeSingle();
+    const notExpired =
+      !voucher?.expiry_date || new Date(voucher.expiry_date).getTime() >= Date.now();
+    const usesLeft =
+      voucher?.max_uses == null || num(voucher.uses, 0) < num(voucher.max_uses, 0);
+    const assignedOk =
+      !voucher?.assigned_to_email ||
+      (email && String(voucher.assigned_to_email).toLowerCase() === email.toLowerCase());
+    if (voucher && voucher.active !== false && notExpired && usesLeft && assignedOk) {
+      allowedDiscount +=
+        voucher.discount_type === "fixed_amount"
+          ? num(voucher.discount_amount, 0)
+          : Math.round((subtotal * num(voucher.discount_percent, 0)) / 100);
+    }
+  }
+
+  const discount = Math.max(
+    0,
+    Math.min(num(checkoutData?.discount, 0), allowedDiscount, subtotal)
+  );
+
+  const total = subtotal - discount + deliveryFee + serviceFee;
+  if (!(total > 0)) return { error: "Invalid amount" };
+
+  return {
+    amountKobo: Math.round(total * 100),
+    normalized: {
+      ...checkoutData,
+      subtotal,
+      service_fee: serviceFee,
+      delivery_fee: deliveryFee,
+      discount,
+      total,
+    },
+  };
+}
+
 /**
  * Initialize a payment attempt.
  *
@@ -90,9 +319,16 @@ async function initializePayment(
     };
   } else if (checkoutData) {
     // New path: checkout data passed directly, no pre-created order.
+    // The amount is recomputed from server-held catalogue prices, fee rules and
+    // the discounts this caller is actually entitled to — the browser's own
+    // totals are only ever used as a lower bound.
     email = checkoutData.customer_email || null;
-    amountKobo = Math.round(Number(checkoutData.total) * 100);
-    storedCheckoutData = checkoutData;
+    const priced = await computeTrustedAmount(supabase, checkoutData, userId, email);
+    if (priced.error) {
+      return jsonResponse({ error: priced.error }, 400);
+    }
+    amountKobo = priced.amountKobo as number;
+    storedCheckoutData = priced.normalized;
     linkedOrderId = null;
   } else {
     return jsonResponse({ error: "checkoutData or orderId is required" }, 400);
