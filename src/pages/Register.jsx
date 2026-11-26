@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,9 @@ export default function Register() {
   const [otpStep, setOtpStep] = useState(false);
   const [otpCode, setOtpCode] = useState("");
   const [resending, setResending] = useState(false);
+  const [otpExpiresAt, setOtpExpiresAt] = useState(null);
+  const [otpSecondsLeft, setOtpSecondsLeft] = useState(300);
+  const otpTimerRef = useRef(null);
 
   const returnTo = safeReturnTo();
   const fullName = `${firstName.trim()} ${lastName.trim()}`.trim();
@@ -88,6 +91,7 @@ export default function Register() {
       if (result?.needsVerification) {
         setOtpStep(true);
         setError("");
+        setOtpExpiresAt(Date.now() + 5 * 60 * 1000);
         return;
       }
       try {
@@ -191,7 +195,12 @@ export default function Register() {
       localStorage.removeItem("ukart_guest");
       window.location.href = returnTo;
     } catch (err) {
-      setError(err.message || "Email verification failed. Check the code and try again.");
+      const msg = err?.message || "";
+      if (/expired|invalid|token/i.test(msg)) {
+        setError('This code has expired or is invalid. Tap "Resend code" to get a new one.');
+      } else {
+        setError(msg || "Email verification failed. Check the code and try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -202,7 +211,9 @@ export default function Register() {
     setResending(true);
     try {
       await base44.auth.resendOtp(email.trim());
-      toast({ title: "New code sent", description: "Check your email for a fresh six-digit code." });
+      setOtpExpiresAt(Date.now() + 5 * 60 * 1000);
+      setOtpSecondsLeft(300);
+      toast({ title: "New code sent", description: "Check your email for a fresh six-digit code. It expires in 5 minutes." });
     } catch (err) {
       setError(err.message || "We couldn't resend the code. Please try again shortly.");
     } finally {
@@ -212,8 +223,36 @@ export default function Register() {
 
   const handleGoogle = () => {
     localStorage.removeItem("ukart_guest");
-    base44.auth.loginWithProvider("google", returnTo);
+    try {
+      base44.auth.loginWithProvider("google", returnTo);
+    } catch (err) {
+      setError(err?.message || "Google sign-in could not start. Please try again or use email signup.");
+    }
   };
+
+  useEffect(() => {
+    if (otpStep && otpExpiresAt) {
+      const tick = () => {
+        const remaining = Math.max(0, Math.round((otpExpiresAt - Date.now()) / 1000));
+        setOtpSecondsLeft(remaining);
+        if (remaining <= 0) {
+          clearInterval(otpTimerRef.current);
+          otpTimerRef.current = null;
+        }
+      };
+      tick();
+      otpTimerRef.current = setInterval(tick, 1000);
+      return () => {
+        if (otpTimerRef.current) {
+          clearInterval(otpTimerRef.current);
+          otpTimerRef.current = null;
+        }
+      };
+    }
+  }, [otpStep, otpExpiresAt]);
+
+  const otpExpired = otpSecondsLeft <= 0;
+  const otpTimeLabel = `${Math.floor(otpSecondsLeft / 60)}:${String(otpSecondsLeft % 60).padStart(2, "0")}`;
 
   return (
     <AuthShell
@@ -235,6 +274,15 @@ export default function Register() {
             <p className="text-sm text-muted-foreground">
               We sent a six-digit code to <strong>{email}</strong>. Enter it below to activate your Ukart account.
             </p>
+            {otpExpired ? (
+              <p className="text-sm text-destructive font-medium">
+                Your code has expired. Tap "Resend code" to get a new one.
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Code expires in <span className="font-semibold text-foreground">{otpTimeLabel}</span>
+              </p>
+            )}
           </div>
           <div>
             <Label className="mb-1.5 block">Six-digit verification code</Label>
@@ -249,11 +297,11 @@ export default function Register() {
               required
             />
           </div>
-          <Button type="submit" className="w-full h-12 rounded-xl font-semibold" disabled={loading || otpCode.length !== 6}>
+          <Button type="submit" className="w-full h-12 rounded-xl font-semibold" disabled={loading || otpCode.length !== 6 || otpExpired}>
             {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Verifying...</> : "Verify email and continue"}
           </Button>
           <Button type="button" variant="outline" className="w-full h-11 rounded-xl" onClick={handleResendOtp} disabled={resending || loading}>
-            {resending ? "Sending..." : "Resend code"}
+            {resending ? "Sending..." : otpExpired ? "Resend code" : "Resend code"}
           </Button>
           <button type="button" className="w-full text-sm text-muted-foreground hover:text-primary" onClick={() => { setOtpStep(false); setOtpCode(""); setError(""); }}>
             Back to registration

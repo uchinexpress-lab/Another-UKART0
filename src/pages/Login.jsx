@@ -56,7 +56,11 @@ export default function Login() {
 
   const handleGoogle = () => {
     localStorage.removeItem("ukart_guest");
-    base44.auth.loginWithProvider("google", returnTo);
+    try {
+      base44.auth.loginWithProvider("google", returnTo);
+    } catch (err) {
+      setError(err?.message || "Google sign-in could not start. Please try again or use email login.");
+    }
   };
 
   const handleApple = () => {
