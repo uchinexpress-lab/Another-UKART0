@@ -212,9 +212,7 @@ export default function Order() {
           style={{ bottom: 0, paddingBottom: 'calc(env(safe-area-inset-bottom) + 72px)' }}
         >
           <div className="flex items-center justify-between text-[11px] mb-2">
-            <span className="text-muted-foreground">
-              {itemCount} items · Delivery ₦{deliveryFee.toLocaleString()}
-            </span>
+            <span className="text-muted-foreground">{itemCount} items</span>
             <span className="font-bold text-foreground">Total ₦{grandTotal.toLocaleString()}</span>
           </div>
           <button onClick={() => navigate('/checkout')} className="uk-btn">
