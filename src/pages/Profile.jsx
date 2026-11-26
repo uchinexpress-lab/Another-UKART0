@@ -103,7 +103,6 @@ export default function Profile() {
   const accountItems = [
     { icon: Package, label: 'My Orders', to: '/orders' },
     { icon: MapPin, label: 'Delivery Addresses', toggle: true },
-    { icon: CreditCard, label: 'Payment Methods', to: '/payment-methods' },
     { icon: Heart, label: 'Wishlist', to: '/wishlist' },
   ];
 
