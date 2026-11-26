@@ -304,6 +304,8 @@ export default function Checkout() {
         const handler = window.PaystackPop.setup({
           key: PAYSTACK_PUBLIC_KEY,
           email: validCustomerEmail,
+          amount: Math.round(grandTotal * 100),
+          ref: res.reference,
           access_code: res.access_code,
           onClose: () => {
             setPlacing(false);
