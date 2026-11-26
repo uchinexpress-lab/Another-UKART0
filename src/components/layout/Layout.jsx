@@ -7,9 +7,23 @@ import FloatingCart from './FloatingCart';
 import BottomNav from './BottomNav';
 import LocationPrompt from '@/components/LocationPrompt';
 import InstallAppPrompt from '@/components/InstallAppPrompt';
+import MainlandComingSoon from '@/components/location/MainlandComingSoon';
+import { useLocation as useDeliveryLocation } from '@/context/LocationContext';
 import { TabNavProvider } from '@/context/TabNavContext';
 
 const TAB_ROUTES = ['/', '/packages', '/order', '/wishlist', '/profile'];
+
+const ALLOWED_ON_MAINLAND = [
+  '/profile',
+  '/order',
+  '/orders',
+  '/track',
+  '/support',
+  '/about',
+  '/account',
+  '/notifications',
+  '/settings',
+];
 
 function getPageTitle(pathname) {
   if (pathname.startsWith('/package/')) return 'Package Details';
@@ -55,6 +69,11 @@ export default function Layout() {
   const isHome = pathname === '/';
   const isTab = TAB_ROUTES.includes(pathname);
   const outlet = useOutlet();
+  const { location: deliveryLocation } = useDeliveryLocation();
+
+  const isBlockedMainland =
+    deliveryLocation?.zone === 'mainland' &&
+    !ALLOWED_ON_MAINLAND.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 
   // Keep-alive: cache each visited tab's outlet element so its state,
   // scroll height, and inputs persist across tab switches.
@@ -76,45 +95,49 @@ export default function Layout() {
 
   return (
     <TabNavProvider>
-    <div className="min-h-screen bg-background flex flex-col relative">
-      {isHome ? (
-        <TopNav />
-      ) : (
-        <BrandedHeader
-          title={getPageTitle(pathname)}
-          backTo={pathname.endsWith('/payment-success') ? '/' : null}
-        />
-      )}
-      <main
-        className={`flex-1 max-w-md mx-auto w-full ${isTab ? 'pb-24' : ''}`}
-        style={{ paddingBottom: isTab ? 'calc(env(safe-area-inset-bottom) + 76px)' : undefined }}
-      >
-        <Suspense fallback={Fallback}>
-          {/* Tab panels — cached outlets, kept alive (hidden when inactive) */}
-          {tabsToRender.map((p) => (
-            <div key={p} className={p === pathname ? 'block' : 'hidden'}>
-              {cached.current[p]}
-            </div>
-          ))}
-          {/* Non-tab child screens — content mounts immediately and eases in,
-              with no exit wait, so a tap never lands on a blank frame */}
-          {!isTab && (
-            <motion.div
-              key={pathname}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            >
-              {outlet}
-            </motion.div>
+      <div className="min-h-screen bg-background flex flex-col relative">
+        {isHome ? (
+          <TopNav />
+        ) : (
+          <BrandedHeader
+            title={getPageTitle(pathname)}
+            backTo={pathname.endsWith('/payment-success') ? '/' : null}
+          />
+        )}
+        <main
+          className={`flex-1 max-w-md mx-auto w-full ${isTab ? 'pb-24' : ''}`}
+          style={{ paddingBottom: isTab ? 'calc(env(safe-area-inset-bottom) + 76px)' : undefined }}
+        >
+          {isBlockedMainland ? (
+            <MainlandComingSoon />
+          ) : (
+            <Suspense fallback={Fallback}>
+              {/* Tab panels — cached outlets, kept alive (hidden when inactive) */}
+              {tabsToRender.map((p) => (
+                <div key={p} className={p === pathname ? 'block' : 'hidden'}>
+                  {cached.current[p]}
+                </div>
+              ))}
+              {/* Non-tab child screens — content mounts immediately and eases in,
+                  with no exit wait, so a tap never lands on a blank frame */}
+              {!isTab && (
+                <motion.div
+                  key={pathname}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  {outlet}
+                </motion.div>
+              )}
+            </Suspense>
           )}
-        </Suspense>
-      </main>
-      <FloatingCart />
-      {isTab && <BottomNav />}
-      <LocationPrompt />
-      <InstallAppPrompt />
-    </div>
+        </main>
+        {!isBlockedMainland && <FloatingCart />}
+        {isTab && <BottomNav />}
+        <LocationPrompt />
+        <InstallAppPrompt />
+      </div>
     </TabNavProvider>
   );
 }
