@@ -23,8 +23,6 @@ Ukart currently serves selected locations in Lagos, Nigeria.
 
 Lagos Island: Express delivery with a target delivery time of approximately 30 minutes for eligible locations and orders.
 
-Lagos Mainland: Same-day delivery, subject to location, order time and operational availability.
-
 These are estimated delivery times, not guaranteed deadlines. Traffic, weather, order volume, sourcing requirements and rider availability may affect delivery.
 
 Customers must provide accurate contact information, delivery addresses and landmarks and remain available to receive their orders.
