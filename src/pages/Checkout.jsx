@@ -129,15 +129,20 @@ export default function Checkout() {
   }, []);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const me = await base44.auth.me();
-        if (!me?.email) return;
-        const paidOrders = await base44.entities.Order.filter({
+  (async () => {
+    try {
+      const me = await base44.auth.me();
+      if (!me?.id) return;
+      if (me.email) {
+        const paidRes = await base44.entities.Order.filter({
           customer_email: me.email,
           payment_status: 'Paid',
         });
-        setIsFirstOrder(!paidOrders || paidOrders.length === 0);
+        const paidList = Array.isArray(paidRes) ? paidRes : paidRes?.items || [];
+        setIsFirstOrder(paidList.length === 0);
+      } else {
+        setIsFirstOrder(true);
+      }
         const profileAddrs = Array.isArray(me?.saved_addresses) ? me.saved_addresses : [];
         setSavedAddresses(
           profileAddrs.map((a) => ({
