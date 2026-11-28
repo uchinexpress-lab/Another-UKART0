@@ -2,9 +2,11 @@ import React, { useState, useRef } from 'react';
 import { Upload, Trash2, Star, Loader2, ImageIcon } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { base44 } from '@/api/base44Client';
+import ImageCropModal from './ImageCropModal';
 
 export default function ImageGallery({ images, onChange }) {
   const [uploading, setUploading] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState([]);
   const inputRef = useRef(null);
 
   const uploadFiles = async (files) => {
@@ -20,6 +22,33 @@ export default function ImageGallery({ images, onChange }) {
       console.error(e);
     }
     setUploading(false);
+    if (inputRef.current) inputRef.current.value = '';
+  };
+
+  const handleFileSelect = (files) => {
+    const queue = Array.from(files);
+    if (!queue.length) return;
+    setPendingFiles(queue);
+  };
+
+  const handleCropConfirm = async (croppedFile) => {
+    const rest = pendingFiles.slice(1);
+    setPendingFiles(rest);
+    setUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadPublicFile({ file: croppedFile });
+      onChange([...images, file_url]);
+    } catch (e) {
+      console.error(e);
+    }
+    setUploading(false);
+    if (inputRef.current) inputRef.current.value = '';
+    if (!rest.length) return;
+  };
+
+  const handleCropCancel = () => {
+    const rest = pendingFiles.slice(1);
+    setPendingFiles(rest);
     if (inputRef.current) inputRef.current.value = '';
   };
 
@@ -60,7 +89,7 @@ export default function ImageGallery({ images, onChange }) {
         accept="image/*"
         multiple
         className="hidden"
-        onChange={(e) => e.target.files?.length && uploadFiles(e.target.files)}
+        onChange={(e) => e.target.files?.length && handleFileSelect(e.target.files)}
       />
 
       {images.length > 0 && (
@@ -110,6 +139,14 @@ export default function ImageGallery({ images, onChange }) {
           <ImageIcon className="w-8 h-8 opacity-40 mb-1" />
           <span className="text-xs">No images yet</span>
         </div>
+      )}
+
+      {pendingFiles.length > 0 && (
+        <ImageCropModal
+          file={pendingFiles[0]}
+          onConfirm={handleCropConfirm}
+          onCancel={handleCropCancel}
+        />
       )}
     </div>
   );
