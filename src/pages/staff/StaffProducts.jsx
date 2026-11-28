@@ -6,7 +6,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { logStaffAction } from '@/lib/staffAudit';
 import { canAccessPage } from '@/lib/staffRoles';
 import {
-  Search, RefreshCw, Loader2, Plus, Edit, Eye, EyeOff, Trash2,
+  Search, RefreshCw, Loader2, Plus, Edit, Copy, Eye, EyeOff, Trash2,
 } from 'lucide-react';
 import SheetSelect from '@/components/SheetSelect';
 import {
@@ -188,6 +188,13 @@ export default function StaffProducts() {
                             title="Edit"
                           >
                             <Edit className="w-4 h-4" />
+                          </Link>
+                          <Link
+                            to={`/admin/products/new?duplicate=${encodeURIComponent(p.id)}`}
+                            className="p-1.5 rounded hover:bg-green-50 text-[#2E7D32]"
+                            title="Duplicate"
+                          >
+                            <Copy className="w-4 h-4" />
                           </Link>
                           <button
                             onClick={() => toggleVisibility(p)}

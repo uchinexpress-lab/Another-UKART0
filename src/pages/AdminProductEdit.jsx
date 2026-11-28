@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Save, Loader2, Plus } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
@@ -21,9 +21,12 @@ const inputCls = 'w-full text-sm border border-gray-200 rounded-lg px-3 py-2.5 o
 export default function AdminProductEdit() {
   const navigate = useNavigate();
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const duplicateId = searchParams.get('duplicate');
   const isNew = !id || id === 'new';
+  const isDuplicate = isNew && Boolean(duplicateId);
 
-  const [loading, setLoading] = useState(!isNew);
+  const [loading, setLoading] = useState(!isNew || isDuplicate);
   const [saving, setSaving] = useState(false);
   const [categories, setCategories] = useState([]);
   const [showNewCat, setShowNewCat] = useState(false);
@@ -57,10 +60,11 @@ export default function AdminProductEdit() {
 
   useEffect(() => {
     base44.entities.Category.list().then(setCategories).catch(() => {});
-    if (!isNew) {
-      base44.entities.Product.get(id).then((p) => {
+    const sourceId = isNew ? duplicateId : id;
+    if (sourceId) {
+      base44.entities.Product.get(sourceId).then((p) => {
         setForm({
-          name: p.name || '',
+          name: isDuplicate ? `${p.name || ''} (Copy)` : p.name || '',
           description: p.description || '',
           description_long: p.description_long || '',
           product_type: p.product_type || 'grocery',
@@ -88,7 +92,7 @@ export default function AdminProductEdit() {
         setLoading(false);
       }).catch(() => { toast({ title: 'Product not found', variant: 'destructive' }); navigate('/admin/products'); });
     }
-  }, [id]);
+  }, [id, duplicateId, isDuplicate]);
 
   const createCategory = async () => {
     if (!newCatName.trim()) return;
@@ -187,7 +191,7 @@ category_ids: selectedIds,
     <div className="p-4 pb-32">
       <div className="flex items-center gap-2 mb-3">
         <button onClick={() => navigate('/admin/products')} className="w-9 h-9 rounded-full bg-card border border-border flex items-center justify-center"><ArrowLeft className="w-4 h-4" /></button>
-        <h1 className="text-xl font-bold text-foreground">{isNew ? 'Add Product' : 'Edit Product'}</h1>
+        <h1 className="text-xl font-bold text-foreground">{isDuplicate ? 'Duplicate Product' : isNew ? 'Add Product' : 'Edit Product'}</h1>
       </div>
 
       <AdminNav />
