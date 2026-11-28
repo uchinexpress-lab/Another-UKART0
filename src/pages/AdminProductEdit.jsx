@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { ArrowLeft, Save, Loader2, Plus } from 'lucide-react';
@@ -28,6 +28,7 @@ export default function AdminProductEdit() {
   const [categories, setCategories] = useState([]);
   const [showNewCat, setShowNewCat] = useState(false);
   const [newCatName, setNewCatName] = useState('');
+  const nameInputRef = useRef(null);
 
   const [form, setForm] = useState({
     name: '',
@@ -109,7 +110,12 @@ export default function AdminProductEdit() {
   };
 
   const handleSave = async () => {
-    if (!form.name.trim()) { toast({ title: 'Product name is required', variant: 'destructive' }); return; }
+    const productName = String(form.name || '').trim();
+    if (!productName) {
+      nameInputRef.current?.focus();
+      toast({ title: 'Enter a product name before saving', description: 'The product name field is required.', variant: 'destructive' });
+      return;
+    }
     setSaving(true);
     try {
       const selectedIds = form.category_ids?.length
@@ -126,7 +132,7 @@ const category = categories.find((c) => c.id === primaryCatId);
         : form.subcategory || '';
 
       const payload = {
-        name: form.name.trim(),
+        name: productName,
         description: form.description,
         description_long: form.description_long,
         product_type: form.product_type,
@@ -162,7 +168,11 @@ category_ids: selectedIds,
       navigate('/admin/products');
     } catch (e) {
       console.error(e);
-      toast({ title: 'Failed to save product', variant: 'destructive' });
+      toast({
+        title: 'Product could not be saved',
+        description: e?.message || 'Please check your details and try again.',
+        variant: 'destructive',
+      });
     }
     setSaving(false);
   };
@@ -187,7 +197,14 @@ category_ids: selectedIds,
         <h2 className="text-sm font-bold text-foreground">Basic Information</h2>
         <div>
           <label className="text-xs font-medium text-muted-foreground">Product name *</label>
-          <input value={form.name} onChange={(e) => set({ name: e.target.value })} placeholder="e.g. Vegetable Oil" className={inputCls} />
+          <input
+            ref={nameInputRef}
+            required
+            value={form.name}
+            onChange={(e) => set({ name: e.target.value })}
+            placeholder="e.g. Vegetable Oil"
+            className={inputCls}
+          />
         </div>
         <div>
           <label className="text-xs font-medium text-muted-foreground">Short description</label>
