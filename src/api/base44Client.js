@@ -106,8 +106,17 @@ function makeEntity(tableName) {
     },
 
     async delete(id) {
-      const { error } = await supabase.from(tableName).delete().eq('id', id);
+      const { data, error } = await supabase
+        .from(tableName)
+        .delete()
+        .eq('id', id)
+        .select('id');
       if (error) err(error);
+      if (!data?.length) {
+        const e = new Error('The item could not be deleted. Please sign in again and retry.');
+        e.status = 403;
+        throw e;
+      }
       return { success: true };
     },
 
